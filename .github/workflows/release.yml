@@ -94,10 +94,8 @@ jobs:
           npm install -g npm@11.5.1 || (sleep 15 && npm install -g npm@11.5.1)
           npm --version
 
-      - name: Publish npm packages (token auth — temporary; switch back to OIDC Trusted Publishing after first release)
+      - name: Publish npm packages (Trusted Publishing / OIDC)
         if: steps.version-gate.outputs.should_release == 'true'
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           set -euo pipefail
           for pkg in \
