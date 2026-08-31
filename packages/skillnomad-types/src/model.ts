@@ -35,12 +35,21 @@ export type FailBehavior =
   | 'halt'
   | 'checkpoint';
 
+export type SourceRefRole = 'contract' | 'schema' | 'rule' | 'reference';
+
 export interface SourceRef {
   path: string;
   schema?: string;
   required?: boolean;
   dynamic?: boolean;
   description?: string;
+  /**
+   * **条目角色标签**（8.5 裁定：`contractRefs` 收拢进 `reads`，语义差异降级为角色标签）。
+   *
+   * 缺省 `'reference'`；首期只实落 `'contract'`，其余遇到再加。
+   * 仅 `as === 'contract'` 的条目在产物中作为「契约引用」组件派生渲染。
+   */
+  as?: SourceRefRole;
 }
 
 export interface SourceAction {
@@ -124,7 +133,6 @@ export interface SourceInstruction {
   next?: string;
   detail?: string;
   sections?: Record<string, string>;
-  contractRefs?: SourceRef[];
   taskTemplates?: Record<string, string>;
 }
 
@@ -299,7 +307,7 @@ export interface SourceStep {
    * **步骤间的直接前驱（线性链契约）**
    *
    * 步骤之间的关系是**线性链**，不是 DAG：
-   * - 每个步骤最多一个前驱、一个后继；
+   * - 每个步骤最多一个前驱、一个后继（8.4 收窄：类型级保证，而非仅构建期校验）；
    * - 需要并行或分支，请在 `flow` 内部表达（`parallel` / `map`），
    *   **不要把可并行的动作拆成多个顶层步骤**——顶层 step 是不可并行的执行单位；
    * - `dependsOn` 与 `next` 互为反函数，
@@ -307,8 +315,11 @@ export interface SourceStep {
    *
    * 违反契约（多依赖 / 成环 / 断链 / 悬空引用）将在构建期报错，
    * **不会静默线性化**。
+   *
+   * 8.4 起收窄为**单值**：意图写多个前驱在编译期就不可能（类型不允许），
+   * 不再依赖运行时校验兜底。
    */
-  dependsOn: string[];
+  dependsOn?: string;
 
   reads: SourceRef[];
   writes: SourceRef[];
@@ -335,6 +346,9 @@ export interface SourceStep {
    * **不参与任何校验**——因此单独声明它不构成额外保障。
    *
    * 若已声明 `dependsOn`，此字段可省略，由框架补出。
+   *
+   * @deprecated 8.4 起标记为衍生值——开发者应声明 `dependsOn`（或什么都不声明，
+   * 由链序决定），`next` 由框架推导；显式声明仅用于覆盖渲染值，通常不必手写。
    */
   next?: string;
 }

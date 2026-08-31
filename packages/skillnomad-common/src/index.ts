@@ -191,18 +191,16 @@ export function validateBarrierContinuity(steps: StepDefinition[]): ValidationEr
   return errors;
 }
 
-export function validateDependencyRefs(steps: StepDefinition[]): ValidationError[] {
+export function validateDependencyRefs(steps: Array<{ id: string; dependsOn?: string }>): ValidationError[] {
   const errors: ValidationError[] = [];
   const ids = new Set(steps.map(s => s.id));
   for (const step of steps) {
-    for (const dep of step.dependsOn) {
-      if (!ids.has(dep)) {
-        errors.push({
-          stepId: step.id,
-          field: 'dependsOn',
-          message: `Depends on "${dep}" which is not a defined step`,
-        });
-      }
+    if (step.dependsOn && !ids.has(step.dependsOn)) {
+      errors.push({
+        stepId: step.id,
+        field: 'dependsOn',
+        message: `Depends on "${step.dependsOn}" which is not a defined step`,
+      });
     }
   }
   return errors;
@@ -234,23 +232,24 @@ export const CHAIN_TERMINAL = 'done';
  *
  * 违反契约会在构建期报错，**不会静默线性化**。
  */
-export function validateStepChain(steps: StepDefinition[]): ValidationError[] {
+export function validateStepChain(steps: Array<{ id: string; dependsOn?: string; next?: string }>): ValidationError[] {
   const errors: ValidationError[] = [];
   if (steps.length === 0) return errors;
 
   const ids = new Set(steps.map(s => s.id));
 
-  // 1) 每个步骤最多一个前驱
+  // 1) 每个步骤最多一个前驱（8.4 收窄为单值后，类型已保证；此处是运行时兜底）
+  //    仅拦截真正违反单值契约的多依赖数组（length>1）；空数组（=根）与单元素数组
+  //    （等价单值）视为合法兼容形态 —— 类型层已不允许，运行时只防 JSON 等导入的非法数据。
   for (const step of steps) {
-    if (step.dependsOn.length > 1) {
+    if (Array.isArray(step.dependsOn) && step.dependsOn.length > 1) {
       errors.push({
         stepId: step.id,
         field: 'dependsOn',
         message:
-          `Linear chain contract: step "${step.id}" declares ${step.dependsOn.length} ` +
-          `dependencies (${step.dependsOn.join(', ')}); a top-level step may have at most one ` +
-          `predecessor. Express parallelism inside the step via \`flow: parallel\` / \`map\` ` +
-          `instead of splitting it into multiple top-level steps.`,
+          `Linear chain contract: step "${step.id}" declares multiple ` +
+          `dependencies via array (${step.dependsOn.join(', ')}); 8.4 起收窄为单值，` +
+          `请用单个前驱。`,
       });
     }
   }
@@ -289,12 +288,10 @@ export function validateStepChain(steps: StepDefinition[]): ValidationError[] {
   }
 
   // 4) 断链与成环：由 dependsOn 反推链，从唯一起点遍历
-  // 入度 = 该步骤声明了几个前驱（只计指向真实步骤的那些）
+  // 入度 = 该步骤声明了几个前驱（单值，最多 1：指向真实步骤时记 1）
   const indegree = new Map<string, number>(steps.map(s => [s.id, 0]));
   for (const step of steps) {
-    for (const dep of step.dependsOn) {
-      if (ids.has(dep)) indegree.set(step.id, (indegree.get(step.id) ?? 0) + 1);
-    }
+    if (step.dependsOn && ids.has(step.dependsOn)) indegree.set(step.id, (indegree.get(step.id) ?? 0) + 1);
   }
   // 入度为 0 即链起点
   const roots = steps.filter(s => (indegree.get(s.id) ?? 0) === 0).map(s => s.id);
@@ -322,7 +319,7 @@ export function validateStepChain(steps: StepDefinition[]): ValidationError[] {
 
   const successorOf = new Map<string, string>();
   for (const step of steps) {
-    for (const dep of step.dependsOn) successorOf.set(dep, step.id);
+    if (step.dependsOn) successorOf.set(step.dependsOn, step.id);
   }
 
   const visited = new Set<string>();
@@ -367,18 +364,16 @@ export function validateStepChain(steps: StepDefinition[]): ValidationError[] {
  * 诊断交给 `validateStepChain()`，派生函数一律回落为「不产出」。
  */
 export function resolveChain(
-  steps: Array<{ id: string; dependsOn: string[] }>,
+  steps: Array<{ id: string; dependsOn?: string }>,
 ): string[] | null {
   if (steps.length === 0) return [];
 
   const ids = new Set(steps.map(s => s.id));
 
-  // 入度 = 声明了几个真实存在的前驱
+  // 入度 = 是否声明了真实存在的前驱（单值，最多 1）
   const indegree = new Map<string, number>(steps.map(s => [s.id, 0]));
   for (const step of steps) {
-    for (const dep of step.dependsOn) {
-      if (ids.has(dep)) indegree.set(step.id, (indegree.get(step.id) ?? 0) + 1);
-    }
+    if (step.dependsOn && ids.has(step.dependsOn)) indegree.set(step.id, (indegree.get(step.id) ?? 0) + 1);
   }
   const roots = steps.filter(s => (indegree.get(s.id) ?? 0) === 0).map(s => s.id);
   if (roots.length !== 1) return null; // 链不唯一 → 不猜测
@@ -386,7 +381,7 @@ export function resolveChain(
   // 前驱 → 后继
   const successorOf = new Map<string, string>();
   for (const step of steps) {
-    for (const dep of step.dependsOn) successorOf.set(dep, step.id);
+    if (step.dependsOn) successorOf.set(step.dependsOn, step.id);
   }
 
   const chain: string[] = [];
@@ -416,7 +411,7 @@ export function resolveChain(
  *   交由 `validateStepChain()` 报错说明原因。
  */
 export function deriveChainNext(
-  steps: Array<{ id: string; dependsOn: string[] }>,
+  steps: Array<{ id: string; dependsOn?: string }>,
 ): Record<string, string> {
   const nextOf: Record<string, string> = {};
   const chain = resolveChain(steps);
@@ -437,7 +432,7 @@ export function deriveChainNext(
  * 链不成立时返回 `undefined`——不猜测，交由 `validateStepChain()` 说明原因。
  */
 export function deriveInitStepId(
-  steps: Array<{ id: string; dependsOn: string[] }>,
+  steps: Array<{ id: string; dependsOn?: string }>,
 ): string | undefined {
   const chain = resolveChain(steps);
   return chain && chain.length > 0 ? chain[0] : undefined;
@@ -476,7 +471,7 @@ export function formatInterval(startSeq: number, endSeq: number): string {
  * 诊断交给 `validatePhaseCoverage()`。
  */
 export function derivePhaseIntervals(
-  steps: Array<{ id: string; dependsOn: string[] }>,
+  steps: Array<{ id: string; dependsOn?: string }>,
   phases: Array<{ name: string; stepIds: string[] }>,
 ): PhaseInterval[] {
   if (phases.length === 0) return [];
@@ -545,7 +540,7 @@ function displayWidth(text: string): number {
  * 无法推导时返回 `undefined`（此时渲染器回落到纯箭头图）。
  */
 export function deriveFlowOverview(
-  steps: Array<{ id: string; dependsOn: string[] }>,
+  steps: Array<{ id: string; dependsOn?: string }>,
   phases: Array<{ name: string; stepIds: string[] }>,
 ): string | undefined {
   const intervals = derivePhaseIntervals(steps, phases);
@@ -587,7 +582,7 @@ export function deriveFlowOverview(
  * 任一条件不满足就报错——因为此时框架算出来的区间标注是不可信的。
  */
 export function validatePhaseCoverage(
-  steps: Array<{ id: string; dependsOn: string[] }>,
+  steps: Array<{ id: string; dependsOn?: string }>,
   phases: Array<{ name: string; stepIds: string[] }>,
 ): ValidationError[] {
   const errors: ValidationError[] = [];
@@ -695,8 +690,8 @@ export function resolveStepOrder(steps: StepDefinition[]): ResolvedPipeline {
     inDegree.set(step.id, 0);
   }
   for (const step of steps) {
-    for (const dep of step.dependsOn) {
-      adj.get(dep)?.push(step.id);
+    if (step.dependsOn) {
+      adj.get(step.dependsOn)?.push(step.id);
       inDegree.set(step.id, (inDegree.get(step.id) ?? 0) + 1);
     }
   }

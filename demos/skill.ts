@@ -19,7 +19,6 @@ const stepParse: StepDefinition = {
   title: '主题解析',
   description: '解析调研主题，生成调研框架（research-brief.json），确定研究范围和深度',
   body: '解析调研主题，生成 research-brief.json，确定研究范围和深度。',
-  dependsOn: [],
   graph: task({
     id: 'parse',
     label: '主题解析',
@@ -53,7 +52,7 @@ const stepExplore: StepDefinition = {
   title: '多维度探索',
   description: '3 个维度 Agent 并行探索（文档、实践、生态）+ 收敛者整合',
   body: '并行探索文档、实践与生态三个维度，并由收敛者整合发现。',
-  dependsOn: ['topic-parse'],
+  dependsOn: 'topic-parse',
   graph: parallel('explore-batch', '多维度并行探索', [
     task({
       id: 'explore-docs',
@@ -112,7 +111,7 @@ const stepOrganize: StepDefinition = {
   title: '分类整理',
   description: '两阶段整理：先归类，再排优先级',
   body: '先对发现归类，再按学习路径排定优先级。',
-  dependsOn: ['multi-dim-explore'],
+  dependsOn: 'multi-dim-explore',
   graph: seq('organize-seq', '两阶段整理', [
     task({
       id: 'organize-categorize',
@@ -161,7 +160,7 @@ const stepDeepDive: StepDefinition = {
   title: '深度研究',
   description: '核心概念研究 → 实践模式研究（后者依赖前者）',
   body: '对核心概念与实践模式进行依赖顺序驱动的深度研究。',
-  dependsOn: ['organize'],
+  dependsOn: 'organize',
   graph: seq('deep-dive-seq', '深度研究', [
     task({
       id: 'dive-concepts',
@@ -215,7 +214,7 @@ const stepReport: StepDefinition = {
   title: '报告生成',
   description: '按章节逐个生成研究报告',
   body: '按章节逐个生成研究报告，并输出可独立阅读的 Markdown。',
-  dependsOn: ['deep-dive'],
+  dependsOn: 'deep-dive',
   graph: mapNode('report-map', '章节报告生成', '{workDir}/.meta/organized.json#categories',
     task({
       id: 'report-worker',

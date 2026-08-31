@@ -13,6 +13,7 @@ npm install -D skillnomad@beta       # 最新 beta（预发布）
 
 - **版本线**：`0.1.0-beta.x`（预发布）。预发布版本发布到 **`beta`** dist-tag，**不占用 `latest`**。
 - **`latest` 只留给正式版**（0.1.0 起）；beta 期装最新请用 `@beta` 或显式版本（如 `@0.1.0-beta.2`）。
+- **⚠️ 1.0 前 API 不稳定**：`0.1.0` 正式版之前属于 beta 线，**接口可能随时以破坏性方式变更**（如字段类型收窄、字段删除）。升级 beta 版本前请查阅 changelog；契约在 `0.1.0`（1.0）发布时冻结。
 - **发布流程**（push tag 即触发 GitHub Actions → OIDC 直发 npm，全程无 token）：
   1. 同步改版本号：`release-manifest.json`（`release` + 4 个包）+ 4 个 `packages/*/package.json` 的 `version`
   2. `git commit -m "chore(release): v<version>"` + `git tag v<version>`
@@ -51,7 +52,8 @@ export default defineConfig({
 由此得到三条使用规则：
 
 1. **不要把可并行的动作拆成多个顶层步骤。** 需要并行就在一步内部用 `.parallel()` / `.map()` 表达。
-2. **`.dependsOn()` 与 `.next()` 互为反函数，只调用其中一个。** 另一个由框架推导；同时声明属冗余，也埋下不一致的风险。
+2. **`.dependsOn()` 只传一个前驱（单值），与 `.next()` 互为反函数。** 另一个由框架推导；同时声明属冗余，也埋下不一致的风险。
+   `dependsOn` 已在 8.4 收窄为单值——顶层步骤最多一个前驱，**类型层面**就保证了「写两个不可能」，而不是靠构建期校验兜底。
 3. **`next` 由框架推导，无需手写。** 框架从链序算出每一步的下一跳（末步为终止标记 `done`），
    不写也能得到正确的「下一步」章节；显式声明可覆盖推导值。
    即 `next` 已从「必须手写的字段」降为「可选覆盖的派生值」。

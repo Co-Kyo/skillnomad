@@ -22,11 +22,11 @@ export interface StepBuilder {
   /**
    * 声明步骤间的直接前驱。**步骤之间是线性链，不是 DAG。**
    *
-   * - 请只传一个前驱；需要并行/分支时在 `.parallel()` / `.map()` 内部表达，
-   *   不要把可并行动作拆成多个顶层步骤。
+   * 8.4 起收窄为**单值**：只接受一个前驱。需要并行/分支时在 `.parallel()` / `.map()`
+   * 内部表达，不要把可并行动作拆成多个顶层步骤。
    * - 与 `.next()` 互为反函数，**只调用其中一个即可**，另一个由框架推导。
    */
-  dependsOn(...ids: string[]): StepBuilder;
+  dependsOn(id: string): StepBuilder;
   reads(...refs: SourceRef[]): StepBuilder;
   writes(...refs: SourceRef[]): StepBuilder;
   inputs(...values: string[]): StepBuilder;
@@ -40,7 +40,6 @@ export interface StepBuilder {
   outputs(...values: string[]): StepBuilder;
   detail(value: string): StepBuilder;
   section(name: string, content: string): StepBuilder;
-  contractRefs(...refs: SourceRef[]): StepBuilder;
   taskTemplate(name: string, template: string): StepBuilder;
   verify(...rules: SourceVerifyRule[]): StepBuilder;
   onFail(...rules: SourceFailRule[]): StepBuilder;
@@ -52,6 +51,9 @@ export interface StepBuilder {
    *
    * 该值仅被渲染为步骤文件的「下一步」章节，**不参与任何校验**；
    * 若已调用 `.dependsOn()`，此处可省略，由框架推导补出。
+   *
+   * @deprecated 8.4 起为可选覆盖的派生值——建议声明 `dependsOn`（或留空由链序决定），
+   * `next` 由框架推导；显式调用仅用于覆盖渲染值。
    */
   next(id: string): StepBuilder;
 
@@ -124,7 +126,6 @@ class StepBuilderImpl implements StepBuilder {
       id,
       title,
       purpose: '',
-      dependsOn: [],
       reads: [],
       writes: [],
       instruction: this.instruction,
@@ -152,8 +153,8 @@ class StepBuilderImpl implements StepBuilder {
     return this;
   }
 
-  dependsOn(...ids: string[]): StepBuilder {
-    this.step.dependsOn = ids;
+  dependsOn(id: string): StepBuilder {
+    this.step.dependsOn = id;
     return this;
   }
 
@@ -206,11 +207,6 @@ class StepBuilderImpl implements StepBuilder {
       this.instruction.sections = {};
     }
     this.instruction.sections[name] = content;
-    return this;
-  }
-
-  contractRefs(...refs: SourceRef[]): StepBuilder {
-    this.instruction.contractRefs = refs;
     return this;
   }
 

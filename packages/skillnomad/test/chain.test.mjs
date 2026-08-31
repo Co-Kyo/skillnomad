@@ -29,7 +29,7 @@ const TAIL = ['capability-research', 'briefing-assemble', 'assemble', 'learning-
 const ORDER = [...HEAD, ...TAIL];
 
 /** 只声明 dependsOn —— 顺序事实的唯一来源 */
-const chainOf = ids => ids.map((id, i) => ({ id, dependsOn: i === 0 ? [] : [ids[i - 1]] }));
+const chainOf = ids => ids.map((id, i) => ({ id, dependsOn: i === 0 ? undefined : ids[i - 1] }));
 const steps = chainOf(ORDER);
 
 const phaseDefs = [
@@ -56,9 +56,9 @@ test('resolveChain:空步骤表返回空数组而非 null', () => {
 test('resolveChain:多个起点返回 null(不猜测)', () => {
   assert.equal(
     resolveChain([
-      { id: 'a', dependsOn: [] },
-      { id: 'b', dependsOn: [] },
-      { id: 'c', dependsOn: ['b'] },
+      { id: 'a' },
+      { id: 'b' },
+      { id: 'c', dependsOn: 'b' },
     ]),
     null,
   );
@@ -67,9 +67,9 @@ test('resolveChain:多个起点返回 null(不猜测)', () => {
 test('resolveChain:成环返回 null(不猜测)', () => {
   assert.equal(
     resolveChain([
-      { id: 'a', dependsOn: ['c'] },
-      { id: 'b', dependsOn: ['a'] },
-      { id: 'c', dependsOn: ['b'] },
+      { id: 'a', dependsOn: 'c' },
+      { id: 'b', dependsOn: 'a' },
+      { id: 'c', dependsOn: 'b' },
     ]),
     null,
   );
@@ -78,9 +78,9 @@ test('resolveChain:成环返回 null(不猜测)', () => {
 test('resolveChain:断链返回 null(不猜测)', () => {
   assert.equal(
     resolveChain([
-      { id: 'a', dependsOn: [] },
-      { id: 'b', dependsOn: ['a'] },
-      { id: 'orphan', dependsOn: ['ghost'] },
+      { id: 'a' },
+      { id: 'b', dependsOn: 'a' },
+      { id: 'orphan', dependsOn: 'ghost' },
     ]),
     null,
   );
@@ -99,7 +99,7 @@ test('deriveChainNext:全链推导正确,末步落到终止标记', () => {
 });
 
 test('deriveChainNext:链不成立时返回空对象(不猜测)', () => {
-  assert.deepEqual(deriveChainNext([{ id: 'a', dependsOn: [] }, { id: 'b', dependsOn: [] }]), {});
+  assert.deepEqual(deriveChainNext([{ id: 'a' }, { id: 'b' }]), {});
 });
 
 // ---------------------------------------------------------------
@@ -111,16 +111,16 @@ test('deriveInitStepId:链起点即初始化步骤', () => {
 });
 
 test('deriveInitStepId:链不成立时为 undefined', () => {
-  assert.equal(deriveInitStepId([{ id: 'a', dependsOn: [] }, { id: 'b', dependsOn: [] }]), undefined);
+  assert.equal(deriveInitStepId([{ id: 'a' }, { id: 'b' }]), undefined);
   assert.equal(deriveInitStepId([]), undefined);
 });
 
 test('deriveInitStepId:与步骤在数组中的书写位置无关', () => {
   // 把起点写在数组最后 —— 推导只看 dependsOn,不看数组顺序
   const shuffled = [
-    { id: 'b', dependsOn: ['a'] },
-    { id: 'c', dependsOn: ['b'] },
-    { id: 'a', dependsOn: [] },
+    { id: 'b', dependsOn: 'a' },
+    { id: 'c', dependsOn: 'b' },
+    { id: 'a' },
   ];
   assert.equal(deriveInitStepId(shuffled), 'a');
 });
@@ -222,7 +222,7 @@ test('deriveFlowOverview:每个区间标注落在其阶段名下方(按显示宽
 
 test('deriveFlowOverview:无法推导时返回 undefined(渲染器回落箭头图)', () => {
   assert.equal(deriveFlowOverview(steps, []), undefined);
-  assert.equal(deriveFlowOverview([{ id: 'a', dependsOn: [] }, { id: 'b', dependsOn: [] }], phaseDefs), undefined);
+  assert.equal(deriveFlowOverview([{ id: 'a' }, { id: 'b' }], phaseDefs), undefined);
 });
 
 // ---------------------------------------------------------------
@@ -277,9 +277,9 @@ test('validatePhaseCoverage:引用不存在的步骤报错', () => {
 
 test('不猜测:派生全部落空时,链校验仍能说明原因', () => {
   const broken = [
-    { id: 'a', dependsOn: [] },
-    { id: 'b', dependsOn: [] },
-    { id: 'c', dependsOn: ['b'] },
+    { id: 'a' },
+    { id: 'b' },
+    { id: 'c', dependsOn: 'b' },
   ];
   assert.equal(resolveChain(broken), null);
   assert.deepEqual(deriveChainNext(broken), {});
@@ -290,4 +290,36 @@ test('不猜测:派生全部落空时,链校验仍能说明原因', () => {
   const errors = validateStepChain(broken);
   assert.ok(errors.length > 0, '链校验必须报错');
   assert.ok(/root steps/.test(errors[0].message), errors[0].message);
+});
+
+// ---------------------------------------------------------------
+// 8.4 收窄防御：dependsOn 在类型层已是单值（string|undefined），
+// 但运行时从 JSON 等导入的非法数据（数组形态）不应被静默线性化——
+// 违反契约必须报错，这是「收窄为类型级保证」之外的最后一道运行时兜底。
+// ---------------------------------------------------------------
+
+test('8.4 收窄防御:运行时传入数组形态的 dependsOn 仍被拦截', () => {
+  // 典型非法输入：某步声明了两个前驱（旧数组形态，绕过 TS 类型）
+  const illegal = [
+    { id: 'a' },
+    { id: 'b', dependsOn: ['a'] },       // 单元素数组 —— 虽等价但形态非法
+    { id: 'c', dependsOn: [] },          // 空数组 —— 应视为未声明
+    { id: 'd', dependsOn: ['b', 'c'] },  // 多依赖 —— 必须拦截（8.4 收窄的防御目标）
+  ];
+  const errors = validateStepChain(illegal);
+  const arrayErrors = errors.filter(e => /declares multiple/.test(e.message));
+  assert.ok(arrayErrors.length >= 1, '多依赖数组必须被拦截: ' + JSON.stringify(errors));
+  assert.ok(arrayErrors[0].stepId === 'd', '拦截的应是声明两个前驱的步骤 d');
+});
+
+test('8.4 收窄防御:单值合法链零防御报错', () => {
+  const valid = [
+    { id: 'a' },
+    { id: 'b', dependsOn: 'a' },
+    { id: 'c', dependsOn: 'b' },
+  ];
+  const singleValueArrayErrors = validateStepChain(valid).filter(e => /declares multiple/.test(e.message));
+  assert.deepEqual(singleValueArrayErrors, [], '单值链不应触发数组防御');
+  // 且整链零错误
+  assert.equal(resolveChain(valid).length, 3);
 });

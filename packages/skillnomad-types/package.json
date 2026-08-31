@@ -1,8 +1,15 @@
 {
   "name": "skillnomad-types",
-  "version": "0.1.0-beta.3",
+  "version": "0.1.0-beta.4",
   "description": "Type system and builder primitives for skillnomad",
-  "keywords": ["skillnomad", "llm", "skill", "pipeline", "types", "builder"],
+  "keywords": [
+    "skillnomad",
+    "llm",
+    "skill",
+    "pipeline",
+    "types",
+    "builder"
+  ],
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

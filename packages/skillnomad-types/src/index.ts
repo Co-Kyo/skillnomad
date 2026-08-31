@@ -180,7 +180,8 @@ export interface StepDefinition {
   id: string;
   title: string;
   description: string;
-  dependsOn: string[];
+  /** 8.4 起收窄为单值：最多一个前驱（线性链契约的类型级保证）。缺省表示链起点。 */
+  dependsOn?: string;
   /** 当该步骤是 pipeline 初始化步骤时，渲染为 SKILL.md 的初始化规则。 */
   initRules?: SkillInitRule[];
   /** 运行时事件埋点协议；渲染器会把它输出为 process 的运行记录章节。 */

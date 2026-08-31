@@ -1,8 +1,17 @@
 {
   "name": "skillnomad",
-  "version": "0.1.0-beta.3",
+  "version": "0.1.0-beta.4",
   "description": "skillnomad — build LLM-executable Markdown skills from structured pipeline definitions",
-  "keywords": ["skillnomad", "llm", "ai-agents", "agent-skills", "skill", "pipeline", "markdown", "claude"],
+  "keywords": [
+    "skillnomad",
+    "llm",
+    "ai-agents",
+    "agent-skills",
+    "skill",
+    "pipeline",
+    "markdown",
+    "claude"
+  ],
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

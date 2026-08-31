@@ -70,7 +70,7 @@ export function validatePipeline(
   }
 
   // Warn if a step has no dependsOn and is not the first step
-  const hasRoot = steps.some(s => s.dependsOn.length === 0);
+  const hasRoot = steps.some(s => !s.dependsOn);
   if (!hasRoot) {
     warnings.push({
       stepId: '(pipeline)',

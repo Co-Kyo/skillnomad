@@ -1,8 +1,15 @@
 {
   "name": "skillnomad-common",
-  "version": "0.1.0-beta.3",
+  "version": "0.1.0-beta.4",
   "description": "Validation, topological sorting and graph helpers for skillnomad",
-  "keywords": ["skillnomad", "llm", "skill", "pipeline", "topological-sort", "graph"],
+  "keywords": [
+    "skillnomad",
+    "llm",
+    "skill",
+    "pipeline",
+    "topological-sort",
+    "graph"
+  ],
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
