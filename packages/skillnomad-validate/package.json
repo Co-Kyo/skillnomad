@@ -1,6 +1,6 @@
 {
   "name": "skillnomad-validate",
-  "version": "0.1.0-beta.2",
+  "version": "0.1.0-beta.3",
   "description": "Pipeline integrity validator for skillnomad",
   "keywords": ["skillnomad", "llm", "skill", "pipeline", "validation"],
   "type": "module",

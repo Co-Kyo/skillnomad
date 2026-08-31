@@ -5,6 +5,11 @@
 // 而是遍历 ScheduleGraph，按节点 kind 逐个渲染
 // ============================================================
 
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+// 版本从 package.json 读取——派生值不许人工维护（曾经硬编码 '0.2.0' 造成 artifact-manifest 版本错报）
+const SKILLNOMAD_VERSION: string = require('../package.json').version as string;
+
 import type {
   SkillDefinition,
   StepDefinition,
@@ -909,7 +914,7 @@ function writeArtifactManifest(
     JSON.stringify(
       {
         generated_at: new Date().toISOString(),
-        skillnomad_version: '0.2.0',
+        skillnomad_version: SKILLNOMAD_VERSION,
         output_version: process.env.SP_SKILL_OUTPUT_VERSION ?? 'unversioned',
         source_commit: process.env.SKILLNOMAD_SOURCE_COMMIT ?? null,
         step_count: pipeline.steps.length,
