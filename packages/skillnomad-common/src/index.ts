@@ -20,6 +20,8 @@ import type {
   PipelineStateManager,
   StepState,
   StepStatus,
+  SourceSchedulingPolicy,
+  SchedulingBatchMode,
 } from 'skillnomad-types';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
@@ -136,6 +138,46 @@ function validateControlNode(
       }
       break;
   }
+}
+
+export function validateSchedulingPolicy(policy: SourceSchedulingPolicy): ValidationError[] {
+  const errors: ValidationError[] = [];
+
+  // 全局并发上限：必填，正整数
+  if (policy.concurrencyLimit == null || !Number.isInteger(policy.concurrencyLimit) || policy.concurrencyLimit <= 0) {
+    errors.push({ stepId: '(meta)', field: 'schedulingPolicy.concurrencyLimit', message: 'concurrencyLimit is required and must be a positive integer' });
+  }
+
+  // 窗口预算子字段：合法时才校验
+  if (policy.windowBudget) {
+    const w = policy.windowBudget;
+    if (w.maxWindowSize != null && (!Number.isInteger(w.maxWindowSize) || w.maxWindowSize <= 0)) {
+      errors.push({ stepId: '(meta)', field: 'schedulingPolicy.windowBudget.maxWindowSize', message: 'maxWindowSize must be a positive integer' });
+    }
+    if (w.inputChunkTokens != null && (!Number.isInteger(w.inputChunkTokens) || w.inputChunkTokens <= 0)) {
+      errors.push({ stepId: '(meta)', field: 'schedulingPolicy.windowBudget.inputChunkTokens', message: 'inputChunkTokens must be a positive integer' });
+    }
+    if (w.itemSummaryTokens != null && (!Number.isInteger(w.itemSummaryTokens) || w.itemSummaryTokens <= 0)) {
+      errors.push({ stepId: '(meta)', field: 'schedulingPolicy.windowBudget.itemSummaryTokens', message: 'itemSummaryTokens must be a positive integer' });
+    }
+  }
+
+  // 分批规则子字段 + 模式枚举
+  if (policy.batchPolicy) {
+    const b = policy.batchPolicy;
+    if (b.maxBatchSize != null && (!Number.isInteger(b.maxBatchSize) || b.maxBatchSize <= 0)) {
+      errors.push({ stepId: '(meta)', field: 'schedulingPolicy.batchPolicy.maxBatchSize', message: 'maxBatchSize must be a positive integer' });
+    }
+    if (b.slotOccupancy != null && (!Number.isInteger(b.slotOccupancy) || b.slotOccupancy <= 0)) {
+      errors.push({ stepId: '(meta)', field: 'schedulingPolicy.batchPolicy.slotOccupancy', message: 'slotOccupancy must be a positive integer' });
+    }
+    const validModes: SchedulingBatchMode[] = ['batch_parallel', 'rolling_window', 'topo_batch'];
+    if (!validModes.includes(b.mode)) {
+      errors.push({ stepId: '(meta)', field: 'schedulingPolicy.batchPolicy.mode', message: `mode must be one of: ${validModes.join(', ')}` });
+    }
+  }
+
+  return errors;
 }
 
 export function validateStep(step: StepDefinition): ValidationError[] {

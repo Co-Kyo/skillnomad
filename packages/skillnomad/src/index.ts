@@ -41,6 +41,7 @@ import type {
   ReuseRule,
   BarrierDef,
   DegradeProtocol,
+  SourceSchedulingPolicy,
 } from 'skillnomad-types';
 import {
   task,
@@ -58,6 +59,7 @@ import {
   validateDependencyRefs,
   validateStepChain,
   validatePhaseCoverage,
+  validateSchedulingPolicy,
   resolveChain,
   deriveChainNext,
   deriveInitStepId,
@@ -379,6 +381,7 @@ export function createSkillFromModel(model: SkillSourceModel): SkillDefinition {
       initRules: model.meta.initRules,
       initStepId,
       flowOverview,
+      schedulingPolicy: model.meta.schedulingPolicy,
     },
     steps: model.steps.map(step => ({
       id: step.id,
@@ -697,6 +700,40 @@ export function renderStep(
 // SKILL.md render
 // ---------------------------------------------------------------
 
+/**
+ * 渲染「调度策略」公共章节（8.13/8.14 下沉的三类声明）。
+ *
+ * 只在存在 schedulingPolicy 时输出；否则整段省略，避免空章节干扰。
+ */
+function renderSchedulingPolicy(policy: SourceSchedulingPolicy): string {
+  let md = `## 调度策略\n\n`;
+
+  if (policy.concurrencyLimit != null) {
+    md += `- **全局并发上限**：${policy.concurrencyLimit} 个 Task Group\n`;
+  }
+
+  if (policy.windowBudget) {
+    const w = policy.windowBudget;
+    md += `- **窗口预算**：单次调用窗口数上限 ${w.maxWindowSize ?? '—'}；输入摘要 ${w.inputChunkTokens ?? '—'} tokens；素材摘要 ${w.itemSummaryTokens ?? '—'} tokens\n`;
+  }
+
+  if (policy.batchPolicy) {
+    const b = policy.batchPolicy;
+    const modeLabel: Record<string, string> = {
+      batch_parallel: '批量并行',
+      rolling_window: '滚动窗口',
+      topo_batch: '拓扑分批',
+    };
+    md += `- **分批规则**：模式 ${modeLabel[b.mode] ?? b.mode}；每批最多 ${b.maxBatchSize ?? '—'} 个 Task Group；单任务槽位 ${b.slotOccupancy ?? 1}\n`;
+  }
+
+  if (policy.note) {
+    md += `\n${policy.note}\n`;
+  }
+
+  return md;
+}
+
 /** 从 pipeline 生成 SKILL.md */
 export function renderSkillMd(
   pipeline: ResolvedPipeline,
@@ -791,6 +828,11 @@ export function renderSkillMd(
       md += `${index + 1}. **${rule.title}**：${rule.body}\n`;
     });
     md += '\n';
+  }
+
+  // 调度策略（8.13/8.14 下沉的三类声明，公共章节）
+  if (api?.schedulingPolicy) {
+    md += renderSchedulingPolicy(api.schedulingPolicy);
   }
 
   // 执行协议
@@ -1127,6 +1169,7 @@ export function buildPipeline(
     ...validateStepChain(steps),
     ...validatePhaseCoverage(steps, meta?.api?.phases ?? []),
     ...validateBarrierContinuity(steps),
+    ...(meta?.api?.schedulingPolicy ? validateSchedulingPolicy(meta.api.schedulingPolicy) : []),
   ];
 
   if (errors.length > 0) {

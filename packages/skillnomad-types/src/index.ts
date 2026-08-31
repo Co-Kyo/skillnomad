@@ -9,7 +9,7 @@
 
 export * from './model.js';
 export * from './builder.js';
-import type { NextAction, SourceRuntimeTrace } from './model.js';
+import type { NextAction, SourceRuntimeTrace, SourceSchedulingPolicy } from './model.js';
 
 // ---------------------------------------------------------------
 // Schema 引用
@@ -250,6 +250,8 @@ export interface SkillApiMetadata {
   initRules?: SkillInitRule[];
   /** 指定哪个步骤负责 pipeline 初始化；renderer 优先从该步骤读取 initRules。 */
   initStepId?: string;
+  /** 调度策略（skill 级全局口径，8.13/8.14 下沉）；渲染到 SKILL.md 公共章节。 */
+  schedulingPolicy?: SourceSchedulingPolicy;
 }
 
 export interface SkillDefinition {

@@ -401,6 +401,46 @@ export interface SourceInitRule {
   body: string;
 }
 
+/**
+ * 子 agent 分批模式（8.13/8.14 下沉的调度子域）。
+ *
+ * - `batch_parallel`：无依赖任务一次性全部启动（超出并发上限则分多批）。
+ * - `rolling_window`：任务互相独立，完成一个补一个，保持并发接近上限。
+ * - `topo_batch`：任务有依赖，按拓扑顺序分批，批内并行。
+ */
+export type SchedulingBatchMode = 'batch_parallel' | 'rolling_window' | 'topo_batch';
+
+/** 分批规则声明：模式 + 每批容量 + 槽位占用。 */
+export interface SchedulingBatchPolicy {
+  mode: SchedulingBatchMode;
+  /** 一批内最多同时运行的 Task Group 数（>0）。 */
+  maxBatchSize?: number;
+  /** 单个任务单元占用的并发槽位数（如组装 1 命题占 2 槽），默认 1。 */
+  slotOccupancy?: number;
+}
+
+/** 窗口预算声明：单次调用窗口与输入压缩上限。 */
+export interface SchedulingWindowBudget {
+  /** 单次 subagent 调用窗口数上限（>0）。 */
+  maxWindowSize?: number;
+  /** 单个 task 输入正文摘要的 token 上限（>0）。 */
+  inputChunkTokens?: number;
+  /** 单条素材正文摘要的 token 上限（>0）。 */
+  itemSummaryTokens?: number;
+}
+
+/** 调度策略声明（skill 级全局口径，8.13 下沉）。 */
+export interface SourceSchedulingPolicy {
+  /** 全局最大并发 Task Group 数（>0）。 */
+  concurrencyLimit: number;
+  /** 窗口预算（单次调用/输入压缩）。 */
+  windowBudget?: SchedulingWindowBudget;
+  /** 分批规则（模式 + 每批容量 + 槽位）。 */
+  batchPolicy?: SchedulingBatchPolicy;
+  /** 自由文本说明（如平台适配提示），可选。 */
+  note?: string;
+}
+
 export interface SourceCallExample {
   label: string;
   pattern: string;
@@ -438,6 +478,14 @@ export interface SourceMeta {
    * 但其中的区间标注不再有人校验——手写即意味着自己承担漂移风险。
    */
   flowOverview?: string;
+  /**
+   * 调度策略（skill 级全局口径，8.13/8.14 下沉）。
+   *
+   * 窗口预算/并发上限/分批规则与业务无关、跨 skill 通用，封装进本字段，
+   * **步骤不再登记**（消除「人工双清单」的横切散布）。构建期统一渲染到
+   * SKILL.md 的「## 调度策略」公共章节。
+   */
+  schedulingPolicy?: SourceSchedulingPolicy;
 }
 
 export interface SkillSourceModel {
