@@ -1,0 +1,139 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 720" width="100%" height="auto" role="img" aria-labelledby="t d">
+  <title id="t">skillpack · 构建管线数据流</title>
+  <desc id="d">输入配置与技能定义经 CLI 读取后,依次通过 Validate、Resolve、Render 三阶段,产出 dist/ 下的 Markdown 与清单</desc>
+
+  <style>
+    text { font-family: "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, -apple-system, sans-serif; }
+    .title { font-size: 20px; font-weight: 500; fill: #1f2937; }
+    .subtitle { font-size: 13px; fill: #6b7280; }
+    .section { font-size: 13px; font-weight: 500; fill: #4b5563; }
+    .stage-label { font-size: 12px; font-weight: 500; fill: #ffffff; }
+    .stage-title { font-size: 13px; font-weight: 500; }
+    .stage-item { font-size: 12px; }
+    .code { font-family: ui-monospace, "SF Mono", Consolas, monospace; font-size: 11px; fill: #1f2937; }
+    .code-key { font-family: ui-monospace, "SF Mono", Consolas, monospace; font-size: 11px; fill: #534ab7; }
+    .code-str { font-family: ui-monospace, "SF Mono", Consolas, monospace; font-size: 11px; fill: #0f6e56; }
+    .code-fn { font-family: ui-monospace, "SF Mono", Consolas, monospace; font-size: 11px; fill: #185fa5; }
+    .code-com { font-family: ui-monospace, "SF Mono", Consolas, monospace; font-size: 10px; fill: #9ca3af; font-style: italic; }
+    .file-tree { font-family: ui-monospace, "SF Mono", Consolas, monospace; font-size: 11px; fill: #374151; }
+    .flow-label { font-size: 12px; font-weight: 500; fill: #4b5563; }
+  </style>
+
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1 L8 5 L2 9" fill="none" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="arr-b" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1 L8 5 L2 9" fill="none" stroke="#185fa5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <text x="500" y="28" text-anchor="middle" class="title">skillpack · 构建管线数据流</text>
+  <text x="500" y="48" text-anchor="middle" class="subtitle">input → CLI → validate → resolve → render → output</text>
+
+  <text x="40" y="78" class="section">Input · demos/</text>
+  <g>
+    <rect x="80" y="92" width="220" height="140" rx="8" fill="#f3f4f6" stroke="#d1d5db" stroke-width="0.5"/>
+    <rect x="80" y="92" width="4" height="140" rx="2" fill="#6b7280"/>
+    <text x="100" y="116" style="font-size:13px;font-weight:500;fill:#111827">skillpack.config.ts</text>
+    <text x="100" y="142"><tspan class="code-key">export default</tspan><tspan class="code"> </tspan><tspan class="code-fn">defineConfig</tspan><tspan class="code">({</tspan></text>
+    <text x="120" y="158"><tspan class="code-key">skill</tspan><tspan class="code">: </tspan><tspan class="code-str">'./skill.ts'</tspan><tspan class="code">,</tspan></text>
+    <text x="120" y="174"><tspan class="code-key">outputDir</tspan><tspan class="code">: </tspan><tspan class="code-str">'./dist'</tspan><tspan class="code">,</tspan></text>
+    <text x="120" y="190"><tspan class="code-key">meta</tspan><tspan class="code">?: { ... },</tspan></text>
+    <text x="100" y="214"><tspan class="code">});</tspan></text>
+  </g>
+
+  <g>
+    <rect x="320" y="92" width="220" height="140" rx="8" fill="#f3f4f6" stroke="#d1d5db" stroke-width="0.5"/>
+    <rect x="320" y="92" width="4" height="140" rx="2" fill="#6b7280"/>
+    <text x="340" y="116" style="font-size:13px;font-weight:500;fill:#111827">skill.ts</text>
+    <text x="340" y="142"><tspan class="code-key">export const</tspan><tspan class="code"> skill = </tspan><tspan class="code-fn">createSkill</tspan><tspan class="code">({</tspan></text>
+    <text x="360" y="158"><tspan class="code-key">name</tspan><tspan class="code">: </tspan><tspan class="code-str">'tech-research'</tspan><tspan class="code">,</tspan></text>
+    <text x="360" y="174"><tspan class="code-key">title</tspan><tspan class="code">: </tspan><tspan class="code-str">'前端技术调研'</tspan><tspan class="code">,</tspan></text>
+    <text x="360" y="190"><tspan class="code-key">steps</tspan><tspan class="code">: [stepParse, stepExplore, …],</tspan></text>
+    <text x="340" y="214"><tspan class="code">});</tspan></text>
+  </g>
+
+  <path d="M300 162 L320 162" fill="none" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <g>
+    <rect x="620" y="92" width="280" height="140" rx="8" fill="#e6f1fb" stroke="#85b7eb" stroke-width="0.5"/>
+    <rect x="620" y="92" width="4" height="140" rx="2" fill="#185fa5"/>
+    <text x="640" y="116" style="font-size:13px;font-weight:500;fill:#0c447c">CLI(cli.ts)</text>
+    <text x="640" y="142"><tspan class="code-com">// 步骤</tspan></text>
+    <text x="640" y="160"><tspan class="code">1. 读取 config → 解析 skill 路径</tspan></text>
+    <text x="640" y="178"><tspan class="code">2. 动态 import config + skill</tspan></text>
+    <text x="640" y="196"><tspan class="code">3. 调用 </tspan><tspan class="code-fn">buildPipeline</tspan><tspan class="code">(steps, outDir, meta)</tspan></text>
+  </g>
+  <path d="M540 162 L620 162" fill="none" stroke="#185fa5" stroke-width="1.5" marker-end="url(#arr-b)"/>
+
+  <text x="40" y="266" class="section">Pipeline · 三个阶段</text>
+
+  <g>
+    <rect x="80" y="280" width="260" height="150" rx="8" fill="#faeeda" stroke="#ef9f27" stroke-width="0.5"/>
+    <rect x="80" y="280" width="260" height="26" rx="8" fill="#ef9f27" opacity="0.2"/>
+    <text x="210" y="298" text-anchor="middle" class="stage-title" fill="#633806">PHASE 1 · VALIDATE</text>
+    <text x="100" y="328" class="stage-item" fill="#633806">validateStep() — 步骤字段</text>
+    <text x="100" y="346" class="stage-item" fill="#633806">validateDependencyRefs() — 依赖引用</text>
+    <text x="100" y="364" class="stage-item" fill="#633806">validateBarrierContinuity() — barrier 连续</text>
+    <text x="100" y="392" style="font-size:11px;fill:#a32d2d;font-style:italic">错误 → 立即停止(HALT)</text>
+    <text x="100" y="414" class="code-com">→ 校验通过的 steps[]</text>
+  </g>
+
+  <g>
+    <rect x="370" y="280" width="260" height="150" rx="8" fill="#e6f1fb" stroke="#85b7eb" stroke-width="0.5"/>
+    <rect x="370" y="280" width="260" height="26" rx="8" fill="#185fa5" opacity="0.15"/>
+    <text x="500" y="298" text-anchor="middle" class="stage-title" fill="#0c447c">PHASE 2 · RESOLVE</text>
+    <text x="390" y="328" class="stage-item" fill="#0c447c">Kahn 拓扑排序(dependsOn)</text>
+    <text x="390" y="346" class="stage-item" fill="#0c447c">分配序号 seq: 00, 01, …</text>
+    <text x="390" y="364" class="stage-item" fill="#0c447c">解析 {{stepSeq}} / {{stepId}}</text>
+    <text x="390" y="392" class="stage-item" fill="#0c447c">构建 ResolvedStep + ResolvedPipeline</text>
+    <text x="390" y="414" class="code-com">→ ResolvedPipeline</text>
+  </g>
+
+  <g>
+    <rect x="660" y="280" width="260" height="150" rx="8" fill="#e1f5ee" stroke="#5dcaa5" stroke-width="0.5"/>
+    <rect x="660" y="280" width="260" height="26" rx="8" fill="#0f6e56" opacity="0.15"/>
+    <text x="790" y="298" text-anchor="middle" class="stage-title" fill="#085041">PHASE 3 · RENDER</text>
+    <text x="680" y="328" class="stage-item" fill="#085041">renderStep() → processes/{seq}-{id}.md</text>
+    <text x="680" y="346" class="stage-item" fill="#085041">renderSkillMd() → SKILL.md</text>
+    <text x="680" y="364" class="stage-item" fill="#085041">renderControlTree() 调度策略章节</text>
+    <text x="680" y="392" class="stage-item" fill="#085041">4 份 manifest + align-report</text>
+    <text x="680" y="414" class="code-com">→ 写入文件系统(writeFileSync)</text>
+  </g>
+
+  <path d="M340 355 L370 355" fill="none" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arr)"/>
+  <path d="M630 355 L660 355" fill="none" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <g>
+    <rect x="80" y="466" width="840" height="120" rx="8" fill="#e1f5ee" stroke="#5dcaa5" stroke-width="0.5"/>
+    <rect x="80" y="466" width="4" height="120" rx="2" fill="#0f6e56"/>
+    <text x="500" y="492" text-anchor="middle" style="font-size:15px;font-weight:500;fill:#085041">OUTPUT · dist/</text>
+    <text x="100" y="516" class="file-tree">dist/</text>
+    <text x="100" y="534" class="file-tree">├── SKILL.md</text>
+    <text x="100" y="552" class="file-tree">├── processes/</text>
+    <text x="100" y="570" class="file-tree">│   ├── 00-topic-parse.md</text>
+    <text x="260" y="534" class="file-tree">├── output-manifest.json</text>
+    <text x="260" y="552" class="file-tree">├── artifact-manifest.json</text>
+    <text x="260" y="570" class="file-tree">├── decision-summary.json</text>
+    <text x="260" y="588" class="file-tree">└── align-report.{json,md}</text>
+  </g>
+
+  <path d="M790 430 L790 466" fill="none" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <text x="40" y="620" class="section">Execution Order(dependsOn 决定的拓扑顺序)</text>
+  <rect x="80" y="632" width="170" height="26" rx="4" fill="#e6f1fb" stroke="#85b7eb" stroke-width="0.5"/>
+  <text x="165" y="650" text-anchor="middle" style="font-size:11px;font-weight:500;fill:#0c447c">00 · topic-parse</text>
+  <path d="M250 645 L268 645" fill="none" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arr)"/>
+  <rect x="270" y="632" width="200" height="26" rx="4" fill="#e6f1fb" stroke="#85b7eb" stroke-width="0.5"/>
+  <text x="370" y="650" text-anchor="middle" style="font-size:11px;font-weight:500;fill:#0c447c">01 · multi-dim-explore</text>
+  <path d="M470 645 L488 645" fill="none" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arr)"/>
+  <rect x="490" y="632" width="140" height="26" rx="4" fill="#e6f1fb" stroke="#85b7eb" stroke-width="0.5"/>
+  <text x="560" y="650" text-anchor="middle" style="font-size:11px;font-weight:500;fill:#0c447c">02 · organize</text>
+  <path d="M630 645 L648 645" fill="none" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arr)"/>
+  <rect x="650" y="632" width="140" height="26" rx="4" fill="#e6f1fb" stroke="#85b7eb" stroke-width="0.5"/>
+  <text x="720" y="650" text-anchor="middle" style="font-size:11px;font-weight:500;fill:#0c447c">03 · deep-dive</text>
+  <path d="M790 645 L808 645" fill="none" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arr)"/>
+  <rect x="810" y="632" width="140" height="26" rx="4" fill="#e6f1fb" stroke="#85b7eb" stroke-width="0.5"/>
+  <text x="880" y="650" text-anchor="middle" style="font-size:11px;font-weight:500;fill:#0c447c">04 · report</text>
+</svg>

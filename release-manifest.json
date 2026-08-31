@@ -1,0 +1,9 @@
+{
+  "release": "0.1.0-beta.1",
+  "packages": {
+    "skillnomad-types": "0.1.0-beta.1",
+    "skillnomad-common": "0.1.0-beta.1",
+    "skillnomad": "0.1.0-beta.1",
+    "skillnomad-validate": "0.1.0-beta.1"
+  }
+}

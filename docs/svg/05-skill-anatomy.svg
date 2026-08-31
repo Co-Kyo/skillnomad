@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="100%" height="auto" role="img" aria-labelledby="t d">
+  <title id="t">skillpack · StepDefinition 解剖图</title>
+  <desc id="d">createSkill 包装层、StepDefinition 完整字段结构(必填 7 + 可选 12)、ControlNode 递归控制树三层关系</desc>
+
+  <style>
+    text { font-family: "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, -apple-system, sans-serif; }
+    .title { font-size: 20px; font-weight: 500; fill: #1f2937; }
+    .subtitle { font-size: 13px; fill: #6b7280; }
+    .section { font-size: 13px; font-weight: 500; fill: #4b5563; }
+    .code { font-family: ui-monospace, "SF Mono", Consolas, "Courier New", monospace; font-size: 12px; fill: #1f2937; }
+    .code-key { font-family: ui-monospace, "SF Mono", Consolas, monospace; font-size: 12px; fill: #534ab7; }
+    .code-fn { font-family: ui-monospace, "SF Mono", Consolas, monospace; font-size: 12px; fill: #185fa5; font-weight: 500; }
+    .code-str { font-family: ui-monospace, "SF Mono", Consolas, monospace; font-size: 12px; fill: #0f6e56; }
+    .code-com { font-family: ui-monospace, "SF Mono", Consolas, monospace; font-size: 11px; fill: #9ca3af; font-style: italic; }
+    .group-label { font-size: 11px; font-weight: 500; fill: #4b5563; }
+    .field-name { font-family: ui-monospace, "SF Mono", Consolas, monospace; font-size: 12px; fill: #1f2937; }
+    .field-type { font-family: ui-monospace, "SF Mono", Consolas, monospace; font-size: 11px; fill: #9ca3af; }
+    .legend { font-size: 11px; fill: #6b7280; }
+    .node-title { font-size: 12px; font-weight: 500; fill: #0c447c; }
+    .node-sub { font-size: 10px; fill: #378add; }
+  </style>
+
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1 L8 5 L2 9" fill="none" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="arr-p" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1 L8 5 L2 9" fill="none" stroke="#534ab7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <text x="500" y="28" text-anchor="middle" class="title">skillpack · StepDefinition 解剖图</text>
+  <text x="500" y="48" text-anchor="middle" class="subtitle">createSkill → StepDefinition → ControlNode 三层结构</text>
+
+  <text x="40" y="76" class="section">Step 1 · Skill Wrapper — createSkill()</text>
+  <g>
+    <rect x="40" y="88" width="920" height="104" rx="8" fill="#f9fafb" stroke="#d1d5db" stroke-width="0.5"/>
+    <text x="60" y="110"><tspan class="code-key">export const</tspan><tspan class="code"> skill = </tspan><tspan class="code-fn">createSkill</tspan><tspan class="code">({</tspan></text>
+    <text x="80" y="128"><tspan class="code-key">name</tspan><tspan class="code">: </tspan><tspan class="code-str">'tech-research'</tspan><tspan class="code">,</tspan></text>
+    <text x="80" y="146"><tspan class="code-key">title</tspan><tspan class="code">: </tspan><tspan class="code-str">'前端技术调研'</tspan><tspan class="code">,</tspan></text>
+    <text x="80" y="164"><tspan class="code-key">steps</tspan><tspan class="code">: [stepParse, stepExplore, stepOrganize, stepDeepDive, stepReport],</tspan></text>
+    <text x="60" y="182"><tspan class="code">});</tspan></text>
+  </g>
+
+  <text x="40" y="214" class="section">Step 2 · StepDefinition 字段：19 个</text>
+  <g>
+    <rect x="40" y="224" width="580" height="356" rx="8" fill="#f9fafb" stroke="#d1d5db" stroke-width="0.5"/>
+    <line x1="320" y1="240" x2="320" y2="560" stroke="#e5e7eb" stroke-width="1"/>
+
+    <text x="60" y="248" class="group-label" fill="#a32d2d">必填：7</text>
+    <text x="60" y="272"><tspan class="field-name">id</tspan></text><text x="170" y="272" class="field-type">string</text>
+    <text x="60" y="294"><tspan class="field-name">title</tspan></text><text x="170" y="294" class="field-type">string</text>
+    <text x="60" y="316"><tspan class="field-name">description</tspan></text><text x="170" y="316" class="field-type">string</text>
+    <text x="60" y="338"><tspan class="field-name">dependsOn</tspan></text><text x="170" y="338" class="field-type">string[]</text>
+    <text x="60" y="360"><tspan class="field-name">graph</tspan></text><text x="170" y="360" class="field-type">ControlNode → Step 3</text>
+    <text x="60" y="382"><tspan class="field-name">reads</tspan></text><text x="170" y="382" class="field-type">FileRef[]</text>
+    <text x="60" y="404"><tspan class="field-name">writes</tspan></text><text x="170" y="404" class="field-type">FileRef[]</text>
+
+    <text x="340" y="248" class="group-label" fill="#534ab7">可选：12</text>
+    <text x="340" y="272"><tspan class="field-name">initRules</tspan></text><text x="460" y="272" class="field-type">SkillInitRule[]</text>
+    <text x="340" y="294"><tspan class="field-name">runtimeTrace</tspan></text><text x="460" y="294" class="field-type">SourceRuntimeTrace</text>
+    <text x="340" y="316"><tspan class="field-name">body</tspan></text><text x="460" y="316" class="field-type">string</text>
+    <text x="340" y="338"><tspan class="field-name">bodyFile</tspan></text><text x="460" y="338" class="field-type">string</text>
+    <text x="340" y="360"><tspan class="field-name">sourceTrace</tspan></text><text x="460" y="360" class="field-type">SourceTraceEntry[]</text>
+    <text x="340" y="382"><tspan class="field-name">next</tspan></text><text x="460" y="382" class="field-type">string</text>
+    <text x="340" y="404"><tspan class="field-name">barrier</tspan></text><text x="460" y="404" class="field-type">BarrierDef</text>
+    <text x="340" y="426"><tspan class="field-name">decisionSummary</tspan></text><text x="460" y="426" class="field-type">SourceDecisionSummary</text>
+    <text x="340" y="448"><tspan class="field-name">display</tspan></text><text x="460" y="448" class="field-type">SourceDecisionDisplay</text>
+    <text x="340" y="470"><tspan class="field-name">reuse</tspan></text><text x="460" y="470" class="field-type">ReuseRule[]</text>
+    <text x="340" y="492"><tspan class="field-name">degrade</tspan></text><text x="460" y="492" class="field-type">DegradeProtocol</text>
+    <text x="340" y="514"><tspan class="field-name">plugins</tspan></text><text x="460" y="514" class="field-type">string[]</text>
+
+    <text x="60" y="552" class="legend">graph 是 v2 核心字段，递归控制流树替代旧版扁平 schedule</text>
+  </g>
+
+  <text x="640" y="214" class="section">Step 3 · ControlNode — 递归控制树</text>
+  <g>
+    <rect x="640" y="224" width="320" height="104" rx="8" fill="#f9fafb" stroke="#d1d5db" stroke-width="0.5"/>
+    <text x="656" y="246"><tspan class="code-key">graph</tspan><tspan class="code">: </tspan><tspan class="code-fn">seq</tspan><tspan class="code">(</tspan><tspan class="code-str">'deep-dive-seq'</tspan><tspan class="code">, [</tspan></text>
+    <text x="676" y="264"><tspan class="code-fn">task</tspan><tspan class="code">({ </tspan><tspan class="code-key">id</tspan><tspan class="code">: </tspan><tspan class="code-str">'dive-concepts'</tspan><tspan class="code">, …}),</tspan></text>
+    <text x="676" y="282"><tspan class="code-fn">task</tspan><tspan class="code">({ </tspan><tspan class="code-key">id</tspan><tspan class="code">: </tspan><tspan class="code-str">'dive-patterns'</tspan><tspan class="code">, …}),</tspan></text>
+    <text x="656" y="300"><tspan class="code">])</tspan></text>
+    <text x="656" y="318"><tspan class="code-com">// 6 种节点: task · seq · parallel · map · branch · loop</tspan></text>
+  </g>
+
+  <g>
+    <rect x="640" y="344" width="320" height="190" rx="8" fill="#e6f1fb" stroke="#85b7eb" stroke-width="0.5"/>
+    <rect x="640" y="344" width="320" height="22" rx="8" fill="#378add" opacity="0.12"/>
+    <text x="800" y="360" text-anchor="middle" class="node-title">Visual Graph · seq</text>
+    <rect x="700" y="380" width="200" height="44" rx="6" fill="#ffffff" stroke="#185fa5" stroke-width="1"/>
+    <text x="800" y="398" text-anchor="middle" class="node-title">dive-concepts</text>
+    <text x="800" y="414" text-anchor="middle" class="node-sub">核心概念研究员 [agent]</text>
+    <path d="M800 426 L800 446" fill="none" stroke="#534ab7" stroke-width="1.5" marker-end="url(#arr-p)"/>
+    <text x="810" y="440" style="font-size:10px;fill:#6b7280;font-style:italic">next</text>
+    <rect x="700" y="448" width="200" height="44" rx="6" fill="#ffffff" stroke="#185fa5" stroke-width="1"/>
+    <text x="800" y="466" text-anchor="middle" class="node-title">dive-patterns</text>
+    <text x="800" y="482" text-anchor="middle" class="node-sub">实践模式研究员 [agent]</text>
+    <text x="800" y="518" text-anchor="middle" style="font-size:10px;fill:#6b7280">mapNode / parallel 同理,可递归嵌套任意控制节点</text>
+  </g>
+</svg>

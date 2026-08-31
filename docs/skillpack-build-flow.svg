@@ -1,0 +1,222 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 690" width="100%" height="auto" role="img" aria-labelledby="t d">
+  <title id="t">skillpack 打包管线 · TS Step 定义 → Markdown 过程文件</title>
+  <desc id="d">左侧 demos/skill.ts 的 5 个 Step 定义(含 graph 与 dependsOn),中间 skillpack 三阶段管线(validate / resolve / render),右侧产出 Markdown 文件</desc>
+
+  <style>
+    text { font-family: "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, -apple-system, sans-serif; }
+    .title { font-size: 20px; font-weight: 500; fill: #1f2937; }
+    .subtitle { font-size: 13px; fill: #6b7280; }
+    .section { font-size: 13px; font-weight: 500; fill: #4b5563; }
+    .step-num { font-size: 10px; font-weight: 700; fill: #ffffff; }
+    .step-id { font-size: 12px; font-weight: 500; fill: #1f2937; }
+    .step-graph { font-size: 10px; fill: #6b7280; }
+    .step-body { font-size: 11px; fill: #4b5563; }
+    .phase-title { font-size: 12px; font-weight: 500; fill: #ffffff; }
+    .phase-name { font-size: 11px; font-weight: 500; fill: #1f2937; }
+    .phase-body { font-size: 11px; fill: #4b5563; }
+    .file { font-size: 11px; fill: #1f2937; }
+    .file-size { font-size: 10px; fill: #9ca3af; }
+    .code { font-family: ui-monospace, "SF Mono", Consolas, monospace; font-size: 10px; fill: #cbd5e1; }
+    .code-key { font-family: ui-monospace, monospace; font-size: 10px; fill: #93c5fd; }
+    .code-h { font-family: ui-monospace, monospace; font-size: 10px; fill: #c4b5fd; }
+    .code-t { font-family: ui-monospace, monospace; font-size: 10px; fill: #f0abfc; }
+    .dep-edge { font-size: 9px; font-style: italic; }
+    .note-key { font-size: 11px; font-weight: 500; fill: #633806; }
+  </style>
+
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1 L8 5 L2 9" fill="none" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="arr-d" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1 L8 5 L2 9" fill="none" stroke="#6b7280" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <text x="500" y="28" text-anchor="middle" class="title">skillpack 打包管线 · TS Step → Markdown</text>
+  <text x="500" y="48" text-anchor="middle" class="subtitle">输入：demos/skill.ts · 处理：@co-kyo/skillpack · 产出：dist/skill</text>
+
+  <text x="40" y="76" class="section">Step 1 · 输入 · TS Step 定义</text>
+
+  <g>
+    <rect x="40" y="88" width="290" height="96" rx="6" fill="#ffffff" stroke="#d1d5db" stroke-width="0.5"/>
+    <circle cx="60" cy="106" r="10" fill="#534ab7"/>
+    <text x="60" y="110" text-anchor="middle" class="step-num">00</text>
+    <text x="78" y="110" class="step-id">topic-parse</text>
+    <text x="270" y="110" text-anchor="end" class="step-graph">graph: task</text>
+    <line x1="60" y1="116" x2="310" y2="116" stroke="#e5e7eb" stroke-width="1"/>
+    <text x="60" y="132" class="step-body">dependsOn: []</text>
+    <text x="60" y="148" class="step-body">graph: task({ id:'parse', … })</text>
+    <text x="60" y="164" class="step-body">writes: .meta/research-brief.json</text>
+    <text x="60" y="180" class="step-body">barrier: ✔</text>
+  </g>
+
+  <path d="M185 184 L185 198" fill="none" stroke="#6b7280" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#arr-d)"/>
+  <text x="195" y="195" class="dep-edge" fill="#6b7280">dependsOn</text>
+
+  <g>
+    <rect x="40" y="198" width="290" height="96" rx="6" fill="#ffffff" stroke="#d1d5db" stroke-width="0.5"/>
+    <circle cx="60" cy="216" r="10" fill="#ba7517"/>
+    <text x="60" y="220" text-anchor="middle" class="step-num">01</text>
+    <text x="78" y="220" class="step-id">multi-dim-explore</text>
+    <text x="270" y="220" text-anchor="end" class="step-graph">graph: parallel</text>
+    <line x1="60" y1="226" x2="310" y2="226" stroke="#e5e7eb" stroke-width="1"/>
+    <text x="60" y="242" class="step-body">dependsOn: ['topic-parse']</text>
+    <text x="60" y="258" class="step-body">graph: parallel('explore-batch', [3 agents])</text>
+    <text x="60" y="274" class="step-body">converge + gate</text>
+    <text x="60" y="290" class="step-body">writes: .meta/consolidated-findings.json</text>
+  </g>
+
+  <path d="M185 294 L185 308" fill="none" stroke="#6b7280" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#arr-d)"/>
+  <text x="195" y="305" class="dep-edge" fill="#6b7280">dependsOn</text>
+
+  <g>
+    <rect x="40" y="308" width="290" height="96" rx="6" fill="#ffffff" stroke="#d1d5db" stroke-width="0.5"/>
+    <circle cx="60" cy="326" r="10" fill="#0f6e56"/>
+    <text x="60" y="330" text-anchor="middle" class="step-num">02</text>
+    <text x="78" y="330" class="step-id">organize</text>
+    <text x="270" y="330" text-anchor="end" class="step-graph">graph: seq</text>
+    <line x1="60" y1="336" x2="310" y2="336" stroke="#e5e7eb" stroke-width="1"/>
+    <text x="60" y="352" class="step-body">dependsOn: ['multi-dim-explore']</text>
+    <text x="60" y="368" class="step-body">graph: seq('organize-seq', [2 tasks])</text>
+    <text x="60" y="384" class="step-body">writes: .meta/organized.json</text>
+  </g>
+
+  <path d="M185 404 L185 418" fill="none" stroke="#6b7280" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#arr-d)"/>
+  <text x="195" y="415" class="dep-edge" fill="#6b7280">dependsOn</text>
+
+  <g>
+    <rect x="40" y="418" width="290" height="96" rx="6" fill="#ffffff" stroke="#d1d5db" stroke-width="0.5"/>
+    <circle cx="60" cy="436" r="10" fill="#0f6e56"/>
+    <text x="60" y="440" text-anchor="middle" class="step-num">03</text>
+    <text x="78" y="440" class="step-id">deep-dive</text>
+    <text x="270" y="440" text-anchor="end" class="step-graph">graph: seq</text>
+    <line x1="60" y1="446" x2="310" y2="446" stroke="#e5e7eb" stroke-width="1"/>
+    <text x="60" y="462" class="step-body">dependsOn: ['organize']</text>
+    <text x="60" y="478" class="step-body">graph: seq('deep-dive-seq', [2 tasks])</text>
+    <text x="60" y="494" class="step-body">writes: .meta/dive-concepts.json 等</text>
+    <text x="60" y="510" class="step-body">reuse: 文件存在跳过</text>
+  </g>
+
+  <path d="M185 514 L185 528" fill="none" stroke="#6b7280" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#arr-d)"/>
+  <text x="195" y="525" class="dep-edge" fill="#6b7280">dependsOn</text>
+
+  <g>
+    <rect x="40" y="528" width="290" height="96" rx="6" fill="#ffffff" stroke="#d1d5db" stroke-width="0.5"/>
+    <circle cx="60" cy="546" r="10" fill="#534ab7"/>
+    <text x="60" y="550" text-anchor="middle" class="step-num">04</text>
+    <text x="78" y="550" class="step-id">report</text>
+    <text x="270" y="550" text-anchor="end" class="step-graph">graph: mapNode</text>
+    <line x1="60" y1="556" x2="310" y2="556" stroke="#e5e7eb" stroke-width="1"/>
+    <text x="60" y="572" class="step-body">dependsOn: ['deep-dive']</text>
+    <text x="60" y="588" class="step-body">graph: mapNode('report-map', items, worker, 3)</text>
+    <text x="60" y="604" class="step-body">writes: .meta/report/{chapter}.md</text>
+    <text x="60" y="620" class="step-body">reuse: 文件存在跳过</text>
+  </g>
+
+  <g>
+    <rect x="40" y="640" width="290" height="20" rx="4" fill="#fffbeb" stroke="#ef9f27" stroke-width="0.5"/>
+    <text x="56" y="654" class="note-key">💡 只声明 dependsOn，不写死序号</text>
+  </g>
+
+  <text x="350" y="76" class="section">Step 2 · skillpack 打包管线</text>
+
+  <g>
+    <rect x="350" y="88" width="360" height="118" rx="8" fill="#f9fafb" stroke="#e5e7eb" stroke-width="0.5"/>
+    <rect x="350" y="88" width="360" height="22" rx="8" fill="#185fa5"/>
+    <text x="530" y="104" text-anchor="middle" class="phase-title">Phase 1 · VALIDATE</text>
+    <text x="362" y="134" class="phase-name">validateStep()</text>
+    <text x="362" y="152" class="phase-body">id / title / writes / graph 必填</text>
+    <text x="362" y="174" class="phase-name">validateDependencyRefs()</text>
+    <text x="362" y="192" class="phase-body">dependsOn 引用的 step id 必须真实存在</text>
+  </g>
+  <path d="M530 206 L530 220" fill="none" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <g>
+    <rect x="350" y="226" width="360" height="148" rx="8" fill="#f9fafb" stroke="#e5e7eb" stroke-width="0.5"/>
+    <rect x="350" y="226" width="360" height="22" rx="8" fill="#ba7517"/>
+    <text x="530" y="242" text-anchor="middle" class="phase-title">Phase 2 · RESOLVE</text>
+    <text x="362" y="272" class="phase-name">resolveStepOrder()</text>
+    <text x="362" y="290" class="phase-body">Kahn 拓扑排序：根据 dependsOn 构建 DAG</text>
+    <rect x="362" y="302" width="160" height="60" rx="4" fill="#fffbeb" stroke="#ef9f27" stroke-width="0.5"/>
+    <text x="442" y="318" text-anchor="middle" class="phase-name">依赖图</text>
+    <text x="372" y="336" class="phase-body">topic-parse</text>
+    <text x="372" y="352" class="phase-body">  └→ multi-dim-explore</text>
+    <rect x="538" y="302" width="160" height="60" rx="4" fill="#e1f5ee" stroke="#5dcaa5" stroke-width="0.5"/>
+    <text x="618" y="318" text-anchor="middle" class="phase-name">产出顺序</text>
+    <text x="548" y="336" class="phase-body">00: topic-parse</text>
+    <text x="548" y="352" class="phase-body">01: multi-dim-explore</text>
+  </g>
+  <path d="M530 374 L530 388" fill="none" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <g>
+    <rect x="350" y="394" width="360" height="118" rx="8" fill="#f9fafb" stroke="#e5e7eb" stroke-width="0.5"/>
+    <rect x="350" y="394" width="360" height="22" rx="8" fill="#0f6e56"/>
+    <text x="530" y="410" text-anchor="middle" class="phase-title">Phase 3 · RENDER</text>
+    <text x="362" y="440" class="phase-body">对每个 ResolvedStep：</text>
+    <text x="362" y="458" class="phase-body">1. 解析 {{stepSeq}} / {{stepId}} 模板变量</text>
+    <text x="362" y="474" class="phase-body">2. 按 ControlNode.kind 选择渲染函数</text>
+    <text x="362" y="490" class="phase-body">3. 拼接 Markdown：标题 → 文件引用 → 调度</text>
+    <text x="362" y="506" class="phase-body">4. fs.writeFileSync(seq-id.md, content)</text>
+  </g>
+  <path d="M530 512 L530 526" fill="none" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <g>
+    <rect x="350" y="532" width="360" height="68" rx="8" fill="#e1f5ee" stroke="#5dcaa5" stroke-width="0.5"/>
+    <rect x="350" y="532" width="4" height="68" rx="2" fill="#0f6e56"/>
+    <text x="530" y="554" text-anchor="middle" class="phase-name" fill="#085041">OUTPUT · ResolvedPipeline</text>
+    <text x="362" y="574" class="phase-body" fill="#085041">pipeline.steps: ResolvedStep[](带 seq 序号)</text>
+    <text x="362" y="592" class="phase-body" fill="#085041">files: 已写入磁盘的 Markdown 路径列表</text>
+  </g>
+
+  <text x="730" y="76" class="section">Step 3 · 产出 · Markdown</text>
+
+  <g>
+    <rect x="730" y="88" width="230" height="30" rx="4" fill="#ffffff" stroke="#d1d5db" stroke-width="0.5"/>
+    <text x="740" y="107" class="file">📄 00-topic-parse.md</text>
+  </g>
+  <g>
+    <rect x="730" y="124" width="230" height="30" rx="4" fill="#ffffff" stroke="#d1d5db" stroke-width="0.5"/>
+    <text x="740" y="143" class="file">📄 01-multi-dim-explore.md</text>
+  </g>
+  <g>
+    <rect x="730" y="160" width="230" height="30" rx="4" fill="#ffffff" stroke="#d1d5db" stroke-width="0.5"/>
+    <text x="740" y="179" class="file">📄 02-organize.md</text>
+  </g>
+  <g>
+    <rect x="730" y="196" width="230" height="30" rx="4" fill="#ffffff" stroke="#d1d5db" stroke-width="0.5"/>
+    <text x="740" y="215" class="file">📄 03-deep-dive.md</text>
+  </g>
+  <g>
+    <rect x="730" y="232" width="230" height="30" rx="4" fill="#ffffff" stroke="#d1d5db" stroke-width="0.5"/>
+    <text x="740" y="251" class="file">📄 04-report.md</text>
+  </g>
+
+  <text x="845" y="280" text-anchor="middle" class="phase-name">展开一个 Markdown 文件</text>
+  <g>
+    <rect x="730" y="290" width="230" height="182" rx="6" fill="#1f2937"/>
+    <text x="740" y="308" class="code"># Step 01: 多维度探索</text>
+    <text x="740" y="322" class="code">...</text>
+    <text x="740" y="338" class="code-key">## 文件引用</text>
+    <text x="740" y="352" class="code">| research-brief.json | ... |</text>
+    <text x="740" y="366" class="code">| schemas.md          | ... |</text>
+    <text x="740" y="382" class="code-key">## 调度策略</text>
+    <text x="740" y="398" class="code-h">### Schedule: 批量并行</text>
+    <text x="740" y="412" class="code">| explore-docs | … | 5min |</text>
+    <text x="740" y="428" class="code-key">## Barrier 1</text>
+    <text x="740" y="442" class="code">  📋 发现质量</text>
+    <text x="740" y="456" class="code">  提示：确认后进入分类整理</text>
+    <text x="740" y="470" class="code-t">*Generated by skillpack v0.1.0*</text>
+  </g>
+
+  <text x="845" y="492" text-anchor="middle" class="phase-name">ControlNode → Markdown 标题</text>
+  <g>
+    <rect x="730" y="502" width="230" height="120" rx="4" fill="#ffffff" stroke="#d1d5db" stroke-width="0.5"/>
+    <text x="740" y="520" class="phase-body">task() → 主线程串行</text>
+    <text x="740" y="536" class="phase-body">parallel() → 批量并行(gate+converge)</text>
+    <text x="740" y="552" class="phase-body">seq() → 顺序执行 / 拓扑分批</text>
+    <text x="740" y="568" class="phase-body">mapNode() → 滚动窗口</text>
+    <text x="740" y="584" class="phase-body">branch() → 条件分支</text>
+    <text x="740" y="600" class="phase-body">loop() → 循环</text>
+  </g>
+</svg>

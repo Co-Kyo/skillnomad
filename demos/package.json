@@ -1,0 +1,17 @@
+{
+  "name": "skillnomad-demo",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "tsx ../packages/skillnomad/src/bin/cli.ts build skillnomad.config.ts"
+  },
+  "dependencies": {
+    "skillnomad-types": "^0.1.0-beta.1",
+    "skillnomad-common": "^0.1.0-beta.1",
+    "skillnomad": "^0.1.0-beta.1"
+  },
+  "devDependencies": {
+    "tsx": "^4.16.0"
+  }
+}

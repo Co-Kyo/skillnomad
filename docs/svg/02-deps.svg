@@ -1,0 +1,131 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 716" width="100%" height="auto" role="img" aria-labelledby="t d">
+  <title id="t">skillpack · 依赖拓扑图</title>
+  <desc id="d">tsconfig 项目引用与 npm workspace 依赖关系:root 编排四包构建顺序,types 为基础层,common 中间层,build 与 validate 消费层,demo 依赖所有包</desc>
+
+  <style>
+    text { font-family: "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, -apple-system, sans-serif; }
+    .title { font-size: 20px; font-weight: 500; fill: #1f2937; }
+    .subtitle { font-size: 13px; fill: #6b7280; }
+    .section { font-size: 13px; font-weight: 500; fill: #4b5563; }
+    .pkg-scope { font-size: 12px; fill: #7f77dd; }
+    .pkg-name { font-size: 14px; font-weight: 500; fill: #3c3489; }
+    .pkg-scope-b { font-size: 12px; fill: #378add; }
+    .pkg-name-b { font-size: 14px; font-weight: 500; fill: #0c447c; }
+    .pkg-dep { font-size: 11px; fill: #6b7280; }
+    .pkg-exp-label { font-size: 11px; fill: #9ca3af; font-style: italic; }
+    .pkg-exp { font-size: 11px; fill: #374151; }
+    .demo-title { font-size: 14px; font-weight: 500; fill: #111827; }
+    .demo-sub { font-size: 12px; fill: #4b5563; }
+    .demo-tag { font-size: 11px; fill: #6b7280; }
+    .legend-label { font-size: 11px; fill: #6b7280; }
+  </style>
+
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1 L8 5 L2 9" fill="none" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="arr-b" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1 L8 5 L2 9" fill="none" stroke="#185fa5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <text x="500" y="28" text-anchor="middle" class="title">skillpack · 依赖拓扑图</text>
+  <text x="500" y="48" text-anchor="middle" class="subtitle">tsconfig 项目引用 + npm workspace 依赖 · 有向无环图</text>
+
+  <line x1="80" y1="82" x2="120" y2="82" stroke="#9ca3af" stroke-width="1.5"/>
+  <text x="128" y="86" class="legend-label">tsconfig ref</text>
+  <line x1="80" y1="104" x2="120" y2="104" stroke="#185fa5" stroke-width="1.5" stroke-dasharray="5,4"/>
+  <text x="128" y="108" class="legend-label">npm dep</text>
+
+  <g>
+    <rect x="350" y="64" width="300" height="64" rx="8" fill="#f3f4f6" stroke="#d1d5db" stroke-width="0.5"/>
+    <rect x="350" y="64" width="4" height="64" rx="2" fill="#6b7280"/>
+    <text x="500" y="88" text-anchor="middle" style="font-size:14px;font-weight:500;fill:#111827">root tsconfig.json</text>
+    <text x="500" y="110" text-anchor="middle" style="font-size:12px;fill:#4b5563">references 4 packages · 编排 tsc -b 构建顺序</text>
+  </g>
+  <text x="500" y="146" text-anchor="middle" style="font-size:11px;fill:#6b7280">tsconfig ref → types · common · build · validate</text>
+
+  <g>
+    <rect x="50" y="150" width="270" height="190" rx="8" fill="#eeedfe" stroke="#afae9c" stroke-width="0.5"/>
+    <rect x="50" y="150" width="4" height="190" rx="2" fill="#534ab7"/>
+    <text x="64" y="172" class="pkg-scope">@co-kyo/</text>
+    <text x="64" y="190" class="pkg-name">skillpack-types</text>
+    <line x1="64" y1="208" x2="304" y2="208" stroke="#e5e7eb" stroke-width="1"/>
+    <text x="64" y="232" class="pkg-dep">tsconfig / npm：零依赖</text>
+    <text x="64" y="250" class="pkg-dep">leaf · 无任何依赖</text>
+    <text x="64" y="274" class="pkg-exp-label">Exports</text>
+    <text x="64" y="294" class="pkg-exp">createSkill · step · task · seq</text>
+    <text x="64" y="312" class="pkg-exp">parallel · mapNode · branch · loop</text>
+    <text x="64" y="330" class="pkg-exp">类型: TaskDef · ControlNode · StepDefinition</text>
+  </g>
+
+  <g>
+    <rect x="350" y="150" width="270" height="190" rx="8" fill="#e6f1fb" stroke="#85b7eb" stroke-width="0.5"/>
+    <rect x="350" y="150" width="4" height="190" rx="2" fill="#185fa5"/>
+    <text x="364" y="172" class="pkg-scope-b">@co-kyo/</text>
+    <text x="364" y="190" class="pkg-name-b">skillpack-common</text>
+    <line x1="364" y1="208" x2="604" y2="208" stroke="#e5e7eb" stroke-width="1"/>
+    <text x="364" y="232" class="pkg-dep">tsconfig → types</text>
+    <text x="364" y="250" class="pkg-dep">npm @co-kyo/skillpack-types</text>
+    <text x="364" y="274" class="pkg-exp-label">Exports</text>
+    <text x="364" y="294" class="pkg-exp">validateStep · resolveStepOrder</text>
+    <text x="364" y="312" class="pkg-exp">validateDependencyRefs</text>
+    <text x="364" y="330" class="pkg-exp">validateBarrierContinuity · walkGraph</text>
+  </g>
+
+  <g>
+    <rect x="650" y="140" width="270" height="190" rx="8" fill="#e6f1fb" stroke="#85b7eb" stroke-width="0.5"/>
+    <rect x="650" y="140" width="4" height="190" rx="2" fill="#185fa5"/>
+    <text x="664" y="162" class="pkg-scope-b">@co-kyo/</text>
+    <text x="664" y="180" class="pkg-name-b">skillpack</text>
+    <line x1="664" y1="198" x2="904" y2="198" stroke="#e5e7eb" stroke-width="1"/>
+    <text x="664" y="222" class="pkg-dep">tsconfig → types, common</text>
+    <text x="664" y="240" class="pkg-dep">npm @co-kyo/skillpack-types/common</text>
+    <text x="664" y="264" class="pkg-exp-label">Exports</text>
+    <text x="664" y="284" class="pkg-exp">buildPipeline · defineConfig</text>
+    <text x="664" y="302" class="pkg-exp">createSkillFromModel · renderStep</text>
+    <text x="664" y="320" class="pkg-exp">bin: skillpack CLI</text>
+  </g>
+
+  <g>
+    <rect x="650" y="350" width="270" height="190" rx="8" fill="#e6f1fb" stroke="#85b7eb" stroke-width="0.5"/>
+    <rect x="650" y="350" width="4" height="190" rx="2" fill="#185fa5"/>
+    <text x="664" y="372" class="pkg-scope-b">@co-kyo/</text>
+    <text x="664" y="390" class="pkg-name-b">skillpack-validate</text>
+    <line x1="664" y1="408" x2="904" y2="408" stroke="#e5e7eb" stroke-width="1"/>
+    <text x="664" y="432" class="pkg-dep">tsconfig → types, common</text>
+    <text x="664" y="450" class="pkg-dep">npm @co-kyo/skillpack-types/common</text>
+    <text x="664" y="474" class="pkg-exp-label">Exports</text>
+    <text x="664" y="494" class="pkg-exp">validatePipeline</text>
+    <text x="664" y="512" class="pkg-exp">bin: skillpack-validate CLI</text>
+    <text x="664" y="530" class="pkg-exp">类型: ValidationReport</text>
+  </g>
+
+  <path d="M320 240 L350 240" fill="none" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arr)"/>
+  <path d="M320 250 L350 250" fill="none" stroke="#185fa5" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#arr-b)"/>
+  <path d="M620 200 L650 170" fill="none" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arr)"/>
+  <path d="M620 210 L650 180" fill="none" stroke="#185fa5" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#arr-b)"/>
+  <path d="M620 275 L650 400" fill="none" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arr)"/>
+  <path d="M620 285 L650 410" fill="none" stroke="#185fa5" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#arr-b)"/>
+
+  <g>
+    <rect x="200" y="560" width="600" height="76" rx="8" fill="#f3f4f6" stroke="#d1d5db" stroke-width="0.5"/>
+    <rect x="200" y="560" width="4" height="76" rx="2" fill="#0f6e56"/>
+    <text x="500" y="584" text-anchor="middle" class="demo-title">@co-kyo/skillpack-demo</text>
+    <text x="500" y="606" text-anchor="middle" class="demo-sub">文件: skillpack.config.ts · skill.ts</text>
+    <text x="500" y="626" text-anchor="middle" class="demo-tag">npm deps: @co-kyo/skillpack* · dev: tsx</text>
+  </g>
+
+  <text x="40" y="664" class="section">Build Order(tsc -b)</text>
+  <rect x="205" y="674" width="110" height="22" rx="4" fill="#eeedfe" stroke="#afae9c" stroke-width="0.5"/>
+  <text x="260" y="689" text-anchor="middle" style="font-size:11px;font-weight:500;fill:#3c3489">Phase 1 · types</text>
+  <path d="M315 685 L333 685" fill="none" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arr)"/>
+  <rect x="335" y="674" width="110" height="22" rx="4" fill="#e6f1fb" stroke="#85b7eb" stroke-width="0.5"/>
+  <text x="390" y="689" text-anchor="middle" style="font-size:11px;font-weight:500;fill:#0c447c">Phase 2 · common</text>
+  <path d="M445 685 L463 685" fill="none" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arr)"/>
+  <rect x="465" y="674" width="190" height="22" rx="4" fill="#e6f1fb" stroke="#85b7eb" stroke-width="0.5"/>
+  <text x="560" y="689" text-anchor="middle" style="font-size:11px;font-weight:500;fill:#0c447c">Phase 3 · build + validate(并行)</text>
+  <path d="M655 685 L673 685" fill="none" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arr)"/>
+  <rect x="675" y="674" width="120" height="22" rx="4" fill="#f3f4f6" stroke="#d1d5db" stroke-width="0.5"/>
+  <text x="735" y="689" text-anchor="middle" style="font-size:11px;font-weight:500;fill:#374151">Phase 4 · demo</text>
+</svg>

@@ -1,0 +1,121 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 720" width="100%" height="auto" role="img" aria-labelledby="t d">
+  <title id="t">skillpack · 全局鸟瞰图</title>
+  <desc id="d">skillpack 物理目录结构:Framework 层四个 npm 包、Demo 层输入文件、Output 层构建产物及依赖与调用关系</desc>
+
+  <style>
+    text { font-family: "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, -apple-system, sans-serif; }
+    .title { font-size: 20px; font-weight: 500; fill: #1f2937; }
+    .subtitle { font-size: 13px; fill: #6b7280; }
+    .section { font-size: 13px; font-weight: 500; fill: #4b5563; }
+    .pkg-scope { font-size: 12px; fill: #7f77dd; }
+    .pkg-name { font-size: 14px; font-weight: 500; fill: #3c3489; }
+    .pkg-scope-b { font-size: 12px; fill: #378add; }
+    .pkg-name-b { font-size: 14px; font-weight: 500; fill: #0c447c; }
+    .pkg-sub { font-size: 12px; fill: #534ab7; }
+    .pkg-sub-b { font-size: 12px; fill: #185fa5; }
+    .pkg-tag { font-size: 11px; fill: #7f77dd; }
+    .pkg-tag-b { font-size: 11px; fill: #378add; }
+    .demo-title { font-size: 14px; font-weight: 500; fill: #111827; }
+    .demo-sub { font-size: 12px; fill: #4b5563; }
+    .demo-tag { font-size: 11px; fill: #6b7280; }
+    .dist-title { font-size: 16px; font-weight: 500; fill: #085041; }
+    .dist-sub { font-size: 12px; fill: #0f6e56; }
+    .dist-tag { font-size: 11px; fill: #1d9e75; }
+    .note { font-size: 12px; fill: #6b7280; }
+    .flow-label { font-size: 12px; font-weight: 500; fill: #4b5563; }
+  </style>
+
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1 L8 5 L2 9" fill="none" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1 L8 5 L2 9" fill="none" stroke="#185fa5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <text x="500" y="28" text-anchor="middle" class="title">skillpack · 全局鸟瞰图</text>
+  <text x="500" y="48" text-anchor="middle" class="subtitle">Skillpack Framework · 物理目录结构</text>
+
+  <text x="40" y="82" class="section">Layer 1 · Framework(packages/)</text>
+  <line x1="40" y1="92" x2="960" y2="92" stroke="#e5e7eb" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <g>
+    <rect x="80" y="144" width="220" height="88" rx="8" fill="#eeedfe" stroke="#afae9c" stroke-width="0.5"/>
+    <rect x="80" y="144" width="4" height="88" rx="2" fill="#534ab7"/>
+    <text x="94" y="166" class="pkg-scope">@co-kyo/</text>
+    <text x="94" y="184" class="pkg-name">skillpack-types</text>
+    <text x="94" y="208" class="pkg-sub">类型系统 + 构建函数</text>
+    <text x="94" y="226" class="pkg-tag">leaf · zero deps</text>
+  </g>
+
+  <g>
+    <rect x="380" y="144" width="220" height="88" rx="8" fill="#e6f1fb" stroke="#85b7eb" stroke-width="0.5"/>
+    <rect x="380" y="144" width="4" height="88" rx="2" fill="#185fa5"/>
+    <text x="394" y="166" class="pkg-scope-b">@co-kyo/</text>
+    <text x="394" y="184" class="pkg-name-b">skillpack-common</text>
+    <text x="394" y="208" class="pkg-sub-b">校验 / 排序 / 图遍历</text>
+    <text x="394" y="226" class="pkg-tag-b">depends on types</text>
+  </g>
+
+  <g>
+    <rect x="700" y="104" width="220" height="88" rx="8" fill="#e6f1fb" stroke="#85b7eb" stroke-width="0.5"/>
+    <rect x="700" y="104" width="4" height="88" rx="2" fill="#185fa5"/>
+    <text x="714" y="126" class="pkg-scope-b">@co-kyo/</text>
+    <text x="714" y="144" class="pkg-name-b">skillpack-validate</text>
+    <text x="714" y="168" class="pkg-sub-b">完整性校验 CLI</text>
+    <text x="714" y="186" class="pkg-tag-b">depends on types, common</text>
+  </g>
+
+  <g>
+    <rect x="700" y="220" width="220" height="88" rx="8" fill="#e6f1fb" stroke="#85b7eb" stroke-width="0.5"/>
+    <rect x="700" y="220" width="4" height="88" rx="2" fill="#185fa5"/>
+    <text x="714" y="242" class="pkg-scope-b">@co-kyo/</text>
+    <text x="714" y="260" class="pkg-name-b">skillpack</text>
+    <text x="714" y="284" class="pkg-sub-b">打包器 + Markdown 渲染 + CLI</text>
+    <text x="714" y="302" class="pkg-tag-b">depends on types, common</text>
+  </g>
+
+  <path d="M300 188 L380 188" fill="none" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <path d="M600 170 L700 148" fill="none" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <path d="M600 215 L700 246" fill="none" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <path d="M810 308 V398 H360 V434" fill="none" stroke="#185fa5" stroke-width="1.5" marker-end="url(#arrow-blue)"/>
+  <path d="M560 398 V434" fill="none" stroke="#185fa5" stroke-width="1.5" marker-end="url(#arrow-blue)"/>
+  <text x="600" y="386" class="flow-label" fill="#185fa5">CLI 读取 config 与 skill</text>
+
+  <text x="40" y="446" class="section">Layer 2 · Demo(demos/)</text>
+  <line x1="40" y1="454" x2="960" y2="454" stroke="#e5e7eb" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <g>
+    <rect x="240" y="466" width="240" height="76" rx="8" fill="#f3f4f6" stroke="#d1d5db" stroke-width="0.5"/>
+    <rect x="240" y="466" width="4" height="76" rx="2" fill="#6b7280"/>
+    <text x="254" y="492" class="demo-title">skillpack.config.ts</text>
+    <text x="254" y="514" class="demo-sub">构建配置(defineConfig)</text>
+    <text x="254" y="532" class="demo-tag">构建入口</text>
+  </g>
+
+  <g>
+    <rect x="520" y="466" width="240" height="76" rx="8" fill="#f3f4f6" stroke="#d1d5db" stroke-width="0.5"/>
+    <rect x="520" y="466" width="4" height="76" rx="2" fill="#6b7280"/>
+    <text x="534" y="492" class="demo-title">skill.ts</text>
+    <text x="534" y="514" class="demo-sub">技能定义(createSkill)</text>
+    <text x="534" y="532" class="demo-tag">技能入口</text>
+  </g>
+
+  <path d="M480 504 L520 504" fill="none" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <path d="M500 542 L500 594" fill="none" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="510" y="572" class="flow-label">buildPipeline() 渲染</text>
+
+  <text x="40" y="604" class="section">Layer 3 · Output(dist/)</text>
+  <line x1="40" y1="612" x2="960" y2="612" stroke="#e5e7eb" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <g>
+    <rect x="175" y="624" width="650" height="76" rx="8" fill="#e1f5ee" stroke="#5dcaa5" stroke-width="0.5"/>
+    <rect x="175" y="624" width="4" height="76" rx="2" fill="#0f6e56"/>
+    <text x="500" y="652" text-anchor="middle" class="dist-title">dist /</text>
+    <text x="500" y="672" text-anchor="middle" class="dist-sub">构建产物</text>
+    <text x="500" y="692" text-anchor="middle" class="dist-tag">SKILL.md  ·  processes/*.md  ·  3 份 manifest + align-report</text>
+  </g>
+</svg>

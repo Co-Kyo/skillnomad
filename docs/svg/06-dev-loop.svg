@@ -1,0 +1,150 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 720" width="100%" height="auto" role="img" aria-labelledby="t d">
+  <title id="t">skillpack · 开发循环</title>
+  <desc id="d">三种开发循环:修改框架源码、修改 Skill 定义、全量重建;右侧 Command Reference 与 File Change → Action 表</desc>
+
+  <style>
+    text { font-family: "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, -apple-system, sans-serif; }
+    .title { font-size: 20px; font-weight: 500; fill: #1f2937; }
+    .subtitle { font-size: 13px; fill: #6b7280; }
+    .loop-title { font-size: 13px; font-weight: 500; fill: #ffffff; }
+    .node { font-size: 12px; font-weight: 500; fill: #1f2937; }
+    .node-sub { font-size: 10px; fill: #6b7280; }
+    .note { font-size: 11px; fill: #4b5563; }
+    .note-em { font-size: 11px; font-weight: 500; fill: #534ab7; }
+    .cmd-name { font-family: ui-monospace, "SF Mono", Consolas, monospace; font-size: 12px; font-weight: 500; fill: #0c447c; }
+    .cmd-desc { font-size: 10px; fill: #6b7280; }
+    .table-h { font-size: 11px; font-weight: 500; fill: #4b5563; }
+    .table-c { font-family: ui-monospace, monospace; font-size: 11px; fill: #1f2937; }
+  </style>
+
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1 L8 5 L2 9" fill="none" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <text x="500" y="28" text-anchor="middle" class="title">skillpack · 开发循环</text>
+  <text x="500" y="48" text-anchor="middle" class="subtitle">三种迭代路径：修改框架源码 · 修改 Skill 定义 · 全量重建</text>
+
+  <g>
+    <rect x="40" y="70" width="600" height="180" rx="8" fill="#f9fafb" stroke="#e5e7eb" stroke-width="0.5"/>
+    <rect x="40" y="70" width="600" height="26" rx="8" fill="#534ab7"/>
+    <text x="56" y="88" class="loop-title">Loop A · 修改框架源码(packages/*)</text>
+    <g>
+      <rect x="60" y="114" width="100" height="40" rx="6" fill="#ffffff" stroke="#85b7eb" stroke-width="0.5"/>
+      <text x="110" y="132" text-anchor="middle" class="node">编辑 EDIT</text>
+      <text x="110" y="146" text-anchor="middle" class="node-sub">packages/*/src/</text>
+      <path d="M160 134 L188 134" fill="none" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arr)"/>
+      <rect x="190" y="114" width="100" height="40" rx="6" fill="#ffffff" stroke="#85b7eb" stroke-width="0.5"/>
+      <text x="240" y="132" text-anchor="middle" class="node">构建 BUILD</text>
+      <text x="240" y="146" text-anchor="middle" class="node-sub">tsc -b</text>
+      <path d="M290 134 L318 134" fill="none" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arr)"/>
+      <rect x="320" y="114" width="120" height="40" rx="6" fill="#ffffff" stroke="#85b7eb" stroke-width="0.5"/>
+      <text x="380" y="132" text-anchor="middle" class="node">类型检查</text>
+      <text x="380" y="146" text-anchor="middle" class="node-sub">tsc -b --emitDeclarationOnly</text>
+      <path d="M440 134 L468 134" fill="none" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arr)"/>
+      <rect x="470" y="114" width="100" height="40" rx="6" fill="#ffffff" stroke="#85b7eb" stroke-width="0.5"/>
+      <text x="520" y="132" text-anchor="middle" class="node">运行 RUN</text>
+      <text x="520" y="146" text-anchor="middle" class="node-sub">npm run demo</text>
+      <path d="M570 134 L598 134" fill="none" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arr)"/>
+      <rect x="600" y="114" width="30" height="40" rx="6" fill="#ffffff" stroke="#85b7eb" stroke-width="0.5"/>
+      <text x="615" y="138" text-anchor="middle" class="node">✓</text>
+    </g>
+    <text x="60" y="184" class="note">tsc -b 级联构建顺序：</text>
+    <text x="180" y="184" class="note-em">types → common → build + validate(并行)</text>
+    <text x="60" y="204" class="node-sub">仅重建变更的包(增量)</text>
+    <text x="60" y="222" class="node-sub">循环回到 EDIT(修改 → 构建 → 运行)</text>
+  </g>
+
+  <g>
+    <rect x="40" y="270" width="600" height="150" rx="8" fill="#f9fafb" stroke="#e5e7eb" stroke-width="0.5"/>
+    <rect x="40" y="270" width="600" height="26" rx="8" fill="#0f6e56"/>
+    <text x="56" y="288" class="loop-title">Loop B · 修改 Skill 定义(demos/)</text>
+    <g>
+      <rect x="120" y="314" width="120" height="44" rx="6" fill="#ffffff" stroke="#5dcaa5" stroke-width="0.5"/>
+      <text x="180" y="334" text-anchor="middle" class="node">编辑 EDIT</text>
+      <text x="180" y="348" text-anchor="middle" class="node-sub">demos/skill.ts · config.ts</text>
+      <path d="M240 336 L268 336" fill="none" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arr)"/>
+      <rect x="270" y="314" width="120" height="44" rx="6" fill="#ffffff" stroke="#5dcaa5" stroke-width="0.5"/>
+      <text x="330" y="334" text-anchor="middle" class="node">运行 RUN</text>
+      <text x="330" y="348" text-anchor="middle" class="node-sub">tsx 直接加载 .ts</text>
+      <path d="M390 336 L418 336" fill="none" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arr)"/>
+      <rect x="420" y="314" width="60" height="44" rx="6" fill="#ffffff" stroke="#5dcaa5" stroke-width="0.5"/>
+      <text x="450" y="342" text-anchor="middle" class="node">✓</text>
+      <text x="450" y="354" text-anchor="middle" class="node-sub">验证</text>
+    </g>
+    <text x="120" y="382" class="note-em">NO BUILD STEP</text>
+    <text x="222" y="382" class="node-sub">· tsx 直接执行 .ts，无需先构建</text>
+    <text x="120" y="400" class="node-sub">前置条件：framework 包至少构建过一次</text>
+  </g>
+
+  <g>
+    <rect x="40" y="440" width="600" height="150" rx="8" fill="#f9fafb" stroke="#e5e7eb" stroke-width="0.5"/>
+    <rect x="40" y="440" width="600" height="26" rx="8" fill="#ba7517"/>
+    <text x="56" y="458" class="loop-title">Loop C · 全量重建(tsbuildinfo 失效或大改)</text>
+    <g>
+      <rect x="60" y="484" width="100" height="44" rx="6" fill="#ffffff" stroke="#ef9f27" stroke-width="0.5"/>
+      <text x="110" y="504" text-anchor="middle" class="node">清除 CLEAN</text>
+      <text x="110" y="518" text-anchor="middle" class="node-sub">npm run clean</text>
+      <path d="M160 506 L188 506" fill="none" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arr)"/>
+      <rect x="190" y="484" width="100" height="44" rx="6" fill="#ffffff" stroke="#ef9f27" stroke-width="0.5"/>
+      <text x="240" y="504" text-anchor="middle" class="node">构建 BUILD</text>
+      <text x="240" y="518" text-anchor="middle" class="node-sub">tsc -b 全量</text>
+      <path d="M290 506 L318 506" fill="none" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arr)"/>
+      <rect x="320" y="484" width="100" height="44" rx="6" fill="#ffffff" stroke="#ef9f27" stroke-width="0.5"/>
+      <text x="370" y="504" text-anchor="middle" class="node">运行 RUN</text>
+      <text x="370" y="518" text-anchor="middle" class="node-sub">npm run demo</text>
+      <path d="M420 506 L448 506" fill="none" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arr)"/>
+      <rect x="450" y="484" width="80" height="44" rx="6" fill="#ffffff" stroke="#ef9f27" stroke-width="0.5"/>
+      <text x="490" y="510" text-anchor="middle" class="node">✓ 验证</text>
+    </g>
+    <text x="60" y="554" class="node-sub">clean 删除：packages/*/dist/ + tsconfig.tsbuildinfo + root dist/</text>
+    <text x="60" y="572" class="node-sub">触发时机：tsconfig.json 变更、依赖大改、缓存失效</text>
+  </g>
+
+  <g>
+    <rect x="660" y="70" width="300" height="260" rx="8" fill="#f9fafb" stroke="#e5e7eb" stroke-width="0.5"/>
+    <text x="670" y="92" style="font-size:13px;font-weight:500;fill:#1f2937">Command Reference</text>
+    <line x1="670" y1="102" x2="950" y2="102" stroke="#e5e7eb" stroke-width="1"/>
+    <rect x="670" y="114" width="280" height="32" rx="6" fill="#ffffff" stroke="#85b7eb" stroke-width="0.5"/>
+    <text x="680" y="134" class="cmd-name">npm run build</text>
+    <text x="680" y="144" class="cmd-desc">tsc -b · 构建 4 个 framework 包</text>
+    <rect x="670" y="154" width="280" height="32" rx="6" fill="#ffffff" stroke="#85b7eb" stroke-width="0.5"/>
+    <text x="680" y="174" class="cmd-name">npm run demo</text>
+    <text x="680" y="184" class="cmd-desc">tsx cli.ts build skillpack.config.ts</text>
+    <rect x="670" y="194" width="280" height="32" rx="6" fill="#ffffff" stroke="#85b7eb" stroke-width="0.5"/>
+    <text x="680" y="214" class="cmd-name">npm run typecheck</text>
+    <text x="680" y="224" class="cmd-desc">tsc -b --emitDeclarationOnly(快速)</text>
+    <rect x="670" y="234" width="280" height="32" rx="6" fill="#ffffff" stroke="#85b7eb" stroke-width="0.5"/>
+    <text x="680" y="254" class="cmd-name">npm run clean</text>
+    <text x="680" y="264" class="cmd-desc">rm -rf packages/*/dist + tsbuildinfo + root dist/</text>
+  </g>
+
+  <g>
+    <rect x="660" y="350" width="300" height="240" rx="8" fill="#f9fafb" stroke="#e5e7eb" stroke-width="0.5"/>
+    <text x="670" y="372" style="font-size:13px;font-weight:500;fill:#1f2937">File Change → Action</text>
+    <line x1="670" y1="382" x2="950" y2="382" stroke="#e5e7eb" stroke-width="1"/>
+    <text x="680" y="402" class="table-h">变更</text>
+    <text x="840" y="402" class="table-h">命令</text>
+    <line x1="670" y1="410" x2="950" y2="410" stroke="#e5e7eb" stroke-width="1"/>
+    <text x="680" y="432" class="table-c">packages/*/src/</text>
+    <text x="840" y="432" class="cmd-name">npm run build</text>
+    <line x1="670" y1="446" x2="950" y2="446" stroke="#f3f4f6" stroke-width="1"/>
+    <text x="680" y="468" class="table-c">demos/skill.ts</text>
+    <text x="840" y="468" class="cmd-name">npm run demo</text>
+    <line x1="670" y1="482" x2="950" y2="482" stroke="#f3f4f6" stroke-width="1"/>
+    <text x="680" y="504" class="table-c">skillpack.config.ts</text>
+    <text x="840" y="504" class="cmd-name">npm run demo</text>
+    <line x1="670" y1="518" x2="950" y2="518" stroke="#f3f4f6" stroke-width="1"/>
+    <text x="680" y="540" class="table-c">tsconfig.json</text>
+    <text x="840" y="540" class="cmd-name">npm run clean + build</text>
+    <line x1="670" y1="554" x2="950" y2="554" stroke="#f3f4f6" stroke-width="1"/>
+    <text x="680" y="576" class="table-c">root package.json</text>
+    <text x="840" y="576" class="cmd-name">npm install</text>
+  </g>
+
+  <text x="40" y="630" style="font-size:13px;font-weight:500;fill:#4b5563">提示</text>
+  <rect x="40" y="640" width="600" height="60" rx="8" fill="#fffbeb" stroke="#ef9f27" stroke-width="0.5"/>
+  <text x="56" y="664" class="note">日常迭代 Loop B 最快：编辑 .ts → 运行即生效</text>
+  <text x="56" y="684" class="note">仅当 packages/* 改动才需要 Loop A；缓存或依赖问题用 Loop C</text>
+</svg>

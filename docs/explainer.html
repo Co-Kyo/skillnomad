@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>skillpack 当前 API 教学</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #f9fafb;
+  --surface: #ffffff;
+  --surface-2: #f3f4f6;
+  --border: #e5e7eb;
+  --text: #1f2937;
+  --muted: #6b7280;
+  --accent: #185fa5;
+  --accent-2: #534ab7;
+  --green: #0f6e56;
+  --amber: #ba7517;
+  --rose: #a32d2d;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Roboto, "Helvetica Neue", sans-serif;
+  line-height: 1.75;
+  padding: 28px 24px 80px;
+}
+
+.wrap {
+  max-width: 1080px;
+  margin: 0 auto;
+}
+
+h1 {
+  font-size: 30px;
+  line-height: 1.25;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  color: var(--muted);
+  margin-bottom: 28px;
+}
+
+.chapter {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  padding: 22px;
+  margin: 18px 0;
+}
+
+.chapter h2 {
+  font-size: 20px;
+  margin-bottom: 10px;
+}
+
+.chapter h3 {
+  font-size: 16px;
+  margin: 18px 0 8px;
+}
+
+p {
+  margin: 8px 0;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.tip {
+  border-left: 3px solid var(--accent);
+  background: #eff6ff;
+  padding: 10px 14px;
+  border-radius: 0 8px 8px 0;
+  margin: 14px 0;
+}
+
+.code-block {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin: 12px 0;
+  overflow-x: auto;
+}
+
+.code-block pre {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.file-path {
+  color: var(--accent);
+  font-size: 12px;
+  margin-bottom: 8px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin: 14px 0;
+}
+
+.card {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+
+.card strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+code {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+
+ul {
+  padding-left: 22px;
+}
+
+.takeaway {
+  border-top: 1px solid var(--border);
+  margin-top: 16px;
+  padding-top: 12px;
+}
+
+.svg-box {
+  margin: 16px 0;
+}
+
+.svg-box object,
+.svg-box img {
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.badge {
+  display: inline-block;
+  background: var(--accent);
+  color: #ffffff;
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  margin-right: 8px;
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>skillpack 当前 API 教学</h1>
+<p class="subtitle">基于 <code>@co-kyo/skillpack@0.1.0</code> 的当前 API 重写。</p>
+
+<section class="chapter">
+  <h2><span class="badge">1</span>skillpack 是什么</h2>
+  <p>skillpack 是一个把结构化 TypeScript 定义打包成 LLM 可执行 Markdown Skill 的构建工具。</p>
+  <p>你使用 <code>StepDefinition</code> 描述流程步骤，使用控制节点描述步骤内部调度，skillpack 负责校验、排序、渲染并输出 <code>SKILL.md</code> 和 <code>processes/*.md</code>。</p>
+  <div class="svg-box">
+    <object data="svg/01-birdseye.svg" type="image/svg+xml" style="min-height:380px;">
+      <img src="svg/01-birdseye.svg" alt="全局鸟瞰">
+    </object>
+  </div>
+</section>
+
+<section class="chapter">
+  <h2><span class="badge">2</span>公开包名</h2>
+  <div class="grid">
+    <div class="card"><strong>@co-kyo/skillpack</strong><span>CLI、defineConfig、createSkillFromModel、buildPipeline</span></div>
+    <div class="card"><strong>@co-kyo/skillpack-types</strong><span>StepDefinition、控制节点、task/seq/parallel/mapNode</span></div>
+    <div class="card"><strong>@co-kyo/skillpack-common</strong><span>校验、拓扑排序、图遍历</span></div>
+    <div class="card"><strong>@co-kyo/skillpack-validate</strong><span>独立校验 CLI</span></div>
+  </div>
+  <div class="svg-box">
+    <object data="svg/02-deps.svg" type="image/svg+xml" style="min-height:380px;">
+      <img src="svg/02-deps.svg" alt="依赖拓扑">
+    </object>
+  </div>
+</section>
+
+<section class="chapter">
+  <h2><span class="badge">3</span>安装</h2>
+  <div class="code-block">
+    <pre>npm install -D @co-kyo/skillpack @co-kyo/skillpack-types</pre>
+  </div>
+</section>
+
+<section class="chapter">
+  <h2><span class="badge">4</span>定义 Skill</h2>
+  <p>最简单的入口是 <code>createSkill()</code>，它接收 <code>SkillDefinition</code> 并返回同一对象。</p>
+  <div class="code-block">
+    <div class="file-path">skill.ts</div>
+    <pre>
+import { createSkill, task, seq, parallel, mapNode } from '@co-kyo/skillpack-types';
+
+const stepParse = {
+  id: 'topic-parse',
+  title: '主题解析',
+  description: '解析调研主题，生成调研框架',
+  dependsOn: [],
+  graph: task({
+    id: 'parse',
+    label: '主题解析',
+    type: 'agent',
+    body: '解析用户输入的调研主题，生成 research-brief.json',
+  }),
+  reads: [],
+  writes: [{ path: '{workDir}/.meta/research-brief.json', description: '调研框架' }],
+};
+
+export const skill = createSkill({
+  name: 'tech-research',
+  title: '前端技术调研',
+  description: '从探索到产出的完整调研流程',
+  steps: [stepParse],
+});</pre>
+  </div>
+  <div class="tip">
+    <p>如果你使用 SourceModel 工作流，可以改用 <code>createSkillFromModel(model)</code>，入口在 <code>@co-kyo/skillpack</code>。</p>
+  </div>
+</section>
+
+<section class="chapter">
+  <h2><span class="badge">5</span>StepDefinition 字段</h2>
+  <div class="code-block">
+    <pre>
+interface StepDefinition {
+  id: string;
+  title: string;
+  description: string;
+  dependsOn: string[];
+  graph: ControlNode;
+  reads: FileRef[];
+  writes: FileRef[];
+  barrier?: BarrierDef;
+  reuse?: ReuseRule[];
+  degrade?: DegradeProtocol;
+  body?: string;
+  plugins?: string[];
+}</pre>
+  </div>
+  <p><code>graph</code> 是当前版本的核心字段，替代旧版的 <code>schedule</code>。它直接使用递归控制节点，不再使用扁平 nodes/edges/entry。</p>
+  <div class="svg-box">
+    <object data="svg/05-skill-anatomy.svg" type="image/svg+xml" style="min-height:400px;">
+      <img src="svg/05-skill-anatomy.svg" alt="Skill Anatomy">
+    </object>
+  </div>
+</section>
+
+<section class="chapter">
+  <h2><span class="badge">6</span>控制节点</h2>
+  <div class="grid">
+    <div class="card"><strong>task()</strong><span>单个任务，type 可为 agent / script / human / subflow</span></div>
+    <div class="card"><strong>seq()</strong><span>顺序执行一组节点</span></div>
+    <div class="card"><strong>parallel()</strong><span>并行分支，支持 converge 和 gate</span></div>
+    <div class="card"><strong>mapNode()</strong><span>从数据源逐项执行同一 worker，支持 maxConcurrency</span></div>
+    <div class="card"><strong>branch()</strong><span>条件分支</span></div>
+    <div class="card"><strong>loop()</strong><span>循环执行，支持 maxIterations</span></div>
+  </div>
+
+  <h3>并行 + 收敛 + 门禁</h3>
+  <div class="code-block">
+    <div class="file-path">parallel()</div>
+    <pre>
+graph: parallel('explore-batch', '多维度并行探索', [
+  task({
+    id: 'explore-docs',
+    label: 'explore-docs',
+    type: 'agent',
+    body: '阅读 research-brief.json，产出 docs-findings.json',
+  }),
+  task({
+    id: 'explore-practice',
+    label: 'explore-practice',
+    type: 'agent',
+    body: '阅读 research-brief.json，产出 practice-findings.json',
+  }),
+], {
+  converge: {
+    id: 'explore-converge',
+    label: 'explore-integrator',
+    type: 'agent',
+    body: '合并三个维度的发现，产出 consolidated-findings.json',
+  },
+  gate: {
+    rule: '3 agents completed or at most 1 degraded',
+    onPass: 'converge',
+    onFail: 'degrade',
+  },
+})</pre>
+  </div>
+
+  <h3>Map / 滚动窗口</h3>
+  <div class="code-block">
+    <div class="file-path">mapNode()</div>
+    <pre>
+graph: mapNode(
+  'report-map',
+  '章节报告生成',
+  '{workDir}/.meta/organized.json#categories',
+  task({
+    id: 'report-worker',
+    label: 'report-{chapter}',
+    type: 'agent',
+    body: '撰写报告章节 {chapter}，产出 {workDir}/.meta/report/{chapter}.md',
+  }),
+  3,
+)</pre>
+  </div>
+</section>
+
+<section class="chapter">
+  <h2><span class="badge">7</span>配置与 CLI</h2>
+  <div class="code-block">
+    <div class="file-path">skillpack.config.ts</div>
+    <pre>
+import { defineConfig } from '@co-kyo/skillpack';
+
+export default defineConfig({
+  skill: './skill.ts',
+  outputDir: 'dist/skill',
+});</pre>
+  </div>
+  <div class="code-block">
+    <pre>npx skillpack build skillpack.config.ts</pre>
+  </div>
+  <p>CLI 会读取配置、加载 skill、调用 <code>buildPipeline()</code>，并生成 <code>SKILL.md</code> 与 <code>processes/*.md</code>。</p>
+</section>
+
+<section class="chapter">
+  <h2><span class="badge">8</span>构建流程</h2>
+  <ul>
+    <li>Validate：校验 StepDefinition 与依赖引用。</li>
+    <li>Resolve：根据 dependsOn 做拓扑排序，解析 {{step:xxx}} 引用。</li>
+    <li>Render：渲染 SKILL.md、processes、align-report 与产物清单。</li>
+  </ul>
+  <div class="svg-box">
+    <object data="svg/03-pipeline.svg" type="image/svg+xml" style="min-height:360px;">
+      <img src="svg/03-pipeline.svg" alt="Build Pipeline">
+    </object>
+  </div>
+  <div class="svg-box">
+    <object data="skillpack-build-flow.svg" type="image/svg+xml" style="min-height:360px;">
+      <img src="skillpack-build-flow.svg" alt="Build Flow">
+    </object>
+  </div>
+  <div class="svg-box">
+    <object data="svg/06-dev-loop.svg" type="image/svg+xml" style="min-height:400px;">
+      <img src="svg/06-dev-loop.svg" alt="Dev Loop">
+    </object>
+  </div>
+</section>
+
+<section class="chapter">
+  <h2><span class="badge">9</span>Release</h2>
+  <p>公开仓库推送 <code>v*</code> tag 后，GitHub Actions 会构建 npm 包并创建 GitHub Release。</p>
+  <p>也可以手动运行 <code>Release skillpack</code> workflow，使用 <code>source.zip</code> 和 npm tarball 作为发布产物。</p>
+</section>
+
+</div>
+</body>
+</html>
