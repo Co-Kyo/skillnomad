@@ -125,6 +125,8 @@ export interface FileRef {
   description: string;
   schema?: string;
   required?: boolean;
+  /** 8.5 裁定：条目角色标签（contract/schema/rule/reference）。仅 as==='contract' 在产物中作为契约引用渲染。缺省 'reference'。 */
+  as?: import('./model.js').SourceRefRole;
 }
 
 // ---------------------------------------------------------------

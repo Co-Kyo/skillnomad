@@ -98,6 +98,7 @@ function sourceRef(ref: SourceRef): FileRef {
     description: ref.description ?? ref.path,
     schema: ref.schema,
     required: ref.required,
+    as: ref.as,
   };
 }
 
@@ -560,11 +561,25 @@ function renderBarrier(step: ResolvedStep): string {
   return md;
 }
 
+// 8.5 裁定：契约引用章节由 reads.filter(as === 'contract') 派生渲染（不再人工维护 contractRefs）。
+// 契约文档只进契约引用章节，不重复进文件引用表——消除人工双清单重复登记。
 function renderFileRefs(step: ResolvedStep): string {
-  let md = `## 文件引用\n\n`;
+  const contractRefs = step.reads.filter(r => r.as === 'contract');
+  const dataReads = step.reads.filter(r => r.as !== 'contract');
+
+  let md = '';
+  if (contractRefs.length > 0) {
+    md += `## 契约引用\n\n`;
+    for (const ref of contractRefs) {
+      md += `- \`${ref.path}\`：${ref.description ?? ''}\n`;
+    }
+    md += `\n`;
+  }
+
+  md += `## 文件引用\n\n`;
   md += `| 类型 | 文件 | 说明 |\n`;
   md += `|------|------|------|\n`;
-  for (const ref of step.reads) {
+  for (const ref of dataReads) {
     md += `| 读取 | \`${ref.path}\` | ${ref.description ?? ''} |\n`;
   }
   for (const ref of step.writes) {
@@ -628,16 +643,8 @@ export function renderStep(
   md += `**关键产出**：${step.writes.map(w => `\`${w.path}\``).join(', ')}\n\n`;
   md += `---\n\n`;
 
-  // File references
-  md += `## 文件引用\n\n`;
-  md += `| 变量 | 文件 | 说明 |\n`;
-  md += `|------|------|------|\n`;
-  for (const ref of step.reads) {
-    md += `| \`${path.basename(ref.path)}\` | \`${ref.path}\` | ${ref.description} |\n`;
-  }
-  for (const ref of step.writes) {
-    md += `| \`${path.basename(ref.path)}\` | \`${ref.path}\` | ${ref.description} |\n`;
-  }
+  // 文件引用（契约引用 + 读取/产出表，8.5 统一派生渲染）
+  md += renderFileRefs(step);
 
   // Dependencies
   md += `\n## 依赖\n\n`;
