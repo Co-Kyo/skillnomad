@@ -31,3 +31,4 @@ output/
 docs/api/reference/
 docs/.vitepress/dist/
 docs/node_modules/
+docs/package-lock.json
