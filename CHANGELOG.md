@@ -2,6 +2,13 @@
 
 > **注意**：下方 v0.2.0/v0.1.0 为改名（skillpack → skillnomad）时沿用的旧版本史。新线自 **0.1.0-beta.1** 独立起步（orphan 干净根提交），本轮 beta 线追溯如下。
 
+## v0.1.0-beta.9（8.16 概念引用承载候选）
+
+- **概念引用形态（8.16 产物路径投射的框架侧）**：
+  - `SourceRef.path` 改为可选 + 新增 `ref?`（概念引用声明形态）。
+  - 边界（老板裁定）：框架**只承载形态，不做领域模型抽象**——`ref` 需由领域侧 resolver 解析为 `path` 后传入；`sourceRef`/map over 遇未解析 `ref` 抛错并提示。
+  - sp-skill 采用实体常量模式（`domain/entities.ts` + `refOf`），步骤层路径字面量清零——框架渲染/校验零逻辑改动。
+
 ## v0.1.0-beta.8（API 表面收敛）
 
 - **主包 = 唯一公共 API 表面**：`skillnomad/src/index.ts` 追加 `export * from 'skillnomad-types'` —— `step` builder、flow 辅助（task/seq/parallel/mapNode/branch/loop）与全部类型统一从主包出。

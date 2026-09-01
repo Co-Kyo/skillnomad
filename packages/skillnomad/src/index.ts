@@ -103,6 +103,11 @@ export interface SkillMeta {
 }
 
 function sourceRef(ref: SourceRef): FileRef {
+  if (!ref.path) {
+    // 8.16 概念引用：框架只承载 ref 形态，不做领域模型抽象——
+    // 未解析的 ref 是领域侧遗漏（resolver 应已把 ref → path 填入模型）。
+    throw new Error(`概念引用未解析: '${ref.ref ?? '(未知)'}'——ref 需由领域侧解析为 path 后传入（框架不感知概念内部结构）`);
+  }
   return {
     path: ref.path,
     description: ref.description ?? ref.path,
@@ -147,6 +152,9 @@ function convertSourceFlow(flow: SourceFlow): ControlNode {
         },
       );
     case 'map':
+      if (!flow.over.path) {
+        throw new Error(`map over 的概念引用未解析: '${flow.over.ref ?? '(未知)'}'——ref 需由领域侧解析为 path（8.16 框架只承载形态）`);
+      }
       return mapNode(
         flow.id,
         flow.label,
