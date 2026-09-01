@@ -22,13 +22,11 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 24
-          cache: npm
-          cache-dependency-path: docs/package-lock.json
+          node-version: 22
       - name: Install & build docs
         working-directory: docs
         run: |
-          npm ci
+          npm install --no-audit --no-fund
           npm run build
       - uses: actions/upload-pages-artifact@v3
         with:
