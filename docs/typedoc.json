@@ -9,5 +9,8 @@
   "githubPages": false,
   "excludePrivate": true,
   "excludeInternal": true,
-  "hideBreadcrumbs": true
+  "hideBreadcrumbs": true,
+  "compilerOptions": {
+    "types": []
+  }
 }
