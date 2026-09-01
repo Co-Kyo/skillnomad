@@ -1,0 +1,13 @@
+{
+  "entryPoints": [
+    "../packages/skillnomad-types/src/model.ts",
+    "../packages/skillnomad-types/src/builder.ts"
+  ],
+  "out": "api/reference",
+  "plugin": ["typedoc-plugin-markdown"],
+  "readme": "none",
+  "githubPages": false,
+  "excludePrivate": true,
+  "excludeInternal": true,
+  "hideBreadcrumbs": true
+}

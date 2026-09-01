@@ -1,0 +1,16 @@
+{
+  "name": "skillnomad-docs",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vitepress dev",
+    "build": "npm run docs:api && vitepress build",
+    "preview": "vitepress preview",
+    "docs:api": "typedoc --options typedoc.json"
+  },
+  "devDependencies": {
+    "typedoc": "^0.27.0",
+    "typedoc-plugin-markdown": "^4.2.0",
+    "vitepress": "^1.6.0"
+  }
+}
