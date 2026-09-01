@@ -26,3 +26,8 @@ output/
 
 # WorkBuddy 项目数据
 .workbuddy/
+
+# 文档站构建产物（TypeDoc/VitePress 生成，永不手写）
+docs/api/reference/
+docs/.vitepress/dist/
+docs/node_modules/
