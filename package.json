@@ -8,7 +8,7 @@
   "scripts": {
     "build": "tsc -b",
     "typecheck": "tsc -b --emitDeclarationOnly",
-    "test": "node --test packages/skillnomad/test/steprefs.test.mjs packages/skillnomad/test/scheduling-policy.test.mjs",
+    "test": "node --test packages/skillnomad/test/steprefs.test.mjs packages/skillnomad/test/scheduling-policy.test.mjs packages/skillnomad/test/module-usage.test.mjs",
     "clean": "rm -rf packages/*/dist packages/*/tsconfig.tsbuildinfo dist",
     "demo": "npm run start --workspace=skillnomad-demo"
   },

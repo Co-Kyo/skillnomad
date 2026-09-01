@@ -35,7 +35,7 @@ export type FailBehavior =
   | 'halt'
   | 'checkpoint';
 
-export type SourceRefRole = 'contract' | 'schema' | 'rule' | 'reference';
+export type SourceRefRole = 'contract' | 'schema' | 'rule' | 'method' | 'reference';
 
 export interface SourceRef {
   path: string;
@@ -358,6 +358,17 @@ export interface SourceContract {
   kind: 'schema' | 'method' | 'policy' | 'source';
   path: string;
   description: string;
+  /**
+   * **归属层（8.15 Step 2）**：'skill' = 跨步共享模块（SkillModule）；
+   * 'step' = 步骤私有模块（StepModule，严格私有、不做跨步引用）。
+   *
+   * 角色 × 归属一致性校验（`validateModuleUsage`）：
+   * `as:'contract'` 的引用必须指向 `scope:'skill'` 的注册条目；
+   * step 级条目被多个步骤引用 → 构建报错（跨步需求 = 它本就是 SkillModule）。
+   */
+  scope: 'skill' | 'step';
+  /** step 级模块的归属步骤（scope:'step' 时必填，须与步骤 id 对应） */
+  step?: string;
 }
 
 export interface SourceRuntimeTrace {

@@ -42,6 +42,7 @@ import type {
   BarrierDef,
   DegradeProtocol,
   SourceSchedulingPolicy,
+  SourceContract,
 } from 'skillnomad-types';
 import {
   task,
@@ -60,6 +61,7 @@ import {
   validateStepChain,
   validatePhaseCoverage,
   validateSchedulingPolicy,
+  validateModuleUsage,
   resolveChain,
   deriveChainNext,
   deriveInitStepId,
@@ -79,6 +81,7 @@ export {
   validateDependencyRefs,
   validateStepChain,
   validatePhaseCoverage,
+  validateModuleUsage,
   resolveChain,
   deriveChainNext,
   deriveInitStepId,
@@ -370,6 +373,7 @@ export function createSkillFromModel(model: SkillSourceModel): SkillDefinition {
     name: model.meta.name,
     title: model.meta.title,
     description: model.meta.description,
+    contracts: model.contracts,
     api: {
       frontmatterDescription: model.meta.frontmatterDescription,
       callExamples: model.meta.callExamples,
@@ -1162,6 +1166,7 @@ export function buildPipeline(
   steps: StepDefinition[],
   outputDir: string,
   meta?: SkillMeta,
+  registry: SourceContract[] = [],
 ): { pipeline: ResolvedPipeline; files: string[] } {
   const errors = [
     ...steps.flatMap(validateStep),
@@ -1169,6 +1174,7 @@ export function buildPipeline(
     ...validateStepChain(steps),
     ...validatePhaseCoverage(steps, meta?.api?.phases ?? []),
     ...validateBarrierContinuity(steps),
+    ...validateModuleUsage(steps, registry),
     ...(meta?.api?.schedulingPolicy ? validateSchedulingPolicy(meta.api.schedulingPolicy) : []),
   ];
 

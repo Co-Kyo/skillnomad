@@ -45,7 +45,7 @@ async function main() {
     process.exit(1);
   }
 
-  const { name, title, description, api, steps } = mod.skill;
+  const { name, title, description, api, steps, contracts } = mod.skill;
 
   // Merge meta: skill's defaults + config overrides
   const meta = {
@@ -56,7 +56,7 @@ async function main() {
     ...(config.meta || {}),
   };
 
-  buildPipeline(steps, config.outputDir, meta);
+  buildPipeline(steps, config.outputDir, meta, contracts);
 }
 
 main().catch((err) => {

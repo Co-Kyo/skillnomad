@@ -9,7 +9,7 @@
 
 export * from './model.js';
 export * from './builder.js';
-import type { NextAction, SourceRuntimeTrace, SourceSchedulingPolicy } from './model.js';
+import type { NextAction, SourceRuntimeTrace, SourceSchedulingPolicy, SourceContract } from './model.js';
 
 // ---------------------------------------------------------------
 // Schema 引用
@@ -260,6 +260,8 @@ export interface SkillDefinition {
   description: string;
   steps: StepDefinition[];
   api?: SkillApiMetadata;
+  /** 模块注册表（8.15 Step 2）：构建期模块引用一致性校验的输入 */
+  contracts?: SourceContract[];
 }
 
 export function createSkill(config: SkillDefinition): SkillDefinition {

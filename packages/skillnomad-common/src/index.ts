@@ -22,6 +22,7 @@ import type {
   StepStatus,
   SourceSchedulingPolicy,
   SchedulingBatchMode,
+  SourceContract,
 } from 'skillnomad-types';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
@@ -711,6 +712,69 @@ export function validatePhaseCoverage(
           `Phases are declared out of order: "${prev.name}" ends at step ` +
           `${String(prevEnd).padStart(2, '0')} but "${curr.name}" starts at step ` +
           `${String(currStart).padStart(2, '0')}.`,
+      });
+    }
+  }
+
+  return errors;
+}
+
+/**
+ * **模块引用一致性校验（8.15 Step 2 · 模块抽象落地）**
+ *
+ * 输入：步骤定义 + 模块注册表（`SourceContract[]`，来自 `model.contracts`）。
+ * 心智：内容模块用符号名注册引用，归属由声明层（scope）决定，路径只是渲染载体。
+ *
+ * **V1 · 角色 × 归属一致性**：`as:'contract'` 的引用必须指向 `scope:'skill'` 的注册条目。
+ * 契约 = 跨步共享的约定；指向 step 级模块说明贴错了角色标签 —— 提示改标签或提升为 SkillModule。
+ *
+ * **V2 · 私有可见性**：step 级模块（StepModule）只能被归属步骤引用；
+ * 被多个步骤引用 → 报错。跨步需求 = 它本就是 SkillModule（身份完全性不同），
+ * 升级路径 = 改一行声明（step:xxx → skill:xxx），文件与路径不搬家。
+ */
+export function validateModuleUsage(
+  steps: StepDefinition[],
+  registry: SourceContract[] = [],
+): ValidationError[] {
+  const errors: ValidationError[] = [];
+  const byPath = new Map(registry.map((c) => [c.path, c]));
+
+  // V1：as:'contract' → scope 必须为 'skill'
+  for (const step of steps) {
+    for (const ref of step.reads ?? []) {
+      if (ref.as !== 'contract') continue;
+      const reg = byPath.get(ref.path);
+      if (!reg) {
+        errors.push({
+          stepId: step.id,
+          field: 'reads',
+          message: `as:'contract' 引用 ${ref.path} 未在模块注册表中登记（8.15：契约引用须指向已注册模块）`,
+        });
+      } else if (reg.scope !== 'skill') {
+        errors.push({
+          stepId: step.id,
+          field: 'reads',
+          message: `as:'contract' 引用了 step 级模块 ${reg.id}（${ref.path}）：契约须为 skill 级共享，请改用 as:'schema'/'rule'/'method'，或提升为 SkillModule`,
+        });
+      }
+    }
+  }
+
+  // V2：step 级模块被跨步引用 → 报错（StepModule 严格私有）
+  for (const reg of registry) {
+    if (reg.scope !== 'step') continue;
+    const users = new Set<string>();
+    for (const step of steps) {
+      const uses = [...(step.reads ?? []), ...(step.writes ?? [])].some(
+        (r) => r.path === reg.path,
+      );
+      if (uses) users.add(step.id);
+    }
+    if (users.size > 1) {
+      errors.push({
+        stepId: reg.step ?? '(pipeline)',
+        field: 'module',
+        message: `step 级模块 ${reg.id}（${reg.path}）被 ${users.size} 个步骤引用（${[...users].join(', ')}）：StepModule 严格私有，跨步引用须提升为 SkillModule（升级 = 改一行声明）`,
       });
     }
   }
