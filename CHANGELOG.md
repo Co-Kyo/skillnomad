@@ -2,6 +2,13 @@
 
 > **注意**：下方 v0.2.0/v0.1.0 为改名（skillpack → skillnomad）时沿用的旧版本史。新线自 **0.1.0-beta.1** 独立起步（orphan 干净根提交），本轮 beta 线追溯如下。
 
+## v0.1.0-beta.8（API 表面收敛）
+
+- **主包 = 唯一公共 API 表面**：`skillnomad/src/index.ts` 追加 `export * from 'skillnomad-types'` —— `step` builder、flow 辅助（task/seq/parallel/mapNode/branch/loop）与全部类型统一从主包出。
+- 用户端体验收敛为：`npm install skillnomad -D` 一条命令 + `import ... from 'skillnomad'` 一个源；types/common 保留为内部组织（传递依赖）。
+- 配套 sp-skill：18 处 `skillnomad-types` import 收敛 + package.json 只声明 skillnomad；第二用例 narrative-focus-port 同步收敛。
+- 验证：tsc + 16 测试全绿；sp-skill 44 测试全绿、产物无新增差异。
+
 ## v0.1.0-beta.7（8.15 Step 2 候选）
 
 - **模块引用一致性校验（8.15 模块抽象落地）**：

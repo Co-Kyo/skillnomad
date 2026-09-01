@@ -90,6 +90,11 @@ export {
   formatInterval,
 };
 
+// 8.17 API 表面收敛：主包 = 唯一公共 API 表面。
+// step builder、flow 辅助（task/seq/parallel/mapNode/branch/loop）与全部类型
+// 统一从主包 re-export——用户只需 `npm install skillnomad` 一个包、`import ... from 'skillnomad'` 一个源。
+export * from 'skillnomad-types';
+
 export interface SkillMeta {
   name: string;
   title?: string;
