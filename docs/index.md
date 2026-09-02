@@ -25,3 +25,13 @@ features:
   - title: 调度策略
     details: 并发 / 窗口 / 分批是 skill 级一等公民声明，步骤不再各自登记。
 ---
+
+
+## 生成之后，你的 skill 怎么活得下去
+
+![skillnomad 顶层叙事：AI 负责写得出来，我们负责活得下去](/svg/hero-narrative.svg)
+
+<p style="text-align:center;color:#94A3B8;font-size:13px">
+  数据口径：官方示例 sp-skill（团队自用 skill）实测 · 适合持续迭代的长流程 skill，小 skill 用不上 ·
+  <a href="/guide/why">为什么需要 skillnomad →</a>
+</p>

@@ -7,6 +7,7 @@ export default defineConfig({
   lang: 'zh-CN',
   themeConfig: {
     nav: [
+      { text: '为什么', link: '/guide/why' },
       { text: '指南', link: '/guide/quickstart' },
       { text: '核心契约', link: '/guide/contract' },
       { text: 'demos', link: 'https://github.com/Co-Kyo/skillnomad/tree/main/demos' },
@@ -17,6 +18,7 @@ export default defineConfig({
       {
         text: '指南',
         items: [
+          { text: '为什么需要 skillnomad', link: '/guide/why' },
           { text: '快速上手', link: '/guide/quickstart' },
           { text: '核心契约（公开承诺）', link: '/guide/contract' },
           { text: '顶层引导与反模式', link: '/guide/anti-patterns' },
