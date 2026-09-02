@@ -8,6 +8,8 @@ export default defineConfig({
   themeConfig: {
     nav: [
       { text: '指南', link: '/guide/quickstart' },
+      { text: '核心契约', link: '/guide/contract' },
+      { text: 'demos', link: 'https://github.com/Co-Kyo/skillnomad/tree/main/demos' },
       { text: 'API 参考', link: '/api/types' },
       { text: '版本线', link: '/versioning' },
     ],
@@ -16,6 +18,7 @@ export default defineConfig({
         text: '指南',
         items: [
           { text: '快速上手', link: '/guide/quickstart' },
+          { text: '核心契约（公开承诺）', link: '/guide/contract' },
           { text: '顶层引导与反模式', link: '/guide/anti-patterns' },
           {
             text: '概念',

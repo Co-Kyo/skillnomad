@@ -3,15 +3,15 @@ layout: home
 
 hero:
   name: skillnomad
-  text: 把 Markdown skill 的抽象写进代码
-  tagline: 声明事实，框架推导其余 —— 顺序、编号、区间、调度策略、产物路径，全部由框架从你的声明派生。
+  text: 为长流程管道型 skill 开发而生
+  tagline: 把 Markdown skill 的抽象写进代码——声明事实，框架推导其余：顺序、编号、区间、调度策略、产物路径，全部由框架从你的声明派生。
   actions:
     - theme: brand
       text: 快速上手
       link: /guide/quickstart
     - theme: alt
-      text: 类型参考
-      link: /api/types
+      text: 核心契约
+      link: /guide/contract
 
 features:
   - title: 单包单源
