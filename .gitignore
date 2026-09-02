@@ -32,3 +32,7 @@ docs/api/reference/
 docs/.vitepress/dist/
 docs/node_modules/
 docs/package-lock.json
+
+# VitePress 临时配置与缓存
+docs/.vitepress/config.ts.timestamp-*.mjs
+docs/.vitepress/cache/
