@@ -1,14 +1,13 @@
 # API 参考
 
-> 本页当前为手写核心类型概览；TypeDoc 自动生成（从 `skillnomad-types` 源码 JSDoc 派生）计划中——
-> 生成后 API 页将完全由 CI 构建，永不手写。
+> 本页为核心类型概览；完整 API 参考由 TypeDoc 在构建时从 `skillnomad-types` 源码 JSDoc 自动生成（CI 执行，永不手写）。
 
 ## SourceRef（引用条目）
 
 ```ts
 interface SourceRef {
   path?: string;              // 路径字面量（与 ref 二选一，解析后必填）
-  ref?: string;               // 概念引用（8.16）：领域侧解析为 path 后传入
+  ref?: string;               // 概念引用：领域侧解析为 path 后传入
   schema?: string;
   required?: boolean;
   dynamic?: boolean;
@@ -28,12 +27,12 @@ interface SourceContract {
   kind: 'policy' | 'schema' | 'method' | 'rule';
   path: string;
   description: string;
-  scope: 'skill' | 'step';    // 8.15 归属层：skill 级共享 / step 级私有
+  scope: 'skill' | 'step';    // 归属层：skill 级共享 / step 级私有
   step?: string;              // step 级时归属的步骤 id
 }
 ```
 
-## schedulingPolicy（skill 级调度声明，8.13/8.14）
+## schedulingPolicy（skill 级调度声明）
 
 ```ts
 interface SchedulingPolicy {
@@ -56,11 +55,11 @@ interface SchedulingPolicy {
 ## step builder（构造步骤）
 
 ```ts
-import { step } from 'skillnomad';   // 8.17 起单包导出
+import { step } from 'skillnomad';   // 单包导出
 
 step(id, title)
   .summary(...)
-  .dependsOn('prev-step')            // 单值（8.4 收窄）
+  .dependsOn('prev-step')            // 单值（单值收窄）
   .reads(...)                        // SourceRef[]（符号名/概念引用）
   .writes(...)
   .inputs(...) / .outputs(...)

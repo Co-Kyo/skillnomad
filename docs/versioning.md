@@ -6,11 +6,11 @@
 
 | 版本 | 里程碑 | 破坏性变更 |
 | :--- | :--- | :--- |
-| 0.1.0-beta.4/5 | 8.4/8.5 契约收窄 | `dependsOn` 数组 → 单值；删除 `contractRefs`（收拢进 reads + `as` 标签）|
-| 0.1.0-beta.6 | 8.13/8.14 调度策略 | `meta.schedulingPolicy` 成为一等公民；步骤不再各自登记调度 |
-| 0.1.0-beta.7 | 8.15 模块抽象 | `SourceContract.scope` 归属层；构建期 `validateModuleUsage` 校验 |
-| 0.1.0-beta.8 | 8.17 API 表面收敛 | **单包**：`step`/类型统一从 `skillnomad` 导出；删除对 `skillnomad-types` 的直接 import |
-| 0.1.0-beta.9 | 8.16 概念引用 | `SourceRef.path` 可选 + `ref?` 概念引用形态 |
+| 0.1.0-beta.4/5 | 契约收窄 | `dependsOn` 数组 → 单值；删除 `contractRefs`（收拢进 reads + `as` 标签）|
+| 0.1.0-beta.6 | 调度策略 | `meta.schedulingPolicy` 成为一等公民；步骤不再各自登记调度 |
+| 0.1.0-beta.7 | 模块抽象 | `SourceContract.scope` 归属层；构建期 `validateModuleUsage` 校验 |
+| 0.1.0-beta.8 | API 表面收敛 | **单包**：`step`/类型统一从 `skillnomad` 导出；删除对 `skillnomad-types` 的直接 import |
+| 0.1.0-beta.9 | 概念引用 | `SourceRef.path` 可选 + `ref?` 概念引用形态 |
 
 ## 迁移要点
 

@@ -40,10 +40,10 @@ export type SourceRefRole = 'contract' | 'schema' | 'rule' | 'method' | 'referen
 export interface SourceRef {
   path?: string;
   /**
-   * **概念引用（8.16 产物路径投射）**：用实体/模块概念名替代路径字面量，
+   * **概念引用（产物路径投射）**：用实体/模块概念名替代路径字面量，
    * 构建期由领域侧 resolver 解析为 `path` 填入模型。
    *
-   * 边界（老板裁定）：skillnomad **只承载概念引用形态，不做领域模型抽象**——
+   * 边界（设计原则）：skillnomad **只承载概念引用形态，不做领域模型抽象**——
    * 框架不感知概念内部结构；解析逻辑归 sp-skill 业务顶层（`domain/entities.ts`）。
    * 解析后 `path` 必填（渲染/校验仍以 path 为准），`ref` 仅存在于源码声明层。
    */
@@ -53,7 +53,7 @@ export interface SourceRef {
   dynamic?: boolean;
   description?: string;
   /**
-   * **条目角色标签**（8.5 裁定：`contractRefs` 收拢进 `reads`，语义差异降级为角色标签）。
+   * **条目角色标签**（`contractRefs` 收拢进 `reads`，语义差异降级为角色标签）。
    *
    * 缺省 `'reference'`；首期只实落 `'contract'`，其余遇到再加。
    * 仅 `as === 'contract'` 的条目在产物中作为「契约引用」组件派生渲染。
@@ -316,7 +316,7 @@ export interface SourceStep {
    * **步骤间的直接前驱（线性链契约）**
    *
    * 步骤之间的关系是**线性链**，不是 DAG：
-   * - 每个步骤最多一个前驱、一个后继（8.4 收窄：类型级保证，而非仅构建期校验）；
+   * - 每个步骤最多一个前驱、一个后继（类型级保证，而非仅构建期校验）；
    * - 需要并行或分支，请在 `flow` 内部表达（`parallel` / `map`），
    *   **不要把可并行的动作拆成多个顶层步骤**——顶层 step 是不可并行的执行单位；
    * - `dependsOn` 与 `next` 互为反函数，
@@ -325,7 +325,7 @@ export interface SourceStep {
    * 违反契约（多依赖 / 成环 / 断链 / 悬空引用）将在构建期报错，
    * **不会静默线性化**。
    *
-   * 8.4 起收窄为**单值**：意图写多个前驱在编译期就不可能（类型不允许），
+   * 收窄为**单值**：意图写多个前驱在编译期就不可能（类型不允许），
    * 不再依赖运行时校验兜底。
    */
   dependsOn?: string;
@@ -356,7 +356,7 @@ export interface SourceStep {
    *
    * 若已声明 `dependsOn`，此字段可省略，由框架补出。
    *
-   * @deprecated 8.4 起标记为衍生值——开发者应声明 `dependsOn`（或什么都不声明，
+   * @deprecated 标记为衍生值——开发者应声明 `dependsOn`（或什么都不声明，
    * 由链序决定），`next` 由框架推导；显式声明仅用于覆盖渲染值，通常不必手写。
    */
   next?: string;
@@ -368,7 +368,7 @@ export interface SourceContract {
   path: string;
   description: string;
   /**
-   * **归属层（8.15 Step 2）**：'skill' = 跨步共享模块（SkillModule）；
+   * **归属层**：'skill' = 跨步共享模块（SkillModule）；
    * 'step' = 步骤私有模块（StepModule，严格私有、不做跨步引用）。
    *
    * 角色 × 归属一致性校验（`validateModuleUsage`）：
@@ -422,7 +422,7 @@ export interface SourceInitRule {
 }
 
 /**
- * 子 agent 分批模式（8.13/8.14 下沉的调度子域）。
+ * 子 agent 分批模式（下沉的调度子域）。
  *
  * - `batch_parallel`：无依赖任务一次性全部启动（超出并发上限则分多批）。
  * - `rolling_window`：任务互相独立，完成一个补一个，保持并发接近上限。
@@ -449,7 +449,7 @@ export interface SchedulingWindowBudget {
   itemSummaryTokens?: number;
 }
 
-/** 调度策略声明（skill 级全局口径，8.13 下沉）。 */
+/** 调度策略声明（skill 级全局口径）。 */
 export interface SourceSchedulingPolicy {
   /** 全局最大并发 Task Group 数（>0）。 */
   concurrencyLimit: number;
@@ -499,7 +499,7 @@ export interface SourceMeta {
    */
   flowOverview?: string;
   /**
-   * 调度策略（skill 级全局口径，8.13/8.14 下沉）。
+   * 调度策略（skill 级全局口径）。
    *
    * 窗口预算/并发上限/分批规则与业务无关、跨 skill 通用，封装进本字段，
    * **步骤不再登记**（消除「人工双清单」的横切散布）。构建期统一渲染到

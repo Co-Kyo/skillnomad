@@ -9,7 +9,7 @@ skillnomad 存在的理由，是一个真实的槽点：**写 markdown skill 时
 skillnomad 的做法：**共用规则是模块，步骤引用的是符号名，路径是构建期的派生物**。
 
 ```bash
-npm install -D skillnomad          # 单包单源（8.17 API 表面收敛后）
+npm install -D skillnomad          # 单包单源（API 表面收敛后）
 ```
 
 ## 最小示例：模块化导入
@@ -66,6 +66,6 @@ npx skillnomad build skillnomad.config.ts
 
 ## 下一步
 
-- 模块化导入的完整语义 → [模块抽象（8.15）](concepts/modules)
+- 模块化导入的完整语义 → [模块抽象](concepts/modules)
 - 哪些写法是反模式 → [顶层引导与反模式](anti-patterns)
 - 类型参考 → [API 参考](../api/types)

@@ -20,8 +20,8 @@ export default defineConfig({
           {
             text: '概念',
             items: [
-              { text: '模块抽象（8.15）', link: '/guide/concepts/modules' },
-              { text: '产物路径投射（8.16）', link: '/guide/concepts/entities' },
+              { text: '模块抽象', link: '/guide/concepts/modules' },
+              { text: '产物路径投射', link: '/guide/concepts/entities' },
             ],
           },
         ],
