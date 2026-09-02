@@ -33,6 +33,10 @@ features:
 
 ![skillnomad 顶层叙事：AI 负责写得出来，我们负责活得下去](/svg/hero-narrative.svg)
 
+<script setup>
+import { withBase } from 'vitepress'
+</script>
+
 <p style="text-align:center;margin-top:6px">
-  <a href="/guide/why">为什么需要 skillnomad →</a>
+  <a :href="withBase('/guide/why')">为什么需要 skillnomad →</a>
 </p>
