@@ -29,9 +29,10 @@ features:
 
 ## 生成之后，你的 skill 怎么活得下去
 
+如果你不打算从零手写 skill——AI 帮你生成之后的事，从这一段开始。
+
 ![skillnomad 顶层叙事：AI 负责写得出来，我们负责活得下去](/svg/hero-narrative.svg)
 
-<p style="text-align:center;color:#94A3B8;font-size:13px">
-  数据口径：官方示例 sp-skill（团队自用 skill）实测 · 适合持续迭代的长流程 skill，小 skill 用不上 ·
+<p style="text-align:center;margin-top:6px">
   <a href="/guide/why">为什么需要 skillnomad →</a>
 </p>
