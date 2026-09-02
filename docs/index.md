@@ -14,6 +14,8 @@ hero:
       link: /guide/contract
 
 features:
+  - title: TypeScript 优先
+    details: TypeScript 编写，类型定义随包发布——step builder 的补全与编译期报错，就是第一层文档。
   - title: 单包单源
     details: npm install skillnomad -D 一条命令。step builder、类型、校验统一从一个包出（API 表面收敛）。
   - title: 模块抽象
