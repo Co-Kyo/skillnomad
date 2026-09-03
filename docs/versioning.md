@@ -1,8 +1,8 @@
 # 版本线与迁移
 
-> ⚠️ **1.0 前 API 不稳定**：beta 线接口可能以破坏性方式变更；升级前查阅本页与 CHANGELOG。契约在 0.1.0 冻结。
+> 当前版本：**0.1.0**（首个稳定版）。beta 线（0.1.0-beta.x）已完成使命，接口在 0.1.0 定型；后续版本节奏以 [CHANGELOG](https://github.com/Co-Kyo/skillnomad/releases) 为准，不在此预告。
 
-## 版本线（beta）
+## 版本线（beta → 0.1.0）
 
 | 版本 | 里程碑 | 破坏性变更 |
 | :--- | :--- | :--- |
@@ -21,6 +21,6 @@
 ## 安装
 
 ```bash
-npm install -D skillnomad@beta        # 最新 beta（预发布）
-npm install -D skillnomad             # 稳定线（beta 期 = 首个 beta，不建议）
+npm install skillnomad             # 稳定版 0.1.0（latest）
+npm install -D skillnomad@beta     # beta 线（历史预发布，仅供回溯）
 ```
