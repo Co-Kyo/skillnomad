@@ -12,6 +12,7 @@
 
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 const filePath = process.argv[2];
 
@@ -26,8 +27,8 @@ console.log(`skillnomad-validate v0.1.0`);
 console.log(`Validating: ${absPath}\n`);
 
 try {
-  // Dynamic import of the pipeline file
-  const mod = await import(absPath);
+  // Dynamic import of the pipeline file（Windows 下绝对路径必须是 file:// URL）
+  const mod = await import(pathToFileURL(absPath).href);
   const steps = mod.default || mod.steps;
 
   if (!steps || !Array.isArray(steps)) {
