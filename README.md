@@ -13,7 +13,7 @@ npm install -D skillnomad@beta       # 最新 beta（预发布）
 
 - **版本线**：`0.1.0-beta.x`（预发布）。预发布版本发布到 **`beta`** dist-tag，**不占用 `latest`**。
 - **`latest` 只留给正式版**（0.1.0 起）；beta 期装最新请用 `@beta` 或显式版本（如 `@0.1.0-beta.2`）。
-- **⚠️ 1.0 前 API 不稳定**：`0.1.0` 正式版之前属于 beta 线，**接口可能随时以破坏性方式变更**（如字段类型收窄、字段删除）。升级 beta 版本前请查阅 changelog；契约在 `0.1.0`（1.0）发布时冻结。
+- **⚠️ 1.0 前 API 不稳定**：`0.1.0` 之前属于 beta 线，**接口可能随时以破坏性方式变更**（如字段类型收窄、字段删除）。升级前请查阅 changelog。semver 口径：**0.x 的 minor 变更即可包含破坏性变更**——`0.1.0` 起「可默认安装」（beta 期装最新请用 `@beta` 或显式版本），但契约冻结发生在 **`1.0`**；`0.2.0` 起仍可破坏性变更。
 - **发布流程**（push tag 即触发 GitHub Actions → OIDC 直发 npm，全程无 token）：
   1. 同步改版本号：`release-manifest.json`（`release` + 4 个包）+ 4 个 `packages/*/package.json` 的 `version`
   2. `git commit -m "chore(release): v<version>"` + `git tag v<version>`

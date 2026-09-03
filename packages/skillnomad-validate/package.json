@@ -1,6 +1,6 @@
 {
   "name": "skillnomad-validate",
-  "version": "0.1.0-beta.9",
+  "version": "0.1.0",
   "description": "Pipeline integrity validator for skillnomad",
   "keywords": [
     "skillnomad",
@@ -39,7 +39,7 @@
     "build": "tsc"
   },
   "dependencies": {
-    "skillnomad-types": "^0.1.0-beta.1",
-    "skillnomad-common": "^0.1.0-beta.1"
+    "skillnomad-types": "^0.1.0",
+    "skillnomad-common": "^0.1.0"
   }
 }
