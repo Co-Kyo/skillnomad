@@ -142,6 +142,8 @@ jobs:
           name: ${{ contains(env.RELEASE_TAG, '-') && env.RELEASE_TAG || format('{0} · 首个稳定版（可信度里程碑）', env.RELEASE_TAG) }}
           # 正式版附定位说明（M1-M5 摘要）；beta 走自动生成 notes
           body_path: ${{ contains(env.RELEASE_TAG, '-') && '' || '.github/RELEASE_NOTES.md' }}
+          # Prerelease 徽章：beta 标黄 "Pre-release"，正式版无徽章——版本线在 Releases 页第一眼可辨
+          prerelease: ${{ contains(env.RELEASE_TAG, '-') }}
           files: |
             dist-release/source.zip
             dist-release/*.tgz
