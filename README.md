@@ -5,20 +5,18 @@ LLM 可执行 Markdown Skill 管线的打包工具。
 ## 安装
 
 ```bash
-npm install -D skillnomad            # 稳定线（beta 期 = 首个 beta）
-npm install -D skillnomad@beta       # 最新 beta（预发布）
+npm install skillnomad               # 稳定版 0.1.0（latest）
 ```
 
 ## 版本与发布节奏
 
-- **版本线**：`0.1.0-beta.x`（预发布，已完成使命）。预发布版本发布到 **`beta`** dist-tag，**不占用 `latest`**。
-- **`latest` 指向稳定版 0.1.0**；beta 期版本请用 `@beta` 或显式版本（如 `@0.1.0-beta.2`）。
-- **当前契约在 0.1.0 定型**：后续版本如发生变更，以 [CHANGELOG](https://github.com/Co-Kyo/skillnomad/releases) 实际发布为准，本文不预告未发布版本。semver 口径：0.x 阶段 minor 变更即可包含破坏性变更。
+- **当前版本：0.1.0**（首个稳定版，接口已定型），`latest` dist-tag 指向它。
+- 后续变更以 [CHANGELOG](https://github.com/Co-Kyo/skillnomad/releases) 实际发布为准，本文不预告未发布版本。semver 口径：0.x 阶段 minor 变更即可包含破坏性变更。
 - **发布流程**（push tag 即触发 GitHub Actions → OIDC 直发 npm，全程无 token）：
   1. 同步改版本号：`release-manifest.json`（`release` + 4 个包）+ 4 个 `packages/*/package.json` 的 `version`
   2. `git commit -m "chore(release): v<version>"` + `git tag v<version>`
   3. `git push origin main v<version>`
-- **验证**：`npm view skillnomad dist-tags`——`beta` 指向最新预发布、`latest` 留给正式版，即符合预期。
+- **验证**：`npm view skillnomad dist-tags`——`latest` 指向稳定版，即符合预期。
 - 四个包（`skillnomad` / `-types` / `-common` / `-validate`）同版本、同节奏发布。
 
 ## 使用
