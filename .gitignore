@@ -36,3 +36,6 @@ docs/package-lock.json
 # VitePress 临时配置与缓存
 docs/.vitepress/config.ts.timestamp-*.mjs
 docs/.vitepress/cache/
+
+# Agent 本地私有覆盖（不入库）
+agents.local.md
