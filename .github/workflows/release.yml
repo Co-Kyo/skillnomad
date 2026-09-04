@@ -133,15 +133,36 @@ jobs:
             npm pack --workspace "$pkg" --pack-destination dist-release
           done
 
+      - name: Extract release notes from CHANGELOG
+        if: steps.version-gate.outputs.should_release == 'true'
+        run: |
+          set -euo pipefail
+          # 正式版正文从 CHANGELOG 对应版本节提取（按 "## vX.Y.Z" 切段），
+          # beta 沿用自动 notes。单真相源：发版只改 CHANGELOG，不可能再忘同步。
+          # （2026-09-04 教训：v0.1.1 沿用固定 RELEASE_NOTES.md，Release 页正文误贴 v0.1.0）
+          if [[ "$RELEASE_TAG" == *-* ]]; then
+            : > dist-release/NOTES.md
+          else
+            VERSION="${RELEASE_TAG#v}"
+            awk -v ver="## v$VERSION" '
+              $0 ~ /^## v/ { in_sec = ($0 ~ ver) }
+              in_sec { print }
+            ' CHANGELOG.md | awk '/^## v/ && ++c > 1 { exit } { print }' > dist-release/NOTES.md
+            if ! grep -q . dist-release/NOTES.md; then
+              echo "CHANGELOG 缺少 $RELEASE_TAG 对应版本节" >&2
+              exit 1
+            fi
+          fi
+
       - name: Create GitHub Release
         if: steps.version-gate.outputs.should_release == 'true'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.RELEASE_TAG }}
-          # 正式版（无 "-"）给带定位的标题；beta 沿用版本号，Releases 页一眼分清两条线
-          name: ${{ contains(env.RELEASE_TAG, '-') && env.RELEASE_TAG || format('{0} · 首个稳定版（可信度里程碑）', env.RELEASE_TAG) }}
-          # 正式版附定位说明（M1-M5 摘要）；beta 走自动生成 notes
-          body_path: ${{ contains(env.RELEASE_TAG, '-') && '' || '.github/RELEASE_NOTES.md' }}
+          # 标题：beta 沿用版本号；v0.1.0 用首个稳定版定位标题；其余正式版用 plain 版本号
+          name: ${{ contains(env.RELEASE_TAG, '-') && env.RELEASE_TAG || (env.RELEASE_TAG == 'v0.1.0' && format('{0} · 首个稳定版（可信度里程碑）', env.RELEASE_TAG) || env.RELEASE_TAG) }}
+          # 正文：正式版用 CHANGELOG 对应版本节（上一步提取），beta 走自动生成 notes
+          body_path: ${{ contains(env.RELEASE_TAG, '-') && '' || 'dist-release/NOTES.md' }}
           # Prerelease 徽章：beta 标黄 "Pre-release"，正式版无徽章——版本线在 Releases 页第一眼可辨
           prerelease: ${{ contains(env.RELEASE_TAG, '-') }}
           files: |
