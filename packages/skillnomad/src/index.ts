@@ -608,6 +608,56 @@ function renderFileRefs(step: ResolvedStep): string {
   return md;
 }
 
+// ---------------------------------------------------------------
+// 声明字段章节渲染（P1 修复：正文早返分支与完整分支共用）
+//
+// renderStep 有两条路径：带正文早返（:654-657）、无正文完整渲染。
+// 早返前只输出正文/文件引用/调度树/Barrier/运行记录，reuse/plugins/degrade/依赖
+// 四节声明被静默丢失（P1：11/11 带正文步骤全员命中）。以下四函数抽取完整分支
+// 的同段逻辑，两条路径共用，保证声明字段必有渲染。
+// ---------------------------------------------------------------
+
+/** 依赖章节：前置步骤声明渲染 */
+function renderDependsOn(step: ResolvedStep): string {
+  let md = `\n## 依赖\n\n`;
+  md += `前置步骤：${step.dependsOn ? `\`${step.dependsOn}\`` : '无'}\n`;
+  return md;
+}
+
+/** 增量复用章节：reuse 规则存在才输出，否则整段省略 */
+function renderReuse(step: ResolvedStep): string {
+  if (!step.reuse || step.reuse.length === 0) return '';
+  let md = `\n## 增量复用\n\n`;
+  md += `| 检查项 | 条件 | 行为 |\n`;
+  md += `|--------|------|------|\n`;
+  for (const rule of step.reuse) {
+    md += `| ${rule.skipDescription} | \`${rule.checkFile}\` 存在 | 跳过该任务 |\n`;
+  }
+  return md;
+}
+
+/** 降级协议章节：degrade 声明存在才输出，否则整段省略 */
+function renderDegrade(step: ResolvedStep): string {
+  if (!step.degrade) return '';
+  let md = `\n## 降级协议\n\n`;
+  md += `- 最大重试次数：${step.degrade.maxRetries}\n`;
+  md += `- 降级后行为：${step.degrade.onDegrade === 'continue' ? '继续' : '停止'}\n`;
+  if (step.degrade.fallbackTask) {
+    md += `- 降级 Task：\n\`\`\`\n${step.degrade.fallbackTask}\n\`\`\`\n`;
+  }
+  return md;
+}
+
+/** 插件加载章节：plugins 声明存在才输出，否则整段省略 */
+function renderPlugins(step: ResolvedStep): string {
+  if (!step.plugins || step.plugins.length === 0) return '';
+  let md = `\n## 插件加载\n\n`;
+  for (const plugin of step.plugins) {
+    md += `- \`${plugin}\`：条件性加载\n`;
+  }
+  return md;
+}
+
 function renderRuntimeTrace(step: ResolvedStep): string {
   if (!step.runtimeTrace?.enabled) return '';
   const logDir = step.runtimeTrace.logDir;
@@ -653,7 +703,10 @@ export function renderStep(
 
   const stepBody = step.body ?? (step.bodyFile ? withRefs(resolveBodyFile(step.bodyFile)) : '');
   if (stepBody) {
-    return `${withRefs(stepBody)}\n\n---\n\n${renderFileRefs(step)}\n## 调度策略\n\n${renderControlTree(step.graph, 0)}\n${renderBarrier(step)}${renderRuntimeTrace(step)}`;
+    // P1 修复：早返分支追加四节声明渲染（与完整分支共用函数）。
+    // 早返前四节（依赖/增量复用/降级协议/插件加载）被静默丢失，导致
+    // 11/11 带正文步骤的 reuse/plugins 声明在产物中零渲染。
+    return `${withRefs(stepBody)}\n\n---\n\n${renderFileRefs(step)}${renderDependsOn(step)}\n## 调度策略\n\n${renderControlTree(step.graph, 0)}\n${renderReuse(step)}${renderDegrade(step)}${renderBarrier(step)}${renderPlugins(step)}${renderRuntimeTrace(step)}`;
   }
 
   const seqStr = String(step.seq).padStart(2, '0');
@@ -666,44 +719,24 @@ export function renderStep(
   // 文件引用（契约引用 + 读取/产出表，8.5 统一派生渲染）
   md += renderFileRefs(step);
 
-  // Dependencies
-  md += `\n## 依赖\n\n`;
-  md += `前置步骤：${step.dependsOn ? `\`${step.dependsOn}\`` : '无'}\n`;
+  // Dependencies（与早返分支共用 renderDependsOn）
+  md += renderDependsOn(step);
 
   // 调度策略（ControlNode tree）
   md += `\n## 调度策略\n\n`;
   md += renderControlTree(step.graph, 0);
 
-  // Incremental reuse
-  if (step.reuse && step.reuse.length > 0) {
-    md += `\n## 增量复用\n\n`;
-    md += `| 检查项 | 条件 | 行为 |\n`;
-    md += `|--------|------|------|\n`;
-    for (const rule of step.reuse) {
-      md += `| ${rule.skipDescription} | \`${rule.checkFile}\` 存在 | 跳过该任务 |\n`;
-    }
-  }
+  // Incremental reuse（与早返分支共用 renderReuse）
+  md += renderReuse(step);
 
-  // Degrade
-  if (step.degrade) {
-    md += `\n## 降级协议\n\n`;
-    md += `- 最大重试次数：${step.degrade.maxRetries}\n`;
-    md += `- 降级后行为：${step.degrade.onDegrade === 'continue' ? '继续' : '停止'}\n`;
-    if (step.degrade.fallbackTask) {
-      md += `- 降级 Task：\n\`\`\`\n${step.degrade.fallbackTask}\n\`\`\`\n`;
-    }
-  }
+  // Degrade（与早返分支共用 renderDegrade）
+  md += renderDegrade(step);
 
   // Barrier
   md += renderBarrier(step);
 
-  // Plugins
-  if (step.plugins && step.plugins.length > 0) {
-    md += `\n## 插件加载\n\n`;
-    for (const plugin of step.plugins) {
-      md += `- \`${plugin}\`：条件性加载\n`;
-    }
-  }
+  // Plugins（与早返分支共用 renderPlugins）
+  md += renderPlugins(step);
 
   md += renderRuntimeTrace(step);
 
