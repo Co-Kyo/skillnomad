@@ -27,6 +27,7 @@
 - TS monorepo：`packages/skillnomad-types` / `-common` / `skillnomad` / `-validate`，同版同节奏（`release-manifest.json`）；push tag → Actions OIDC 直发 npm。
 - `renderStep` / validate / contract 行为即契约；改渲染、校验、类型就是改契约。
 - `docs/` 为 VitePress 站；`demos/` 最小用例；`release.yml` Version gate 要求 tag / manifest / 每包版本三者一致。
+- `main` 受分支保护：一切变更走分支 + PR，不直推（直推报 GH013 拒收）。
 
 ## 3. 内容→角色映射
 
@@ -57,10 +58,11 @@
 - 最小改动；改前选最小充分验证；不扩大范围；发现相关问题先记录，不擅自顺手改。
 - Windows 路径用 `pathToFileURL`（e45555b 教训）；换行用 `.gitattributes`。
 - T1/T2 把实际命令、输出摘要、改动文件和结论写入回复。
+- 推送分工（2026-09-04 确立）：分支推送 agent 可直接执行（含建分支、提交、push、开 PR）；**云端合入（merge）由用户把关，agent 不点合入**。
 
 ## 7. 用户门（到达必须停下确认）
 
-- 版本 bump、打 tag、push、发布。
+- 版本 bump、打 tag、push（走分支 + PR 合入，不直推 main）、发布。
 - contract / 渲染 / 校验语义变更；0.x breaking 变更。
 - 改变本契约。
 
