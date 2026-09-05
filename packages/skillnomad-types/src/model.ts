@@ -38,6 +38,13 @@ export type FailBehavior =
 export type SourceRefRole = 'contract' | 'schema' | 'rule' | 'method' | 'reference';
 
 export interface SourceRef {
+  /**
+   * 产物路径，允许带 `#fragment` 后缀指向文件内节
+   * （如 `capability-graph.json#capabilities`）。
+   * 框架原样透传，不解析、不校验：拼写责任在消费者，
+   * 建议消费者侧以 schema 正本一致性单测锁定（见专案27）。
+   * fragment 存在性校验待语义稳定后加，本版仅文档化。
+   */
   path?: string;
   /**
    * **概念引用（产物路径投射）**：用实体/模块概念名替代路径字面量，
