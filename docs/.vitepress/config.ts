@@ -20,6 +20,7 @@ export default defineConfig({
         items: [
           { text: '为什么需要 skillnomad', link: '/guide/why' },
           { text: '快速上手', link: '/guide/quickstart' },
+          { text: '转化手册（markdown skill → 管道）', link: '/guide/conversion' },
           { text: '核心契约（公开承诺）', link: '/guide/contract' },
           { text: '顶层引导与反模式', link: '/guide/anti-patterns' },
           {
