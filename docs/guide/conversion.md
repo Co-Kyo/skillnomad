@@ -65,6 +65,14 @@
 - [ ] 产物推远端，`git clone` 可复现。
 - [ ] before/after 对照：原 markdown 与产物 SKILL.md 逐段对照（结构在位：模式/检查点/角色标签…），语义忠实由执行者自检 + 决策者终验。
 
+## 坑位清单（案例二实测补充，2026-09-06）
+
+从工作区源码包直装时的额外坑（npm 正式包无此问题）：
+
+- `skillnomad` / `skillnomad-common` / `skillnomad-types` 三个包的工作区 `package.json` 均缺 `exports`/`main`——放入 `node_modules` 的副本需各补一个最小 `package.json`（`{"main":"dist/index.js"}` 或 types 的 `src/index.ts`），且 `skillnomad-common` 必须在位（主包运行时依赖它）。
+- 用户检查点在**直装配**（`createSkill(对象字面量)`）下不生效——须直接写运行时字段 `barrier: { checkItems, clarifyPrompt, onConfirm, onReject }`；要走 checkpoint→barrier 自动转换需 `createSkillFromModel` 装配路径（两者差异先写死再动手）。
+- 顶层单根链契约下，双模式/条件流程用步骤内 `branch` + `mapNode` 表达（案例二实测：单步骤 + branch 模式选择 + map 并行标注 + barrier 检查点，构建一次通过）。
+
 ## 下一步
 
 - 符号名引用的完整语义 → [模块抽象](concepts/modules)
