@@ -201,6 +201,8 @@ export interface StepDefinition {
   reads: FileRef[];
   writes: FileRef[];
   barrier?: BarrierDef;
+  /** 可选：源侧用户检查点声明。直装配（createSkill）下由框架转换为运行时 barrier（与 createSkillFromModel 行为对齐）。 */
+  checkpoint?: import('./model.js').SourceCheckpoint;
   decisionSummary?: import('./model.js').SourceDecisionSummary;
   display?: import('./model.js').SourceDecisionDisplay;
   reuse?: ReuseRule[];
@@ -265,7 +267,15 @@ export interface SkillDefinition {
 }
 
 export function createSkill(config: SkillDefinition): SkillDefinition {
-  return config;
+  // 双装配路径行为对齐（D29 缺陷2 修复）：直装配下同样把源侧 checkpoint
+  // 转换为运行时 barrier，与 createSkillFromModel 行为一致。
+  // 已有 barrier 时以 barrier 为准（不覆盖）。
+  const steps = config.steps.map(step =>
+    step.barrier || !step.checkpoint
+      ? step
+      : { ...step, barrier: { ...step.checkpoint } },
+  );
+  return { ...config, steps };
 }
 
 // ---------------------------------------------------------------
