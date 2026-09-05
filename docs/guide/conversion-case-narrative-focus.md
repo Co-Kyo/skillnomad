@@ -12,4 +12,4 @@
 | 中间产物（标注表/检测报告/修正记录/二次校验）无契约 | `entities` 4 条声明 + `refOf` 符号名引用，步骤层零路径字面量 |
 | 语义忠实 | 双模式分支/检查点 Barrier/角色标签 A-T-C 全部在位（presence 核验通过） |
 
-执行坑位（5 个，已回写[转化手册](conversion.md)）：工作区直装 3 包 package.json、skillnomad-common 必须在位、checkpoint 直装配不转、barrier 直写字段、branch 形态绕单根链契约。
+
