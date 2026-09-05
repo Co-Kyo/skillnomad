@@ -269,6 +269,13 @@ export interface SourceDecisionDisplay {
 export interface SourceDecisionSummary {
   schema_version?: string;
   stage_id?: string;
+  /**
+   * 示例标记（专案24/P2 decision 硬编码教训）：
+   * 为 true 时 metrics/selection/risks/barrier_summary 均为某次历史运行的
+   * 示例取值，渲染时应标注"示例"字样；运行时填充的真实数据为 false/缺省。
+   * 渲染器暂未消费本字段（待后续版本），消费者侧先以 label"（示例）"字样兜底。
+   */
+  isExample?: boolean;
   gateType: SourceGateType;
   title?: string;
   subtitle?: string;
