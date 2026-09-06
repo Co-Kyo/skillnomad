@@ -6,8 +6,7 @@
 
 ```ts
 interface SourceRef {
-  path?: string;              // 路径字面量（与 ref 二选一，解析后必填）
-  ref?: string;               // 概念引用：领域侧解析为 path 后传入
+  path: string;               // 源产物路径（必填）
   schema?: string;
   required?: boolean;
   dynamic?: boolean;
@@ -17,7 +16,7 @@ interface SourceRef {
 ```
 
 - `as: 'contract'` 的条目在产物中派生渲染「契约引用」章节
-- `ref` 是概念引用声明形态——框架**只承载形态，不做领域模型抽象**，解析归业务顶层
+- 路径解析（如概念名→路径）归用户侧 helper（`refOf` 模式），框架不承载概念引用形态（v0.2.0 起 `ref` 声明形态已清退）
 
 ## SourceContract（模块注册表条目）
 

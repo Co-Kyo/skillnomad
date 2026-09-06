@@ -1,9 +1,9 @@
 {
-  "release": "0.1.1",
+  "release": "0.2.0",
   "packages": {
-    "skillnomad-types": "0.1.1",
-    "skillnomad-common": "0.1.1",
-    "skillnomad": "0.1.1",
-    "skillnomad-validate": "0.1.1"
+    "skillnomad-types": "0.2.0",
+    "skillnomad-common": "0.2.0",
+    "skillnomad": "0.2.0",
+    "skillnomad-validate": "0.2.0"
   }
 }
