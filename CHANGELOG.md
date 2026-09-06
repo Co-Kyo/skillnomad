@@ -1,6 +1,14 @@
 # Changelog
 
-> **注意**：下方 v0.2.0/v0.1.0 为改名（skillpack → skillnomad）时沿用的旧版本史。新线自 **0.1.0-beta.1** 独立起步（orphan 干净根提交），本轮 beta 线追溯如下。
+> **注意**：新线自 **0.1.0-beta.1** 独立起步（orphan 干净根提交，skillpack → skillnomad 改名）；改名前的 skillpack 时期记录已归并在该版本节内。
+
+## v0.1.2（ref 承载形态清退 · D29 缺陷修复版）
+
+- **breaking(types)**：清退 `SourceRef.ref` 概念引用声明形态（删字段与注释块），`SourceRef.path` 转必填——该形态自 beta.9 发布起零真实用例：两次真实转化（sp-skill、narrative-focus port）均自发选择用户侧 `refOf` helper 达成同一不变量「步骤层零路径字面量」，原定验证路径被真实转化绕开而非采用。路径解析归用户侧，框架不承载概念引用形态——「不做领域模型抽象」的边界收得更紧。
+- **refactor(core)**：删除两处「未解析概念引用」运行时 throw 防护（`sourceRef` 与 map over）——`path` 必填后为死代码（实测删除后全量测试仍全绿）；缺失路径由运行时 throw 改为编译期报错。
+- **fix(core)**（随本版发版生效）：工作区三包补 `main`/`exports` 导出；`createSkill` 直装配路径 checkpoint 正确转 barrier（含 3 回归用例）。
+- 升级影响：源码声明 `{ ref: '…' }` 不带 `path` 由运行时 throw 改为编译期报错；两真实转化仓 grep 实测零改动。`docs/api/types.md` 概览已同步；`SourceVerifyRule.ref`（校验清单条目引用）为另一独立字段，不受影响。
+- 回归：typecheck 通过；全量测试 23/23。
 
 ## v0.1.1（P1 缺陷修复版）
 
@@ -88,13 +96,10 @@
 
 - 全新独立起点（干净根提交），4 包改名发布；CLI `skillnomad`、`.skillnomad-state.json`、`SKILLNOMAD_SOURCE_COMMIT`、release.yml OIDC。
 
-## v0.2.0
+**改名前记录（skillpack 时期）**：
 
-- 新增 `{{num:stepId}}` 占位符:渲染为两位补零步骤序号(与 processes 文件名一致);`{{step:stepId}}` 行为不变。
-- 插值盲区补全:bodyFile 内容、任务级 bodyFile、SKILL.md flowOverview 现在也经 `resolveStepRefs` 解析。
-- `renderStep` 新增 `stepOrder` 参数(渲染期可解析任意文本中的步骤引用)。
-- 首批单元测试(node --test,5 项)。
-
-## v0.1.0
-
-- 首次开源发布。
+- （skillpack v0.2.0）新增 `{{num:stepId}}` 占位符:渲染为两位补零步骤序号(与 processes 文件名一致);`{{step:stepId}}` 行为不变。
+- （skillpack v0.2.0）插值盲区补全:bodyFile 内容、任务级 bodyFile、SKILL.md flowOverview 现在也经 `resolveStepRefs` 解析。
+- （skillpack v0.2.0）`renderStep` 新增 `stepOrder` 参数(渲染期可解析任意文本中的步骤引用)。
+- （skillpack v0.2.0）首批单元测试(node --test,5 项)。
+- （skillpack v0.1.0）首次开源发布。

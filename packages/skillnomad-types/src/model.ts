@@ -38,16 +38,11 @@ export type FailBehavior =
 export type SourceRefRole = 'contract' | 'schema' | 'rule' | 'method' | 'reference';
 
 export interface SourceRef {
-  path?: string;
   /**
-   * **概念引用（产物路径投射）**：用实体/模块概念名替代路径字面量，
-   * 构建期由领域侧 resolver 解析为 `path` 填入模型。
-   *
-   * 边界（设计原则）：skillnomad **只承载概念引用形态，不做领域模型抽象**——
-   * 框架不感知概念内部结构；解析逻辑归 sp-skill 业务顶层（`domain/entities.ts`）。
-   * 解析后 `path` 必填（渲染/校验仍以 path 为准），`ref` 仅存在于源码声明层。
+   * 源产物路径（必填）。路径解析（如概念名→路径）归用户侧 helper（`refOf` 模式），
+   * 框架不承载概念引用形态（原 `ref?: string` 声明形态零真实用例，已清退）。
    */
-  ref?: string;
+  path: string;
   schema?: string;
   required?: boolean;
   dynamic?: boolean;

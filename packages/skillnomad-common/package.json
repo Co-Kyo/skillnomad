@@ -1,6 +1,6 @@
 {
   "name": "skillnomad-common",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Validation, topological sorting and graph helpers for skillnomad",
   "keywords": [
     "skillnomad",
