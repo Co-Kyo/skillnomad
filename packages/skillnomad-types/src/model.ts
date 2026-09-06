@@ -285,6 +285,12 @@ export interface SourceDecisionSummary {
   actions?: SourceDecisionAction[];
   barrier_summary?: string;
   display?: SourceDecisionDisplay;
+  /**
+   * **示例标记（单真相源，D33）**：为 true 时本 decision 全块为历史运行示例值，
+   * 非本次运行时填充；渲染层据此加示例区块标注，缺席（undefined/false）即事实，
+   * 产物逐字不变。过渡期消费侧保留的"（示例）"字样为降级兼容，非第二语义源。
+   */
+  isExample?: boolean;
 }
 
 export interface SourceReuseRule {

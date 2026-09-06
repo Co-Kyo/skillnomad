@@ -2,6 +2,13 @@
 
 > **注意**：新线自 **0.1.0-beta.1** 独立起步（orphan 干净根提交，skillpack → skillnomad 改名）；改名前的 skillpack 时期记录已归并在该版本节内。
 
+## v0.1.3（decision 示例分隔符 · D33）
+
+- **feat(types)**：`SourceDecisionSummary` 加 `isExample?: boolean`（语义单真相源：为 true 时全块为历史运行示例值，非本次运行时填充；缺席即事实）——few-shot 示例分隔符的机器可读边界（D33 P24 升格专案）。
+- **feat(render)**：decision 渲染加示例分支（md `renderBarrier`：示例区块标注——题注＋metrics/selection `（示例）` 后缀＋barrier_summary `【示例】` 前缀；缺席逐字不变）＋ `decision-summary.json` manifest 透传（缺席键省略）。
+- 回归：typecheck 通过；全量测试 25/25（含新增 `decision-example.test.mjs` 双测：分支含标注＋缺席快照逐字一致）。
+- 升级影响：可选字段，缺席逐字不变；存量"（示例）"字样保留作降级兼容。
+
 ## v0.1.2（ref 承载形态清退 · D29 缺陷修复版）
 
 - **breaking(types)**：清退 `SourceRef.ref` 概念引用声明形态（删字段与注释块），`SourceRef.path` 转必填——该形态自 beta.9 发布起零真实用例：两次真实转化（sp-skill、narrative-focus port）均自发选择用户侧 `refOf` helper 达成同一不变量「步骤层零路径字面量」，原定验证路径被真实转化绕开而非采用。路径解析归用户侧，框架不承载概念引用形态——「不做领域模型抽象」的边界收得更紧。
