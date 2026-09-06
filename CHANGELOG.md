@@ -1,6 +1,6 @@
 # Changelog
 
-> **注意**：本文件末尾 `## v0.2.0`/`## v0.1.0`（标题标注「skillpack 时代旧版史」）为改名（skillpack → skillnomad）时沿用的历史节，版本号与新线重合属历史巧合；新线自 **0.1.0-beta.1** 独立起步（orphan 干净根提交）。
+> **注意**：新线自 **0.1.0-beta.1** 独立起步（orphan 干净根提交，skillpack → skillnomad 改名）；改名前的 skillpack 时期记录已归并在该版本节内。
 
 ## v0.1.2（ref 承载形态清退 · D29 缺陷修复版）
 
@@ -96,13 +96,10 @@
 
 - 全新独立起点（干净根提交），4 包改名发布；CLI `skillnomad`、`.skillnomad-state.json`、`SKILLNOMAD_SOURCE_COMMIT`、release.yml OIDC。
 
-## v0.2.0（skillpack 时代旧版史 · 改名沿用）
+**改名前记录（skillpack 时期）**：
 
-- 新增 `{{num:stepId}}` 占位符:渲染为两位补零步骤序号(与 processes 文件名一致);`{{step:stepId}}` 行为不变。
-- 插值盲区补全:bodyFile 内容、任务级 bodyFile、SKILL.md flowOverview 现在也经 `resolveStepRefs` 解析。
-- `renderStep` 新增 `stepOrder` 参数(渲染期可解析任意文本中的步骤引用)。
-- 首批单元测试(node --test,5 项)。
-
-## v0.1.0（skillpack 时代旧版史 · 改名沿用）
-
-- 首次开源发布。
+- （skillpack v0.2.0）新增 `{{num:stepId}}` 占位符:渲染为两位补零步骤序号(与 processes 文件名一致);`{{step:stepId}}` 行为不变。
+- （skillpack v0.2.0）插值盲区补全:bodyFile 内容、任务级 bodyFile、SKILL.md flowOverview 现在也经 `resolveStepRefs` 解析。
+- （skillpack v0.2.0）`renderStep` 新增 `stepOrder` 参数(渲染期可解析任意文本中的步骤引用)。
+- （skillpack v0.2.0）首批单元测试(node --test,5 项)。
+- （skillpack v0.1.0）首次开源发布。
