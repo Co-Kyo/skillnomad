@@ -8,7 +8,7 @@
   "scripts": {
     "build": "tsc -b",
     "typecheck": "tsc -b --emitDeclarationOnly",
-    "test": "node --test packages/skillnomad/test/steprefs.test.mjs packages/skillnomad/test/scheduling-policy.test.mjs packages/skillnomad/test/module-usage.test.mjs packages/skillnomad/test/renderstep-p1.test.mjs packages/skillnomad/test/checkpoint-conversion.test.mjs",
+    "test": "node --test packages/skillnomad/test/steprefs.test.mjs packages/skillnomad/test/scheduling-policy.test.mjs packages/skillnomad/test/module-usage.test.mjs packages/skillnomad/test/renderstep-p1.test.mjs packages/skillnomad/test/checkpoint-conversion.test.mjs packages/skillnomad/test/decision-example.test.mjs",
     "clean": "rm -rf packages/*/dist packages/*/tsconfig.tsbuildinfo dist",
     "demo": "npm run start --workspace=skillnomad-demo"
   },

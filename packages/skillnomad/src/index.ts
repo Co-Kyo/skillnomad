@@ -560,15 +560,24 @@ function renderBarrier(step: ResolvedStep): string {
   md += `| 拒绝 | ${step.barrier.onReject} |\n`;
   const decision = step.decisionSummary;
   if (decision) {
+    // 语义见 `SourceDecisionSummary.isExample`（单真相源，D33）：严格 === true 才进示例分支。
+    const ex = decision.isExample === true;
     md += `\n### Decision Summary\n\n`;
+    if (ex) md += `> 示例值——以下为历史运行示例，非本次运行时数据。\n\n`;
     md += `- gate_type: \`${decision.gateType}\`\n`;
     if (decision.confirm) md += `- confirm: ${decision.confirm}\n`;
     if (decision.metrics && decision.metrics.length > 0) {
-      md += `- metrics: ${decision.metrics.map(metric => `${metric.label}=${metric.value}`).join('; ')}\n`;
+      md += ex
+        ? `- metrics（示例）: ${decision.metrics.map(metric => `${metric.label}=${metric.value}`).join('; ')}\n`
+        : `- metrics: ${decision.metrics.map(metric => `${metric.label}=${metric.value}`).join('; ')}\n`;
     }
-    if (decision.selection) md += `- selection: ${decision.selection.summary}\n`;
+    if (decision.selection) md += ex
+      ? `- selection（示例）: ${decision.selection.summary}\n`
+      : `- selection: ${decision.selection.summary}\n`;
     if (decision.execution) md += `- execution: ${decision.execution.current} -> ${decision.execution.next}\n`;
-    if (decision.barrier_summary) md += `\n> ${decision.barrier_summary}\n`;
+    if (decision.barrier_summary) md += ex
+      ? `\n> 【示例】${decision.barrier_summary}\n`
+      : `\n> ${decision.barrier_summary}\n`;
   }
   return md;
 }
@@ -1192,6 +1201,8 @@ function writeDecisionSummaryManifest(pipeline: ResolvedPipeline, outputDir: str
         actions: decision?.actions,
         barrier_summary: decision?.barrier_summary ?? '',
         display: decision?.display ?? step.display,
+        // D33：示例标记透传（缺席时键省略；`schema_version` 硬编码本次不动，独立契约 schema 无代码关联）。
+        ...(decision?.isExample === true ? { isExample: true } : {}),
       };
     }),
   };

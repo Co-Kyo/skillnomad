@@ -1,6 +1,6 @@
 {
   "name": "skillnomad-types",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Type system and builder primitives for skillnomad",
   "keywords": [
     "skillnomad",
