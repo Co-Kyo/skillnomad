@@ -16,7 +16,7 @@ interface SourceRef {
 ```
 
 - `as: 'contract'` 的条目在产物中派生渲染「契约引用」章节
-- 路径解析（如概念名→路径）归用户侧 helper（`refOf` 模式），框架不承载概念引用形态（v0.2.0 起 `ref` 声明形态已清退）
+- 路径解析（如概念名→路径）归用户侧 helper（`refOf` 模式），框架不承载概念引用形态（`ref` 声明形态已清退）
 
 ## SourceContract（模块注册表条目）
 

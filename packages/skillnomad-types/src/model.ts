@@ -40,7 +40,7 @@ export type SourceRefRole = 'contract' | 'schema' | 'rule' | 'method' | 'referen
 export interface SourceRef {
   /**
    * 源产物路径（必填）。路径解析（如概念名→路径）归用户侧 helper（`refOf` 模式），
-   * 框架不承载概念引用形态（v0.2.0 清退原 `ref?: string` 声明形态，零真实用例）。
+   * 框架不承载概念引用形态（原 `ref?: string` 声明形态零真实用例，已清退）。
    */
   path: string;
   schema?: string;
