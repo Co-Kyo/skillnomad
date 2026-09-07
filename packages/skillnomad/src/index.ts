@@ -690,6 +690,28 @@ function renderRuntimeTrace(step: ResolvedStep): string {
   return md;
 }
 
+/**
+ * **模块附录节（D35 W3 · 构成渲染）**：按 registry 中 `module` 有值条目，
+ * 查 `contents[moduleId]` 拼装（D34 附录版式为参照：标注＋来源；不复用 SourceInline 语义——
+ * 路径内联 vs 构成渲染两码事）。缺席（无模块条目或查表无内容）整段省略；
+ * 早返＋完整双路径共用（P1 同构）。
+ */
+export function renderModulesAppendix(
+  registry: import('skillnomad-types').SourceContract[] = [],
+  contents: Record<string, string> = {},
+): string {
+  const mods = registry.filter((c) => c.module);
+  if (mods.length === 0) return '';
+  const bodies = mods
+    .filter((c) => contents[c.module as string])
+    .map((c) => `### 模块：\`${c.module}\`（${c.id}）\n\n> 来源：模块 \`${c.module}\`［构建时渲染，版本随产物 manifest 锁定］\n\n${contents[c.module as string]}\n\n<!-- module:${c.module} -->`);
+  if (bodies.length === 0) return '';
+  let md = `\n## 模块附录\n\n`;
+  md += `> 本节由构建期模块渲染生成（D35）；引用表模块条目此处为执行用正本。\n\n`;
+  md += bodies.join('\n') + '\n';
+  return md;
+}
+
 // ---------------------------------------------------------------
 // Full step render
 // ---------------------------------------------------------------

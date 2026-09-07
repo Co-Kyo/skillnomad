@@ -30,3 +30,20 @@ test('defineModule 原样返回（装配入口与 step 并列）', () => {
   const m = { id: 'scheduling-policy', kind: 'data', render: () => 'W=5' };
   assert.deepEqual(defineModule(m), m);
 });
+
+test('W3 正例：模块附录缺席整段省略', async () => {
+  const { renderModulesAppendix } = await import('../dist/index.js');
+  assert.equal(renderModulesAppendix([], {}), '');
+  assert.equal(renderModulesAppendix([{ id: 'x', kind: 'data', path: 'p', description: '', scope: 'skill' }], {}), '');
+});
+
+test('W3 正例：模块附录查表拼装', async () => {
+  const { renderModulesAppendix } = await import('../dist/index.js');
+  const md = renderModulesAppendix(
+    [{ id: 'sched', kind: 'data', path: 'p', description: '', scope: 'skill', module: 'scheduling-policy' }],
+    { 'scheduling-policy': 'W=5' },
+  );
+  assert.match(md, /^## 模块附录$/m);
+  assert.ok(md.includes('W=5'));
+  assert.ok(md.includes('<!-- module:scheduling-policy -->'));
+});

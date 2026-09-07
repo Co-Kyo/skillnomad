@@ -164,7 +164,7 @@ export interface SourceTraceEntry {
   section: string;
   sourceField: string;
   sourceFile: string;
-  sourceLayer?: 'steps' | 'contracts' | 'assets' | 'plugins' | 'renderer';
+  sourceLayer?: 'steps' | 'contracts' | 'assets' | 'plugins' | 'renderer' | 'modules';
   sourceKind?: 'content' | 'schema' | 'path' | 'rule' | 'render';
 }
 
