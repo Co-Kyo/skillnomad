@@ -63,6 +63,11 @@ import {
   validateSchedulingPolicy,
   validateModuleUsage,
   validateModules,
+  // D35 W4 首刀转口（3 值）：消费实例只用 SCHEDULING/renderBinding/renderModuleDoc；
+  // 其余动词组合子走 skillnomad-common 直引（8.17 单源口径守住，转口膨胀可控）。
+  SCHEDULING,
+  renderBinding,
+  renderModuleDoc,
   resolveChain,
   deriveChainNext,
   deriveInitStepId,
@@ -84,6 +89,10 @@ export {
   validatePhaseCoverage,
   validateModuleUsage,
   validateModules,
+  // D35 W4 首刀转口（3 值，同上）。
+  SCHEDULING,
+  renderBinding,
+  renderModuleDoc,
   resolveChain,
   deriveChainNext,
   deriveInitStepId,
