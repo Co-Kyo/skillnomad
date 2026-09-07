@@ -86,3 +86,21 @@ test('W4 渲染：renderModuleDoc 全节由函数派生', async () => {
   assert.match(md, /^## 调度策略/m);
   assert.ok(md.includes('批量并行') && md.includes('滚动窗口') && md.includes('拓扑分批'));
 });
+
+test('W4 解耦：调度模块代码零业务引用（无状态原子化）', async () => {
+  // 门禁语义留调度，校验内容参数化：模块代码不得出现业务字面量
+  // （dimension/capability_id/overview 归各业务 step 的 verify.field；JSON 解析由调用方传谓词）。
+  const { readFileSync } = await import('node:fs');
+  const src = readFileSync(new URL('../../skillnomad-common/src/scheduling.ts', import.meta.url), 'utf-8');
+  const code = src.split('\n').filter((l) => {
+    const t = l.trim();
+    return t && !t.startsWith('//') && !t.startsWith('*') && !t.startsWith('/*');
+  }).join('\n');
+  for (const w of ['dimension', 'capability_id', 'overview', 'json.load', 'JSON.parse', 'expected_file']) {
+    assert.ok(!code.includes(w), `调度模块代码含业务引用: ${w}`);
+  }
+  // id 槽位名保留（existence/json/fields），行为已参数化（when 串写明调用方传入）。
+  const s = await import('../../skillnomad-common/dist/scheduling.js');
+  assert.deepEqual(s.PROACTIVE_CHECK_IDS, ['existence', 'json', 'fields']);
+  assert.ok(s.proactiveChecks().every((c) => c.onFail === 'pending-retry'));
+});

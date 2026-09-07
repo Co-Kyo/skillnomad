@@ -41,7 +41,7 @@ export const RETRY_DEFAULT = {
 export const STEP_MODES = ['batch_parallel', 'rolling_window', 'topo_batch'] as const;
 export type StepMode = (typeof STEP_MODES)[number];
 
-/** 即时校验三步 id（存在性 → JSON 合法 → 关键字段）。 */
+/** 即时校验三槽位 id（门禁语义：完成事件到达后立刻触发，不等同批）。 */
 export const PROACTIVE_CHECK_IDS = ['existence', 'json', 'fields'] as const;
 export type ProactiveCheckId = (typeof PROACTIVE_CHECK_IDS)[number];
 
@@ -105,12 +105,15 @@ export function isCompleted(existingFiles: string[], expectedFiles: string[]): b
   return expectedFiles.every((f) => existingFiles.includes(f));
 }
 
-/** 即时校验三步（数据形态）：存在性 → JSON 合法 → 关键字段；任一步失败即 pending-retry。 */
-export function proactiveChecks(): { id: ProactiveCheckId; what: string; onFail: 'pending-retry' }[] {
+/** 即时校验门禁语义（三槽位）：完成事件到达后立刻触发，不等同批；任一槽位失败即 pending-retry。
+ * 无状态：只定"何时查、失败怎么办"，不定"查什么"——查什么由调用方以谓词传入：
+ * existence 配 isCompleted（文件谓词，通用）；json 与 fields 的查什么由调用方以谓词/字段表传入，
+ * 默认跳过（调度模块不认识任何产物格式与业务字段名）。 */
+export function proactiveChecks(): { id: ProactiveCheckId; when: string; onFail: 'pending-retry' }[] {
   return [
-    { id: 'existence', what: 'expected_file 是否存在于磁盘', onFail: 'pending-retry' },
-    { id: 'json', what: 'JSON 产物 json.load 是否报错（仅 JSON 产物）', onFail: 'pending-retry' },
-    { id: 'fields', what: '关键字段是否齐全（按产物类型匹配）', onFail: 'pending-retry' },
+    { id: 'existence', when: '完成事件到达后立刻', onFail: 'pending-retry' },
+    { id: 'json', when: '完成事件到达后立刻（仅调用方声明的产物）', onFail: 'pending-retry' },
+    { id: 'fields', when: '完成事件到达后立刻（按调用方传入的字段表匹配）', onFail: 'pending-retry' },
   ];
 }
 
@@ -223,7 +226,7 @@ export function renderMode(
   const limitW = opts.limitW ?? SCHEDULING.concurrencyLimit;
   const slots = opts.slotOccupancy ?? SCHEDULING.batchPolicy.slotOccupancy;
   if (mode === 'batch_parallel') {
-    return `批量并行（W=${limitW}）：无依赖任务一次性启动一批；验证 expected_files 标记 completed/failed；${retryPolicy().maxRetries} 次重试，仍失败标 degraded 不阻塞。`;
+    return `批量并行（W=${limitW}）：无依赖任务一次性启动一批；验证产出标记 completed/failed；${retryPolicy().maxRetries} 次重试，仍失败标 degraded 不阻塞。`;
   }
   if (mode === 'rolling_window') {
     return `滚动窗口（W=${limitW}）：首发前 ${windowWidth(limitW, limitW)} 个（${slotsFor(1, slots)} 槽/任务）；完成一个补一个；跳过产出已存在；${retryPolicy().maxRetries} 次重试。`;
@@ -255,7 +258,7 @@ export function renderModuleDoc(policy?: SourceSchedulingPolicy): string {
     batchPolicy: { ...SCHEDULING.batchPolicy },
   };
   const checks = proactiveChecks()
-    .map((c) => `- ${c.id}：${c.what} → ${c.onFail}`)
+    .map((c) => `- ${c.id}：${c.when} → ${c.onFail}`)
     .join('\n');
   return `## 调度策略（模块渲染正本，D35 首刀）\n\n${renderPolicy(p)}\n### 批量并行\n\n${renderMode('batch_parallel')}\n\n### 滚动窗口\n\n${renderMode('rolling_window')}\n\n### 拓扑分批\n\n${renderMode('topo_batch')}\n\n### 即时校验\n\n${checks}\n`;
 }
