@@ -400,6 +400,11 @@ export interface SourceContract {
   scope: 'skill' | 'step';
   /** step 级模块的归属步骤（scope:'step' 时必填，须与步骤 id 对应） */
   step?: string;
+  /**
+   * **模块引用（D35 W2 · 路径→id 过渡期双轨）**：指向 `SourceModule.id`。
+   * 缺席即今日路径形态；存在则 V4 先认 id（未登记即红），路径校验（V1/V2）保留。
+   */
+  module?: string;
 }
 
 export interface SourceRuntimeTrace {

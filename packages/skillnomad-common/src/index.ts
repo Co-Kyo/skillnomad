@@ -782,6 +782,46 @@ export function validateModuleUsage(
   return errors;
 }
 
+/**
+ * **V4 · 模块注册表合法性（D35 W2）**：`SourceModule[]` 自身合法。
+ * 不碰 `validateModuleUsage(steps, registry)` 签名；引用一致性（reads 按 module 查）随 W4 首刀来。
+ * - V4a：module id 唯一（重复 id 即红；R2 F-4 无 deps 降级位）；
+ * - V4b：deps 环即红（DFS；无 deps 即无边，不报错）。
+ */
+export function validateModules(modules: import('skillnomad-types').SourceModule[] = []): ValidationError[] {
+  const errors: ValidationError[] = [];
+  const seen = new Set<string>();
+  for (const m of modules) {
+    if (seen.has(m.id)) {
+      errors.push({ stepId: '(modules)', field: 'module', message: `模块 id 重复：${m.id}（D35 V4a）` });
+    }
+    seen.add(m.id);
+  }
+  const adj = new Map(modules.map((m) => [m.id, (m.deps ?? []).filter((d) => m.id !== d)]));
+  const WHITE = 0, GRAY = 1, BLACK = 2;
+  const color = new Map([...adj.keys()].map((k) => [k, WHITE]));
+  const stack: string[] = [];
+  const visit = (u: string): boolean => {
+    color.set(u, GRAY);
+    stack.push(u);
+    for (const v of adj.get(u) ?? []) {
+      if (!adj.has(v)) continue;
+      if (color.get(v) === GRAY) return true;
+      if (color.get(v) === WHITE && visit(v)) return true;
+    }
+    stack.pop();
+    color.set(u, BLACK);
+    return false;
+  };
+  for (const u of adj.keys()) {
+    if (color.get(u) === WHITE && visit(u)) {
+      errors.push({ stepId: '(modules)', field: 'module', message: `模块依赖环：${[...stack, u].join(' → ')}（D35 V4b）` });
+      break;
+    }
+  }
+  return errors;
+}
+
 // ---------------------------------------------------------------
 // Dependency resolver (topological sort)
 // ---------------------------------------------------------------
