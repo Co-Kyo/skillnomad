@@ -47,3 +47,42 @@ test('W3 正例：模块附录查表拼装', async () => {
   assert.ok(md.includes('W=5'));
   assert.ok(md.includes('<!-- module:scheduling-policy -->'));
 });
+
+test('W4 动词：windowWidth/slotsFor/batchesFor 计算与配错即红', async () => {
+  const s = await import('../../skillnomad-common/dist/scheduling.js');
+  assert.equal(s.windowWidth(10, 5), 5);
+  assert.equal(s.windowWidth(3, 5), 3);
+  assert.equal(s.windowWidth(0, 5), 0);
+  assert.throws(() => s.windowWidth(10, 0), /正整数/);
+  assert.equal(s.slotsFor(1, 2), 2);
+  assert.equal(s.batchesFor(7, 5), 2);
+  assert.equal(s.batchesFor(0, 5), 0);
+});
+
+test('W4 动词：labelFor 缺变量即红', async () => {
+  const s = await import('../../skillnomad-common/dist/scheduling.js');
+  assert.equal(s.labelFor('search-{batch_id}', { batch_id: 'B1' }), 'search-B1');
+  assert.throws(() => s.labelFor('search-{batch_id}', {}), /缺变量/);
+});
+
+test('W4 组合子：rollingWindow 首发＋排队＋占2槽', async () => {
+  const s = await import('../../skillnomad-common/dist/scheduling.js');
+  assert.deepEqual(s.rollingWindow(['a', 'b', 'c', 'd', 'e', 'f', 'g'], 5).start, ['a', 'b', 'c', 'd', 'e']);
+  assert.deepEqual(s.rollingWindow(['p1', 'p2', 'p3'], 5, 2).start, ['p1', 'p2']);
+  assert.deepEqual(s.batchParallel(['a', 'b', 'c', 'd', 'e', 'f', 'g'], 5).batches, [['a', 'b', 'c', 'd', 'e'], ['f', 'g']]);
+});
+
+test('W4 渲染：renderBinding(scan) 单节可写文档', async () => {
+  const s = await import('../../skillnomad-common/dist/scheduling.js');
+  const md = s.renderBinding({ stepId: 'scan', mode: 'rolling_window', taskGroup: '1 个命题批次 = 1 个 agent' });
+  assert.match(md, /^### scan（滚动窗口）$/m);
+  assert.ok(md.includes('1 个命题批次'));
+  assert.ok(!md.includes('，1 槽/任务，1 槽/任务'));
+});
+
+test('W4 渲染：renderModuleDoc 全节由函数派生', async () => {
+  const s = await import('../../skillnomad-common/dist/scheduling.js');
+  const md = s.renderModuleDoc();
+  assert.match(md, /^## 调度策略/m);
+  assert.ok(md.includes('批量并行') && md.includes('滚动窗口') && md.includes('拓扑分批'));
+});
