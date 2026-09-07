@@ -37,6 +37,27 @@ export type FailBehavior =
 
 export type SourceRefRole = 'contract' | 'schema' | 'rule' | 'method' | 'reference';
 
+/**
+ * **模块种类（D35 W1 · 首刀调度）**：于 `step()` 并列的构成原子分类。
+ * 首刀只用 `'action'`（调度三动作）＋ `'data'`（策略口径）；其余三类占位，后补。
+ */
+export type SourceModuleKind = 'schema' | 'method' | 'rule' | 'data' | 'action';
+
+/**
+ * **模块声明（D35 W1 · 一等公民）**：Skill 构成原子（与 `step()` 并列）。
+ * 类型只定形状（R2 F-1）：`render` 签名注记，实现在消费侧模块对象；
+ * 装配（`defineModule()`）做运行时注册表（`Map<id, ModuleDef>`）。
+ */
+export interface SourceModule {
+  id: string;
+  kind: SourceModuleKind;
+  version?: string;
+  /** 依赖的模块 id（无则空；环校验载体，无 deps 降级重复 id 红，R2 F-4） */
+  deps?: string[];
+  /** 渲染 Markdown 片段（实现侧提供；类型侧只注记签名） */
+  render: () => string;
+}
+
 export interface SourceRef {
   /**
    * 源产物路径（必填）。路径解析（如概念名→路径）归用户侧 helper（`refOf` 模式），

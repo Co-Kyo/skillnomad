@@ -1,4 +1,5 @@
 import type {
+  SourceModule,
   SourceAction,
   SourceCheckpoint,
   SourceDegrade,
@@ -367,4 +368,12 @@ class StepBuilderImpl implements StepBuilder {
     }
     return this.step;
   }
+}
+
+/**
+ * **模块装配入口（D35 W1 · 与 `step()` 并列的一等公民）**：对象参数（R2 F-2 推荐），
+ * 注册表形态（`Map<id, ModuleDef>`）由消费侧持有（框架只定形状，不管实例）。
+ */
+export function defineModule(module: SourceModule): SourceModule {
+  return module;
 }
