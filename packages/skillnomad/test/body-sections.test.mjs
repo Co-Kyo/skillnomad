@@ -31,3 +31,12 @@ test('B1 反例：含搜法缺参照即红', () => {
   assert.equal(errs.length, 1);
   assert.match(errs[0].message, /缺"参照/);
 });
+
+test('B1-R1 检测/标注/修正触发判据参照（narrative-focus首验）', () => {
+  const good = '你是审稿人。\n\n检测：\n1. 提取概念\n\n判据：✅/❌对齐\n\n参照替代测试与粒度指南';
+  assert.deepEqual(validateBodySections([step('s', [good])]), []);
+  const noGate = '你是审稿人。检测概念并标注角色，修正权重。';
+  assert.equal(validateBodySections([step('s', [noGate])]).length, 2);
+  const nf = '概念提取 → 替代测试定角色 → 输出检测报告（✅/❌）→ ⚠️用户检查点确认后修正 → 二次校验对照官方文档';
+  assert.equal(validateBodySections([step('s', [nf])]).length, 2);
+});

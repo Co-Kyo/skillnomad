@@ -784,29 +784,30 @@ export function validateModuleUsage(
 }
 
 /**
- * **B1 · body 三段分块（联调薄校验）**：含"搜法"贴片的 task body 须三段齐。
+ * **B1 · body 三段分块（联调薄校验；D40-R1 扩动作通用）**：含动作词的 task body 须三段齐。
  * 只认结构标记，不认散文内容（散文归 mdlego，不管对错）：
- * 含"搜法"即须含"判据："与"参照"字样；缺一即红。不含"搜法"的 body 直接放行。
+ * 含"搜法／检测／标注／修正"任一即须含"判据："与"参照"字样；缺一即红。旧"搜法"逻辑不变（子集）。
  * 定位：mdlego 供砖（文字形状），本校验只供钩子（分块齐不齐），两仓独立。
  */
+const B1_ACTION_WORDS = ['搜法', '检测', '标注', '修正'] as const;
 export function validateBodySections(steps: StepDefinition[]): ValidationError[] {
   const errors: ValidationError[] = [];
   for (const step of steps) {
     if (!step.graph) continue;
     for (const t of collectTasks(step.graph)) {
-      if (!t.body || !t.body.includes('搜法')) continue;
+      if (!t.body || !B1_ACTION_WORDS.some((w) => t.body.includes(w))) continue;
       if (!t.body.includes('判据：')) {
         errors.push({
           stepId: step.id,
           field: `graph.task.${t.id}.body`,
-          message: `task ${t.id} 含搜法贴片但缺"判据："段（body 三段：做什么／搜法／判据＋参照）`,
+          message: `task ${t.id} 含动作词但缺"判据："段（body 三段：做什么／动作／判据＋参照）`,
         });
       }
       if (!t.body.includes('参照')) {
         errors.push({
           stepId: step.id,
           field: `graph.task.${t.id}.body`,
-          message: `task ${t.id} 含搜法贴片但缺"参照"段（body 三段：做什么／搜法／判据＋参照）`,
+          message: `task ${t.id} 含动作词但缺"参照"段（body 三段：做什么／动作／判据＋参照）`,
         });
       }
     }
