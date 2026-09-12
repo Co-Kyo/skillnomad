@@ -20,6 +20,7 @@
     { "path": "packages/skillnomad-types" },
     { "path": "packages/skillnomad-common" },
     { "path": "packages/skillnomad-validate" },
-    { "path": "packages/skillnomad" }
+    { "path": "packages/skillnomad" },
+    { "path": "packages/md-deps" }
   ]
 }

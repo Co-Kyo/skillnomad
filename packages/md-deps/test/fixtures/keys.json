@@ -1,0 +1,7 @@
+{
+  "entries": [
+    { "name": "alpha", "path": "docs/a.md", "site": "keys.json:3" },
+    { "name": "beta", "path": "docs/b.md", "site": "keys.json:4" },
+    { "name": "payload", "path": "docs/data.json", "site": "keys.json:5" }
+  ]
+}
