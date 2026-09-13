@@ -13,7 +13,7 @@ import { validate } from '../dist/index.js';
 const here = dirname(fileURLToPath(import.meta.url));
 const pkgRoot = join(here, '..');
 const fixtures = join(here, 'fixtures-docs');
-const bin = join(pkgRoot, 'bin', 'md-deps.mjs');
+const bin = join(pkgRoot, 'bin', 'markrefs.mjs');
 
 const readJson = (file) => JSON.parse(readFileSync(join(fixtures, file), 'utf8'));
 const io = { exists: (path) => existsSync(join(fixtures, path)) };

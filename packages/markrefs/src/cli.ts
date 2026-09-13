@@ -1,6 +1,6 @@
 // ============================================================
-// md-deps CLI — check
-// 用法：md-deps check --keys keys.json --refs refs.json [--strict] [--format text|json]
+// markrefs CLI — check
+// 用法：markrefs check --keys keys.json --refs refs.json [--strict] [--format text|json]
 // 退出码：0＝无 error（strict 下无 warn）；1＝有 error（strict 下含 warn）；2＝用法/输入错误。
 // ============================================================
 
@@ -8,10 +8,10 @@ import { existsSync, readFileSync } from 'node:fs';
 import { isBlocking, validate, type Diagnostic, type KeyMap, type RefDecl } from './index.js';
 
 const USAGE =
-    'usage: md-deps check --keys <keys.json> --refs <refs.json> [--strict] [--format text|json]';
+    'usage: markrefs check --keys <keys.json> --refs <refs.json> [--strict] [--format text|json]';
 
 function fail(message: string): number {
-    process.stderr.write(`md-deps: ${message}\n${USAGE}\n`);
+    process.stderr.write(`markrefs: ${message}\n${USAGE}\n`);
     return 2;
 }
 

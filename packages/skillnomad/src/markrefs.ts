@@ -1,7 +1,7 @@
 // ============================================================
-// md-deps 集成（宿主侧适配层）
+// markrefs 集成（宿主侧适配层）
 // ------------------------------------------------------------
-// 框架把两样数据交给 md-deps：消费侧声明的键表（keys）与登记出来的引用（refs）；
+// 框架把两样数据交给 markrefs：消费侧声明的键表（keys）与登记出来的引用（refs）；
 // 构建期跑解析与校验，诊断并入构建失败汇总。
 // 本文件不认识业务概念：名字与 scope 是不透明字符串，位置只以 file[:line[:col]] 表达。
 // ============================================================
@@ -19,7 +19,7 @@ import {
     type Io,
     type KeyMap,
     type RefDecl,
-} from 'md-deps';
+} from 'markrefs';
 
 const MODULE_DIR = dirname(fileURLToPath(import.meta.url));
 /**
@@ -33,7 +33,7 @@ const PLACEHOLDER = /[{}*]/;
 
 const isPlaceholder = (path: string): boolean => PLACEHOLDER.test(path);
 
-export interface MdDepsRefOptions {
+export interface RefOptions {
     /** '#' 后片段（只透传，不解释语义） */
     fragment?: string;
     /** 显式位置 file:line；缺省由调用栈取 */
@@ -49,30 +49,30 @@ export interface MdRefRecord {
     fragment?: string;
 }
 
-export interface MdDepsRefs {
+export interface Refs {
     /** 登记一条"名字→路径"引用（名字供解析，本地路径只用于一致性核对与渲染）。 */
-    ref(name: string, localPath: string, options?: MdDepsRefOptions): void;
+    ref(name: string, localPath: string, options?: RefOptions): void;
     /** 登记一条直接路径引用（不查表）。 */
-    refPath(path: string, options?: MdDepsRefOptions): void;
+    refPath(path: string, options?: RefOptions): void;
     /** 快照（按 site|name|path|localPath|fragment 去重，顺序即登记顺序）。 */
     snapshot(): MdRefRecord[];
     /** 清空（测试用）。 */
     clear(): void;
 }
 
-export interface MdDepsRefsOptions {
+export interface RefsOptions {
     /** 包装层数：默认 1（消费侧 helper 包一层，site 取 helper 的调用点）。0＝登记点即调用点。 */
     siteDepth?: number;
 }
 
-export interface MdDepsConfig {
+export interface MarkrefsConfig {
     keys: KeyMap;
-    refs: MdDepsRefs;
+    refs: Refs;
     /** 严格模式：warn 也计入失败。 */
     strict?: boolean;
 }
 
-export interface MdDepsCounts {
+export interface RefsCounts {
     /** 登记条数 */
     total: number;
     /** 构建期判过存在性的引用数 */
@@ -81,17 +81,17 @@ export interface MdDepsCounts {
     skipped: number;
 }
 
-export interface MdDepsReport {
-    /** md-deps 诊断（未过滤级别） */
+export interface RefsReport {
+    /** markrefs 诊断（未过滤级别） */
     diagnostics: Diagnostic[];
     /** 按其级别＋strict 判定为阻断的诊断 */
     blocking: Diagnostic[];
     /** 宿主级问题（名字与本地路径漂移、键表声明了却没有引用等）——一律阻断 */
     problems: string[];
-    counts: MdDepsCounts;
+    counts: RefsCounts;
 }
 
-export function createMdRefs(options: MdDepsRefsOptions = {}): MdDepsRefs {
+export function createRefs(options: RefsOptions = {}): Refs {
     const siteDepth = options.siteDepth ?? 1;
     const records: MdRefRecord[] = [];
     const seen = new Set<string>();
@@ -161,13 +161,13 @@ function toFilePath(file: string): string {
 }
 
 /**
- * 跑一遍 md-deps 校验：键表类 + 引用类诊断 + 宿主级问题 + 计数。
+ * 跑一遍 markrefs 校验：键表类 + 引用类诊断 + 宿主级问题 + 计数。
  * io 由本函数提供：占位符路径跳过存在性（构建期不可判），其余按 cwd 解析。
  */
-export function inspectMdDeps(
-    config: MdDepsConfig,
+export function inspectRefs(
+    config: MarkrefsConfig,
     options: { cwd?: string; keysSource?: string } = {},
-): MdDepsReport {
+): RefsReport {
     const cwd = options.cwd ?? process.cwd();
     const strict = config.strict === true;
     const records = config.refs.snapshot();
@@ -201,7 +201,7 @@ export function inspectMdDeps(
     };
 
     // 逐条分流：名字类错误照报；目标全是占位符的（构建期不可判）不交给校验，只计数。
-    const counts: MdDepsCounts = { total: records.length, checked: 0, skipped: 0 };
+    const counts: RefsCounts = { total: records.length, checked: 0, skipped: 0 };
     const checkable: RefDecl[] = [];
     for (const decl of declarations) {
         const resolved = resolve(decl, config.keys);

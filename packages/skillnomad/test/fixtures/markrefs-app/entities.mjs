@@ -1,8 +1,8 @@
-// md-deps E2E 夹具：消费侧（纯 ESM，便于 node 直接跑 CLI，不需要 tsx）
+// markrefs E2E 夹具：消费侧（纯 ESM，便于 node 直接跑 CLI，不需要 tsx）
 // 模式切换（env）：ok / missing-target / missing-key / dup-path / drift
-import { createMdRefs } from 'skillnomad';
+import { createRefs } from 'skillnomad';
 
-export const MODE = process.env.MD_DEPS_MODE ?? 'ok';
+export const MODE = process.env.MARKREFS_MODE ?? 'ok';
 
 export const entities = {
     alpha: { artifact: 'docs/a.md', description: '样本文档' },
@@ -10,7 +10,7 @@ export const entities = {
     other: { artifact: 'docs/other.md', description: '漂移模式用' },
 };
 
-export const mdRefs = createMdRefs();
+export const refs = createRefs();
 
 const entries = Object.entries(entities)
     .filter(([name]) => !(MODE === 'missing-key' && name === 'alpha'))
@@ -24,20 +24,20 @@ if (MODE === 'dup-path') {
     entries.push({ name: 'alphaAlias', path: 'docs/a.md', scope: 'entity', site: 'entities.mjs' });
 }
 
-export const mdDeps = {
+export const markrefs = {
     keys: { entries },
-    refs: mdRefs,
-    strict: process.env.MD_DEPS_STRICT === '1',
+    refs: refs,
+    strict: process.env.MARKREFS_STRICT === '1',
 };
 
 export function refOf(name) {
     const entity = entities[name];
     if (!entity) throw new Error(`未知产物实体: ${String(name)}`);
-    mdRefs.ref(name, entity.artifact);
+    refs.ref(name, entity.artifact);
     return { path: entity.artifact, description: entity.description, required: true };
 }
 
 export function refPath(path) {
-    mdRefs.refPath(path);
+    refs.refPath(path);
     return { path, description: '直接路径引用', required: true };
 }

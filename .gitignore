@@ -44,5 +44,5 @@ agents.local.md
 .env
 .env.*
 
-# md-deps E2E fixture build output
+# markrefs E2E fixture build output
 packages/skillnomad/test/fixtures/*/out/

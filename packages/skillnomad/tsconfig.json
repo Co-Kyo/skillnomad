@@ -16,7 +16,7 @@
             "path": "../skillnomad-common"
         },
         {
-            "path": "../md-deps"
+            "path": "../markrefs"
         }
     ]
 }

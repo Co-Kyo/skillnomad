@@ -1,11 +1,12 @@
 {
-    "name": "md-deps",
-    "version": "0.1.3",
-    "description": "Markdown dependency resolution and validation (name to path, existence, duplicates)",
+    "name": "markrefs",
+    "version": "0.1.0",
+    "description": "Markdown cross-reference resolution and validation (name to path, existence, duplicates)",
     "keywords": [
         "markdown",
-        "dependencies",
+        "cross-reference",
         "references",
+        "dependencies",
         "validation",
         "lint"
     ],
@@ -13,7 +14,7 @@
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "bin": {
-        "md-deps": "./bin/md-deps.mjs"
+        "markrefs": "./bin/markrefs.mjs"
     },
     "exports": {
         ".": {
@@ -37,6 +38,7 @@
         "access": "public"
     },
     "scripts": {
-        "build": "tsc"
+        "build": "tsc",
+        "test": "node --test test/p0.test.mjs test/docgroup.test.mjs"
     }
 }

@@ -44,6 +44,6 @@
     "dependencies": {
         "skillnomad-types": "^0.1.0",
         "skillnomad-common": "^0.1.0",
-        "md-deps": "^0.1.0"
+        "markrefs": "^0.1.0"
     }
 }

@@ -21,6 +21,6 @@
         { "path": "packages/skillnomad-common" },
         { "path": "packages/skillnomad-validate" },
         { "path": "packages/skillnomad" },
-        { "path": "packages/md-deps" }
+        { "path": "packages/markrefs" }
     ]
 }

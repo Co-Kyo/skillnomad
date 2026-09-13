@@ -1,8 +1,8 @@
 import { defineConfig } from 'skillnomad';
-import { mdDeps } from './entities.mjs';
+import { markrefs } from './entities.mjs';
 
 export default defineConfig({
     skill: './skill.mjs',
     outputDir: 'out',
-    mdDeps: process.env.MD_DEPS_MODE === 'off' ? undefined : mdDeps,
+    markrefs: process.env.MARKREFS_MODE === 'off' ? undefined : markrefs,
 });
