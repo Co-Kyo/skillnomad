@@ -1,6 +1,6 @@
 {
-  "refs": [
-    { "site": "docs/index.md:3", "path": "docs/guide/setup.md" },
-    { "site": "docs/guide/setup.md:21", "path": "docs/guide/missing.md" }
-  ]
+    "refs": [
+        { "site": "docs/index.md:3", "path": "docs/guide/setup.md" },
+        { "site": "docs/guide/setup.md:21", "path": "docs/guide/missing.md" }
+    ]
 }

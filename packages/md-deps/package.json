@@ -1,26 +1,26 @@
 {
-  "name": "md-deps",
-  "version": "0.1.0",
-  "description": "Markdown dependency resolution and validation (name to path, existence, duplicates)",
-  "private": true,
-  "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+    "name": "md-deps",
+    "version": "0.1.0",
+    "description": "Markdown dependency resolution and validation (name to path, existence, duplicates)",
+    "private": true,
+    "type": "module",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "import": "./dist/index.js",
+            "types": "./dist/index.d.ts"
+        }
+    },
+    "bin": {
+        "md-deps": "./bin/md-deps.mjs"
+    },
+    "files": [
+        "dist",
+        "bin"
+    ],
+    "license": "MIT",
+    "scripts": {
+        "build": "tsc"
     }
-  },
-  "bin": {
-    "md-deps": "./bin/md-deps.mjs"
-  },
-  "files": [
-    "dist",
-    "bin"
-  ],
-  "license": "MIT",
-  "scripts": {
-    "build": "tsc"
-  }
 }

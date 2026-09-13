@@ -1,22 +1,22 @@
 {
-  "extends": "../../tsconfig.json",
-  "compilerOptions": {
-    "composite": true,
-    "outDir": "./dist",
-    "rootDir": "./src"
-  },
-  "include": [
-    "src"
-  ],
-  "references": [
-    {
-      "path": "../skillnomad-types"
+    "extends": "../../tsconfig.json",
+    "compilerOptions": {
+        "composite": true,
+        "outDir": "./dist",
+        "rootDir": "./src"
     },
-    {
-      "path": "../skillnomad-common"
-    },
-    {
-      "path": "../md-deps"
-    }
-  ]
+    "include": [
+        "src"
+    ],
+    "references": [
+        {
+            "path": "../skillnomad-types"
+        },
+        {
+            "path": "../skillnomad-common"
+        },
+        {
+            "path": "../md-deps"
+        }
+    ]
 }

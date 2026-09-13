@@ -61,7 +61,7 @@
 - T1/T2 把实际命令、输出摘要、改动文件和结论写入回复。
 - 推送分工（2026-09-04 确立）：分支推送 agent 可直接执行（含建分支、提交、push、开 PR）；**云端合入（merge）由用户把关，agent 不点合入**。
 
-- 代码风格：TS/JS 统一 **4 空格**缩进；提交前跑 `npm run lint`（自动修 `npm run format`）——配置 `eslint.config.mjs`（只约束缩进；模板字符串跳过，避免动到文案产物）。
+- 代码风格：TS/JS 与 JSON 配置统一 **4 空格**缩进；提交前跑 `npm run lint`（自动修 `npm run format`）——配置 `eslint.config.mjs`（只约束缩进；模板字符串跳过，避免动到文案产物；`package-lock.json` 不纳入）。
 
 ## 7. 用户门（到达必须停下确认）
 

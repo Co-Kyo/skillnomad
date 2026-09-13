@@ -1,6 +1,6 @@
 {
-  "entries": [
-    { "name": "alpha", "path": "docs/a.md", "site": "keys.json:3" },
-    { "name": "alphaAlias", "path": "docs/a.md", "site": "keys.json:4" }
-  ]
+    "entries": [
+        { "name": "alpha", "path": "docs/a.md", "site": "keys.json:3" },
+        { "name": "alphaAlias", "path": "docs/a.md", "site": "keys.json:4" }
+    ]
 }

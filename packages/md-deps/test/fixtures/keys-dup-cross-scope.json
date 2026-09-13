@@ -1,6 +1,6 @@
 {
-  "entries": [
-    { "name": "alpha", "path": "docs/a.md", "scope": "base", "site": "keys.json:3" },
-    { "name": "alpha", "path": "docs/b.md", "scope": "extra", "site": "keys.json:4" }
-  ]
+    "entries": [
+        { "name": "alpha", "path": "docs/a.md", "scope": "base", "site": "keys.json:3" },
+        { "name": "alpha", "path": "docs/b.md", "scope": "extra", "site": "keys.json:4" }
+    ]
 }
