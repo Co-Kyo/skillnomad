@@ -42,8 +42,8 @@
         "build": "tsc"
     },
     "dependencies": {
-        "skillnomad-types": "workspace:*",
-        "skillnomad-common": "workspace:*",
-        "md-deps": "workspace:*"
+        "skillnomad-types": "^0.1.0",
+        "skillnomad-common": "^0.1.0",
+        "md-deps": "^0.1.0"
     }
 }
