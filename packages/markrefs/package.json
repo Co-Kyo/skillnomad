@@ -14,7 +14,7 @@
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "bin": {
-        "markrefs": "./bin/markrefs.mjs"
+        "markrefs": "bin/markrefs.mjs"
     },
     "exports": {
         ".": {
