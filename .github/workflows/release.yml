@@ -62,7 +62,6 @@ jobs:
           for pkg in \
             packages/skillnomad-types \
             packages/skillnomad-common \
-            packages/md-deps \
             packages/skillnomad \
             packages/skillnomad-validate
           do
@@ -110,7 +109,6 @@ jobs:
           for pkg in \
             packages/skillnomad-types \
             packages/skillnomad-common \
-            packages/md-deps \
             packages/skillnomad \
             packages/skillnomad-validate
           do
@@ -137,7 +135,6 @@ jobs:
           for pkg in \
             packages/skillnomad-types \
             packages/skillnomad-common \
-            packages/md-deps \
             packages/skillnomad \
             packages/skillnomad-validate
           do
