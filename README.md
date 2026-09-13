@@ -123,7 +123,8 @@ step('scan', '广域扫描')
 packages/
 ├── skillnomad-types/     # 类型系统 + task/seq/parallel/mapNode 等构建函数
 ├── skillnomad-common/    # 校验、图遍历与链推导
-├── skillnomad-build/     # 打包器 + Markdown 渲染 + CLI
+├── md-deps/              # Markdown 依赖解析与校验（独立最小核心 + CLI）
+├── skillnomad/           # 打包器 + Markdown 渲染 + CLI
 └── skillnomad-validate/  # 管线完整性校验 CLI
 ```
 
@@ -132,6 +133,7 @@ npm 包名：
 - `skillnomad`
 - `skillnomad-types`
 - `skillnomad-common`
+- `md-deps`
 - `skillnomad-validate`
 
 ## 开发
@@ -147,7 +149,7 @@ npm run demo
 
 推送 `v*` tag，或在 GitHub Actions 中手动运行 `Release skillnomad` 工作流：
 
-- 自动构建并打包四个 npm 包。
+- 自动构建并打包五个 npm 包。
 - 如果仓库配置了 `NPM_TOKEN` secret，自动发布到 npm。
 - 自动生成 `source.zip` 与 npm tarball，并创建 GitHub Release。
 
