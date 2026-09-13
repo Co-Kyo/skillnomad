@@ -5,7 +5,7 @@
 // ============================================================
 
 import { existsSync, readFileSync } from 'node:fs';
-import { validate, type Diagnostic, type KeyMap, type RefDecl } from './index.js';
+import { isBlocking, validate, type Diagnostic, type KeyMap, type RefDecl } from './index.js';
 
 const USAGE =
   'usage: md-deps check --keys <keys.json> --refs <refs.json> [--strict] [--format text|json]';
@@ -17,10 +17,6 @@ function fail(message: string): number {
 
 function readJson(file: string): unknown {
   return JSON.parse(readFileSync(file, 'utf8'));
-}
-
-function isBlocking(diagnostic: Diagnostic, strict: boolean): boolean {
-  return diagnostic.severity === 'error' || (strict && diagnostic.severity === 'warn');
 }
 
 export function run(argv: string[]): number {

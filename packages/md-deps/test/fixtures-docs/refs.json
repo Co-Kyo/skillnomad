@@ -1,0 +1,7 @@
+{
+  "refs": [
+    { "site": "docs/index.md:3", "path": "docs/guide/setup.md" },
+    { "site": "docs/index.md:9", "path": "docs/guide/rules.json", "fragment": "rules" },
+    { "site": "docs/guide/setup.md:14", "path": "docs/index.md" }
+  ]
+}

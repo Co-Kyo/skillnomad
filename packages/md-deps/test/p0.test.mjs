@@ -172,3 +172,25 @@ test('⑯ 每个 fixture 至少被本文件引用一次（防用例腐烂）', (
     assert.ok(used.includes(file), `fixture 未被使用：docs/${file}`);
   }
 });
+
+// ---------- 增补（P1）：duplicate-path（同 scope 内两个名字登记同一路径） ----------
+
+test('⑰ duplicate-path：同 scope 两名同路径 → warn；默认不拦、--strict 才拦', () => {
+  const keys = readJson('keys-dup-path-same-scope.json');
+  const diagnostics = only(validate(readJson('refs-alpha.json').refs, keys, io), 'duplicate-path');
+  assert.equal(diagnostics.length, 1);
+  assert.equal(diagnostics[0].severity, 'warn');
+  assert.match(diagnostics[0].message, /alpha \/ alphaAlias/);
+
+  const loose = cliRun(['check', '--keys', 'keys-dup-path-same-scope.json', '--refs', 'refs-alpha.json']);
+  assert.equal(loose.status, 0, loose.stderr);
+
+  const strict = cliRun(['check', '--keys', 'keys-dup-path-same-scope.json', '--refs', 'refs-alpha.json', '--strict']);
+  assert.equal(strict.status, 1);
+  assert.match(strict.stderr, /duplicate-path/);
+});
+
+test('⑱ duplicate-path：跨 scope 同名路径 → 视为别名，不报', () => {
+  const keys = readJson('keys-dup-path-cross-scope.json');
+  assert.deepEqual(validate(readJson('refs-alpha.json').refs, keys, io), []);
+});

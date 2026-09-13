@@ -18,6 +18,7 @@ export type RuleId =
   | 'missing-key'
   | 'missing-target'
   | 'duplicate-key'
+  | 'duplicate-path'
   | 'duplicate-decl';
 
 /** 名字表条目（名字→路径）。scope 是不透明命名空间；缺省 'default'。 */
@@ -87,6 +88,11 @@ export function isDiagnostic(value: unknown): value is Diagnostic {
   );
 }
 
+/** 是否阻断构建：error 一律阻断；strict 下 warn 也阻断。退出码由调用方定。 */
+export function isBlocking(diagnostic: Diagnostic, strict = false): boolean {
+  return diagnostic.severity === 'error' || (strict && diagnostic.severity === 'warn');
+}
+
 function scopeOf(entry: KeyEntry): string {
   return entry.scope ?? DEFAULT_SCOPE;
 }
@@ -149,10 +155,16 @@ function fileOf(site: string): string {
 function keyDiagnostics(keys: KeyMap, keysSource: string): Diagnostic[] {
   const out: Diagnostic[] = [];
   const byName = new Map<string, KeyEntry[]>();
+  const byScopeAll = new Map<string, KeyEntry[]>();
   for (const entry of keys.entries) {
     const list = byName.get(entry.name);
     if (list) list.push(entry);
     else byName.set(entry.name, [entry]);
+
+    const scope = scopeOf(entry);
+    const scoped = byScopeAll.get(scope);
+    if (scoped) scoped.push(entry);
+    else byScopeAll.set(scope, [entry]);
   }
   for (const [, list] of byName) {
     const byScope = new Map<string, KeyEntry[]>();
@@ -181,13 +193,34 @@ function keyDiagnostics(keys: KeyMap, keysSource: string): Diagnostic[] {
       });
     }
   }
+  // 同 scope 内两个名字登记同一路径＝同一条依赖被重复定义（跨 scope 视为别名，不报）。
+  for (const [scope, entries] of byScopeAll) {
+    const byPath = new Map<string, KeyEntry[]>();
+    for (const entry of entries) {
+      const list = byPath.get(entry.path);
+      if (list) list.push(entry);
+      else byPath.set(entry.path, [entry]);
+    }
+    for (const [path, list] of byPath) {
+      const names = [...new Set(list.map((e) => e.name))];
+      if (names.length > 1) {
+        out.push({
+          ruleId: 'duplicate-path',
+          severity: 'warn',
+          site: list[1].site ?? keysSource,
+          message: `同一 scope 内两个名字登记同一路径：${path}（${names.join(' / ')}，scope=${scope}）`,
+        });
+      }
+    }
+  }
   return out;
 }
 
 /**
- * 两项校验 + 重复声明：
+ * 两项校验 + 重复声明/定义：
  * - missing-key / missing-target（error）
  * - duplicate-key（同 scope＝error；跨 scope＝warn）
+ * - duplicate-path（同 scope 内两个名字登记同一路径＝warn；跨 scope 视为别名不报）
  * - duplicate-decl（同一声明源文件内、同一 path#fragment 两次＝error）
  */
 export function validate(

@@ -108,6 +108,21 @@ export {
 // 统一从主包 re-export——用户只需 `npm install skillnomad` 一个包、`import ... from 'skillnomad'` 一个源。
 export * from 'skillnomad-types';
 
+// md-deps 集成：引用登记 + 键表 + 构建期校验（宿主侧适配层，见 ./md-deps.ts）
+import { createMdRefs, inspectMdDeps, type MdDepsConfig } from './md-deps.js';
+
+export {
+  createMdRefs,
+  inspectMdDeps,
+  type MdDepsConfig,
+  type MdDepsCounts,
+  type MdDepsRefOptions,
+  type MdDepsRefs,
+  type MdDepsRefsOptions,
+  type MdDepsReport,
+  type MdRefRecord,
+} from './md-deps.js';
+
 export interface SkillMeta {
   name: string;
   title?: string;
@@ -439,6 +454,11 @@ export interface SkillnomadConfig {
   outputDir: string;
   /** 可选的 meta 覆盖项 */
   meta?: Partial<SkillMeta>;
+  /**
+   * md-deps 集成（可选）：消费侧声明的键表 + 引用登记（见 ./md-deps.ts）。
+   * 缺省＝不做 md-deps 校验（旧行为不变）。
+   */
+  mdDeps?: MdDepsConfig;
 }
 
 /** 创建 skillnomad 配置（纯类型辅助，返回传入的对象） */
@@ -1251,6 +1271,7 @@ export function buildPipeline(
   outputDir: string,
   meta?: SkillMeta,
   registry: SourceContract[] = [],
+  mdDeps?: MdDepsConfig,
 ): { pipeline: ResolvedPipeline; files: string[] } {
   const errors = [
     ...steps.flatMap(validateStep),
@@ -1262,12 +1283,32 @@ export function buildPipeline(
     ...(meta?.api?.schedulingPolicy ? validateSchedulingPolicy(meta.api.schedulingPolicy) : []),
   ];
 
-  if (errors.length > 0) {
-    console.error('Validation errors:');
-    for (const err of errors) {
-      console.error(`  ❌ [${err.stepId}] ${err.field}: ${err.message}`);
+  // md-deps 校验（可选）：诊断保持 md-deps 自身格式（site ruleId message），不映射进
+  // {stepId, field, message}——框架侧不为它发明 stepId；宿主级问题（漂移/未接线）一律阻断。
+  let mdDepsErrorCount = 0;
+  if (mdDeps) {
+    const report = inspectMdDeps(mdDeps, { keysSource: 'skillnomad.config' });
+    console.log(
+      `md-deps：${report.counts.total} 条引用（${report.counts.checked} 条判存在性，${report.counts.skipped} 条模板跳过）`,
+    );
+    for (const diagnostic of report.diagnostics) {
+      const blocking = report.blocking.includes(diagnostic);
+      const line = `  ${blocking ? '✗' : '·'} ${diagnostic.site} ${diagnostic.ruleId} ${diagnostic.message}`;
+      if (blocking) console.error(line);
+      else console.log(line);
     }
-    throw new Error(`Validation failed with ${errors.length} error(s)`);
+    for (const problem of report.problems) console.error(`  ✗ ${problem}`);
+    mdDepsErrorCount = report.blocking.length + report.problems.length;
+  }
+
+  if (errors.length + mdDepsErrorCount > 0) {
+    if (errors.length > 0) {
+      console.error('Validation errors:');
+      for (const err of errors) {
+        console.error(`  ❌ [${err.stepId}] ${err.field}: ${err.message}`);
+      }
+    }
+    throw new Error(`Validation failed with ${errors.length + mdDepsErrorCount} error(s)`);
   }
 
   console.log('Validation passed ✓');

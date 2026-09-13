@@ -43,6 +43,7 @@
   },
   "dependencies": {
     "skillnomad-types": "workspace:*",
-    "skillnomad-common": "workspace:*"
+    "skillnomad-common": "workspace:*",
+    "md-deps": "workspace:*"
   }
 }

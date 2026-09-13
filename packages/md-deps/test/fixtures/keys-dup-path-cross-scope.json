@@ -1,0 +1,6 @@
+{
+  "entries": [
+    { "name": "alpha", "path": "docs/a.md", "scope": "left", "site": "keys.json:3" },
+    { "name": "alphaAlias", "path": "docs/a.md", "scope": "right", "site": "keys.json:4" }
+  ]
+}
