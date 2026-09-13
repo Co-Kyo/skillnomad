@@ -123,7 +123,7 @@ step('scan', '广域扫描')
 packages/
 ├── skillnomad-types/     # 类型系统 + task/seq/parallel/mapNode 等构建函数
 ├── skillnomad-common/    # 校验、图遍历与链推导
-├── skillnomad-build/     # 打包器 + Markdown 渲染 + CLI
+├── skillnomad/           # 打包器 + Markdown 渲染 + CLI
 └── skillnomad-validate/  # 管线完整性校验 CLI
 ```
 
@@ -133,6 +133,8 @@ npm 包名：
 - `skillnomad-types`
 - `skillnomad-common`
 - `skillnomad-validate`
+
+构建期 markdown 交叉引用校验由 [`markrefs`](https://github.com/Co-Kyo/markrefs)（独立项目，独立版本线）提供，本仓以 dependency 引用其已发布版本。
 
 ## 开发
 
@@ -147,9 +149,11 @@ npm run demo
 
 推送 `v*` tag，或在 GitHub Actions 中手动运行 `Release skillnomad` 工作流：
 
-- 自动构建并打包四个 npm 包。
+- 自动构建并打包四个 npm 包（`skillnomad` / `-types` / `-common` / `-validate`）。
 - 如果仓库配置了 `NPM_TOKEN` secret，自动发布到 npm。
 - 自动生成 `source.zip` 与 npm tarball，并创建 GitHub Release。
+
+`markrefs` 独立发版：见 [Co-Kyo/markrefs](https://github.com/Co-Kyo/markrefs)（推 `v*` tag）。
 
 ## 文档
 

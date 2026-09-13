@@ -43,3 +43,6 @@ agents.local.md
 # Env secrets
 .env
 .env.*
+
+# markrefs E2E fixture build output
+packages/skillnomad/test/fixtures/*/out/

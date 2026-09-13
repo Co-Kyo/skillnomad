@@ -1,19 +1,25 @@
 {
-  "name": "skillnomad-monorepo",
-  "private": true,
-  "workspaces": [
-    "packages/*",
-    "demos"
-  ],
-  "scripts": {
-    "build": "tsc -b",
-    "typecheck": "tsc -b --emitDeclarationOnly",
-    "test": "node --test packages/skillnomad/test/steprefs.test.mjs packages/skillnomad/test/scheduling-policy.test.mjs packages/skillnomad/test/module-usage.test.mjs packages/skillnomad/test/renderstep-p1.test.mjs packages/skillnomad/test/checkpoint-conversion.test.mjs packages/skillnomad/test/decision-example.test.mjs",
-    "clean": "rm -rf packages/*/dist packages/*/tsconfig.tsbuildinfo dist",
-    "demo": "npm run start --workspace=skillnomad-demo"
-  },
-  "devDependencies": {
-    "@types/node": "^26.1.0",
-    "typescript": "^5.5.0"
-  }
+    "name": "skillnomad-monorepo",
+    "private": true,
+    "workspaces": [
+        "packages/*",
+        "demos"
+    ],
+    "scripts": {
+        "build": "tsc -b",
+        "typecheck": "tsc -b --emitDeclarationOnly",
+        "test": "node --test packages/skillnomad/test/steprefs.test.mjs packages/skillnomad/test/scheduling-policy.test.mjs packages/skillnomad/test/module-usage.test.mjs packages/skillnomad/test/renderstep-p1.test.mjs packages/skillnomad/test/checkpoint-conversion.test.mjs packages/skillnomad/test/decision-example.test.mjs packages/skillnomad/test/define-module.test.mjs packages/skillnomad/test/markrefs-bridge.test.mjs packages/skillnomad/test/markrefs-e2e.test.mjs",
+        "clean": "rm -rf packages/*/dist packages/*/tsconfig.tsbuildinfo dist",
+        "demo": "npm run start --workspace=skillnomad-demo",
+        "lint": "eslint .",
+        "format": "eslint . --fix"
+    },
+    "devDependencies": {
+        "@stylistic/eslint-plugin": "^5.10.0",
+        "@types/node": "^26.1.0",
+        "eslint": "^9.39.5",
+        "eslint-plugin-jsonc": "^3.4.2",
+        "typescript": "^5.5.0",
+        "typescript-eslint": "^8.70.0"
+    }
 }

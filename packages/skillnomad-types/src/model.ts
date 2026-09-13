@@ -37,38 +37,59 @@ export type FailBehavior =
 
 export type SourceRefRole = 'contract' | 'schema' | 'rule' | 'method' | 'reference';
 
+/**
+ * **模块种类（D35 W1 · 首刀调度）**：于 `step()` 并列的构成原子分类。
+ * 首刀只用 `'action'`（调度三动作）＋ `'data'`（策略口径）；其余三类占位，后补。
+ */
+export type SourceModuleKind = 'schema' | 'method' | 'rule' | 'data' | 'action';
+
+/**
+ * **模块声明（D35 W1 · 一等公民）**：Skill 构成原子（与 `step()` 并列）。
+ * 类型只定形状（R2 F-1）：`render` 签名注记，实现在消费侧模块对象；
+ * 装配（`defineModule()`）做运行时注册表（`Map<id, ModuleDef>`）。
+ */
+export interface SourceModule {
+    id: string;
+    kind: SourceModuleKind;
+    version?: string;
+    /** 依赖的模块 id（无则空；环校验载体，无 deps 降级重复 id 红，R2 F-4） */
+    deps?: string[];
+    /** 渲染 Markdown 片段（实现侧提供；类型侧只注记签名） */
+    render: () => string;
+}
+
 export interface SourceRef {
-  /**
+    /**
    * 源产物路径（必填）。路径解析（如概念名→路径）归用户侧 helper（`refOf` 模式），
    * 框架不承载概念引用形态（原 `ref?: string` 声明形态零真实用例，已清退）。
    */
-  path: string;
-  schema?: string;
-  required?: boolean;
-  dynamic?: boolean;
-  description?: string;
-  /**
+    path: string;
+    schema?: string;
+    required?: boolean;
+    dynamic?: boolean;
+    description?: string;
+    /**
    * **条目角色标签**（`contractRefs` 收拢进 `reads`，语义差异降级为角色标签）。
    *
    * 缺省 `'reference'`；首期只实落 `'contract'`，其余遇到再加。
    * 仅 `as === 'contract'` 的条目在产物中作为「契约引用」组件派生渲染。
    */
-  as?: SourceRefRole;
+    as?: SourceRefRole;
 }
 
 export interface SourceAction {
-  id: string;
-  label: string;
-  verb: NextAction;
-  actor: ActorKind;
-  content: string;
-  timeout?: number;
-  retry?: {
-    max: number;
-    backoff: 'fixed' | 'linear' | 'exponential';
-  };
-  reads?: SourceRef[];
-  writes?: SourceRef[];
+    id: string;
+    label: string;
+    verb: NextAction;
+    actor: ActorKind;
+    content: string;
+    timeout?: number;
+    retry?: {
+        max: number;
+        backoff: 'fixed' | 'linear' | 'exponential';
+    };
+    reads?: SourceRef[];
+    writes?: SourceRef[];
 }
 
 export type SourceFlow =
@@ -80,12 +101,12 @@ export type SourceFlow =
       label: string;
       branches: SourceFlow[];
       gate?: {
-        rule: string;
-        onPass: 'converge' | 'skip';
-        onFail: 'degrade' | 'halt' | 'userChoice';
+          rule: string;
+          onPass: 'converge' | 'skip';
+          onFail: 'degrade' | 'halt' | 'userChoice';
       };
       converge?: SourceAction;
-    }
+  }
   | {
       kind: 'map';
       id: string;
@@ -93,7 +114,7 @@ export type SourceFlow =
       over: SourceRef;
       worker: SourceFlow;
       maxConcurrency: number;
-    }
+  }
   | {
       kind: 'branch';
       id: string;
@@ -101,7 +122,7 @@ export type SourceFlow =
       when: string;
       then: SourceFlow;
       else?: SourceFlow;
-    }
+  }
   | {
       kind: 'loop';
       id: string;
@@ -109,138 +130,138 @@ export type SourceFlow =
       until: string;
       body: SourceFlow;
       maxIterations?: number;
-    };
+  };
 
 export interface SourceException {
-  on: string;
-  behavior: FailBehavior;
-  then: string;
+    on: string;
+    behavior: FailBehavior;
+    then: string;
 }
 
 export type SourceFailRule = SourceException;
 
 export interface SourceVerifyRule {
-  type: VerifyKind;
-  ref?: string;
-  description: string;
+    type: VerifyKind;
+    ref?: string;
+    description: string;
 }
 
 export interface SourceInstruction {
-  target: string;
-  purpose?: string;
-  inputs: string[];
-  actions: string[];
-  outputs: string[];
-  validation: SourceVerifyRule[];
-  exceptions: SourceFailRule[];
-  checkpointNote?: string;
-  next?: string;
-  detail?: string;
-  sections?: Record<string, string>;
-  taskTemplates?: Record<string, string>;
+    target: string;
+    purpose?: string;
+    inputs: string[];
+    actions: string[];
+    outputs: string[];
+    validation: SourceVerifyRule[];
+    exceptions: SourceFailRule[];
+    checkpointNote?: string;
+    next?: string;
+    detail?: string;
+    sections?: Record<string, string>;
+    taskTemplates?: Record<string, string>;
 }
 
 export interface SourceCheckpoint {
-  checkItems: string[];
-  clarifyPrompt: string;
-  onConfirm: 'continue';
-  onReject: 'rollback' | 'modify';
+    checkItems: string[];
+    clarifyPrompt: string;
+    onConfirm: 'continue';
+    onReject: 'rollback' | 'modify';
 }
 
 export type SourceGateType = 'human_gate' | 'agent_checkpoint' | 'auto_segment';
 
 export interface SourceDecisionMetric {
-  id?: string;
-  label: string;
-  value: string;
-  detail?: string;
-  tone?: 'normal' | 'warning' | 'danger';
+    id?: string;
+    label: string;
+    value: string;
+    detail?: string;
+    tone?: 'normal' | 'warning' | 'danger';
 }
 
 export interface SourceDecisionAlternative {
-  name: string;
-  cost: string;
+    name: string;
+    cost: string;
 }
 
 export interface SourceDecisionTradeoff {
-  title: string;
-  decision: string;
-  reason?: string;
-  alternatives: SourceDecisionAlternative[];
-  evidence?: string;
+    title: string;
+    decision: string;
+    reason?: string;
+    alternatives: SourceDecisionAlternative[];
+    evidence?: string;
 }
 
 export interface SourceDecisionSectionItem {
-  id: string;
-  name: string;
-  meta?: string;
+    id: string;
+    name: string;
+    meta?: string;
 }
 
 export interface SourceDecisionSection {
-  id: string;
-  title: string;
-  collapsed: boolean;
-  summary: string;
-  view_all_after?: number;
-  items?: SourceDecisionSectionItem[];
+    id: string;
+    title: string;
+    collapsed: boolean;
+    summary: string;
+    view_all_after?: number;
+    items?: SourceDecisionSectionItem[];
 }
 
 export interface SourceDecisionEvidence {
-  path: string;
-  label?: string;
-  detail?: string;
-  kind?: string;
-  hash?: string;
+    path: string;
+    label?: string;
+    detail?: string;
+    kind?: string;
+    hash?: string;
 }
 
 export interface SourceDecisionSelection {
-  unit: string;
-  summary: string;
-  total: number;
-  selected: number;
-  groups?: Array<{
-    id: string;
-    label: string;
-    summary?: string;
+    unit: string;
+    summary: string;
     total: number;
     selected: number;
-    items?: SourceDecisionSectionItem[];
-  }>;
+    groups?: Array<{
+        id: string;
+        label: string;
+        summary?: string;
+        total: number;
+        selected: number;
+        items?: SourceDecisionSectionItem[];
+    }>;
 }
 
 export interface SourceDecisionExecutionStage {
-  id: string;
-  label: string;
-  batch?: string;
-  status: 'pending' | 'running' | 'done' | 'partial' | 'failed';
-  progress?: number;
-  output?: string;
-  validation?: string;
-  risks?: string[];
+    id: string;
+    label: string;
+    batch?: string;
+    status: 'pending' | 'running' | 'done' | 'partial' | 'failed';
+    progress?: number;
+    output?: string;
+    validation?: string;
+    risks?: string[];
 }
 
 export interface SourceDecisionExecution {
-  current: string;
-  next: string;
-  outputs: string[];
-  stages: SourceDecisionExecutionStage[];
-  override_actions?: string[];
+    current: string;
+    next: string;
+    outputs: string[];
+    stages: SourceDecisionExecutionStage[];
+    override_actions?: string[];
 }
 
 export interface SourceDecisionRisk {
-  code: 'source' | 'extraction' | 'model' | 'validation' | 'orchestration' | 'quality';
-  label: string;
-  severity: 'info' | 'warning' | 'critical';
-  count?: number;
-  detail?: string;
+    code: 'source' | 'extraction' | 'model' | 'validation' | 'orchestration' | 'quality';
+    label: string;
+    severity: 'info' | 'warning' | 'critical';
+    count?: number;
+    detail?: string;
 }
 
 export interface SourceDecisionAction {
-  id: string;
-  label: string;
-  verb?: string;
-  primary: boolean;
-  disabled?: boolean;
+    id: string;
+    label: string;
+    verb?: string;
+    primary: boolean;
+    disabled?: boolean;
 }
 
 export type SourceDecisionDisplayPattern =
@@ -253,67 +274,67 @@ export type SourceDecisionDisplayPattern =
   | 'delivery_checklist';
 
 export interface SourceDecisionDisplay {
-  pattern: SourceDecisionDisplayPattern;
-  primary_unit?: string;
-  max_visible?: number;
-  badge?: string;
-  legend?: boolean;
-  selection?: 'none' | 'single' | 'multi' | 'confirm';
+    pattern: SourceDecisionDisplayPattern;
+    primary_unit?: string;
+    max_visible?: number;
+    badge?: string;
+    legend?: boolean;
+    selection?: 'none' | 'single' | 'multi' | 'confirm';
 }
 
 export interface SourceDecisionSummary {
-  schema_version?: string;
-  stage_id?: string;
-  gateType: SourceGateType;
-  title?: string;
-  subtitle?: string;
-  confirm?: string;
-  context?: {
-    current: string;
-    question: string;
-    next: string;
-    architecture_preview?: string;
-  };
-  metrics: SourceDecisionMetric[];
-  selection?: SourceDecisionSelection;
-  execution?: SourceDecisionExecution;
-  secondary?: {
-    sections: SourceDecisionSection[];
-    evidence: SourceDecisionEvidence[];
-  };
-  risks?: SourceDecisionRisk[];
-  actions?: SourceDecisionAction[];
-  barrier_summary?: string;
-  display?: SourceDecisionDisplay;
-  /**
+    schema_version?: string;
+    stage_id?: string;
+    gateType: SourceGateType;
+    title?: string;
+    subtitle?: string;
+    confirm?: string;
+    context?: {
+        current: string;
+        question: string;
+        next: string;
+        architecture_preview?: string;
+    };
+    metrics: SourceDecisionMetric[];
+    selection?: SourceDecisionSelection;
+    execution?: SourceDecisionExecution;
+    secondary?: {
+        sections: SourceDecisionSection[];
+        evidence: SourceDecisionEvidence[];
+    };
+    risks?: SourceDecisionRisk[];
+    actions?: SourceDecisionAction[];
+    barrier_summary?: string;
+    display?: SourceDecisionDisplay;
+    /**
    * **示例标记（单真相源，D33）**：为 true 时本 decision 全块为历史运行示例值，
    * 非本次运行时填充；渲染层据此加示例区块标注，缺席（undefined/false）即事实，
    * 产物逐字不变。过渡期消费侧保留的"（示例）"字样为降级兼容，非第二语义源。
    */
-  isExample?: boolean;
+    isExample?: boolean;
 }
 
 export interface SourceReuseRule {
-  ifExists: string;
-  skipDescription: string;
+    ifExists: string;
+    skipDescription: string;
 }
 
 export interface SourceDegrade {
-  maxRetries: number;
-  onDegrade: 'continue' | 'halt';
-  fallback?: string;
+    maxRetries: number;
+    onDegrade: 'continue' | 'halt';
+    fallback?: string;
 }
 
 export interface SourceStep {
-  id: string;
-  title: string;
-  purpose: string;
-  /** SKILL 步骤表中的核心目的；与 instruction.target 分离。 */
-  summary?: string;
-  /** 当该步骤是 pipeline 初始化步骤时，渲染为 SKILL.md 的初始化规则。 */
-  initRules?: SourceInitRule[];
+    id: string;
+    title: string;
+    purpose: string;
+    /** SKILL 步骤表中的核心目的；与 instruction.target 分离。 */
+    summary?: string;
+    /** 当该步骤是 pipeline 初始化步骤时，渲染为 SKILL.md 的初始化规则。 */
+    initRules?: SourceInitRule[];
 
-  /**
+    /**
    * **步骤间的直接前驱（线性链契约）**
    *
    * 步骤之间的关系是**线性链**，不是 DAG：
@@ -329,27 +350,27 @@ export interface SourceStep {
    * 收窄为**单值**：意图写多个前驱在编译期就不可能（类型不允许），
    * 不再依赖运行时校验兜底。
    */
-  dependsOn?: string;
+    dependsOn?: string;
 
-  reads: SourceRef[];
-  writes: SourceRef[];
+    reads: SourceRef[];
+    writes: SourceRef[];
 
-  /**
+    /**
    * **步骤内的控制流**——并行与分支只在这一层表达。
    * 支持 `do` / `seq` / `parallel` / `map` / `branch` / `loop`，
    * 其中 `parallel` 用 `gate` 收敛、`map` 用 `maxConcurrency` 控制并发度。
    */
-  flow: SourceFlow;
+    flow: SourceFlow;
 
-  instruction: SourceInstruction;
-  checkpoint?: SourceCheckpoint;
-  decision?: SourceDecisionSummary;
-  display?: SourceDecisionDisplay;
-  reuse?: SourceReuseRule[];
-  degrade?: SourceDegrade;
-  plugins?: string[];
+    instruction: SourceInstruction;
+    checkpoint?: SourceCheckpoint;
+    decision?: SourceDecisionSummary;
+    display?: SourceDecisionDisplay;
+    reuse?: SourceReuseRule[];
+    degrade?: SourceDegrade;
+    plugins?: string[];
 
-  /**
+    /**
    * **步骤的直接后继（派生字段）**
    *
    * 可由 `dependsOn` 或链顺序推导。框架仅将其渲染为步骤文件的「下一步」章节，
@@ -360,15 +381,15 @@ export interface SourceStep {
    * @deprecated 标记为衍生值——开发者应声明 `dependsOn`（或什么都不声明，
    * 由链序决定），`next` 由框架推导；显式声明仅用于覆盖渲染值，通常不必手写。
    */
-  next?: string;
+    next?: string;
 }
 
 export interface SourceContract {
-  id: string;
-  kind: 'schema' | 'method' | 'policy' | 'source';
-  path: string;
-  description: string;
-  /**
+    id: string;
+    kind: 'schema' | 'method' | 'policy' | 'source';
+    path: string;
+    description: string;
+    /**
    * **归属层**：'skill' = 跨步共享模块（SkillModule）；
    * 'step' = 步骤私有模块（StepModule，严格私有、不做跨步引用）。
    *
@@ -376,28 +397,33 @@ export interface SourceContract {
    * `as:'contract'` 的引用必须指向 `scope:'skill'` 的注册条目；
    * step 级条目被多个步骤引用 → 构建报错（跨步需求 = 它本就是 SkillModule）。
    */
-  scope: 'skill' | 'step';
-  /** step 级模块的归属步骤（scope:'step' 时必填，须与步骤 id 对应） */
-  step?: string;
+    scope: 'skill' | 'step';
+    /** step 级模块的归属步骤（scope:'step' 时必填，须与步骤 id 对应） */
+    step?: string;
+    /**
+   * **模块引用（D35 W2 · 路径→id 过渡期双轨）**：指向 `SourceModule.id`。
+   * 缺席即今日路径形态；存在则 V4 先认 id（未登记即红），路径校验（V1/V2）保留。
+   */
+    module?: string;
 }
 
 export interface SourceRuntimeTrace {
-  enabled: boolean;
-  logDir: string;
-  eventTypes: string[];
+    enabled: boolean;
+    logDir: string;
+    eventTypes: string[];
 }
 
 export interface SourcePolicies {
-  contextIsolation: boolean;
-  reuseByFileExistence: boolean;
-  checkpointRequired: boolean;
-  traceFields: string[];
-  runtimeTrace: SourceRuntimeTrace;
+    contextIsolation: boolean;
+    reuseByFileExistence: boolean;
+    checkpointRequired: boolean;
+    traceFields: string[];
+    runtimeTrace: SourceRuntimeTrace;
 }
 
 export interface SourceParam {
-  name: string;
-  description: string;
+    name: string;
+    description: string;
 }
 
 /**
@@ -412,14 +438,14 @@ export interface SourceParam {
  * 不满足就无法安全推导区间标注，因此框架报错而非猜测。
  */
 export interface SourcePhase {
-  name: string;
-  stepIds: string[];
-  description: string;
+    name: string;
+    stepIds: string[];
+    description: string;
 }
 
 export interface SourceInitRule {
-  title: string;
-  body: string;
+    title: string;
+    body: string;
 }
 
 /**
@@ -433,64 +459,64 @@ export type SchedulingBatchMode = 'batch_parallel' | 'rolling_window' | 'topo_ba
 
 /** 分批规则声明：模式 + 每批容量 + 槽位占用。 */
 export interface SchedulingBatchPolicy {
-  mode: SchedulingBatchMode;
-  /** 一批内最多同时运行的 Task Group 数（>0）。 */
-  maxBatchSize?: number;
-  /** 单个任务单元占用的并发槽位数（如组装 1 命题占 2 槽），默认 1。 */
-  slotOccupancy?: number;
+    mode: SchedulingBatchMode;
+    /** 一批内最多同时运行的 Task Group 数（>0）。 */
+    maxBatchSize?: number;
+    /** 单个任务单元占用的并发槽位数（如组装 1 命题占 2 槽），默认 1。 */
+    slotOccupancy?: number;
 }
 
 /** 窗口预算声明：单次调用窗口与输入压缩上限。 */
 export interface SchedulingWindowBudget {
-  /** 单次 subagent 调用窗口数上限（>0）。 */
-  maxWindowSize?: number;
-  /** 单个 task 输入正文摘要的 token 上限（>0）。 */
-  inputChunkTokens?: number;
-  /** 单条素材正文摘要的 token 上限（>0）。 */
-  itemSummaryTokens?: number;
+    /** 单次 subagent 调用窗口数上限（>0）。 */
+    maxWindowSize?: number;
+    /** 单个 task 输入正文摘要的 token 上限（>0）。 */
+    inputChunkTokens?: number;
+    /** 单条素材正文摘要的 token 上限（>0）。 */
+    itemSummaryTokens?: number;
 }
 
 /** 调度策略声明（skill 级全局口径）。 */
 export interface SourceSchedulingPolicy {
-  /** 全局最大并发 Task Group 数（>0）。 */
-  concurrencyLimit: number;
-  /** 窗口预算（单次调用/输入压缩）。 */
-  windowBudget?: SchedulingWindowBudget;
-  /** 分批规则（模式 + 每批容量 + 槽位）。 */
-  batchPolicy?: SchedulingBatchPolicy;
-  /** 自由文本说明（如平台适配提示），可选。 */
-  note?: string;
+    /** 全局最大并发 Task Group 数（>0）。 */
+    concurrencyLimit: number;
+    /** 窗口预算（单次调用/输入压缩）。 */
+    windowBudget?: SchedulingWindowBudget;
+    /** 分批规则（模式 + 每批容量 + 槽位）。 */
+    batchPolicy?: SchedulingBatchPolicy;
+    /** 自由文本说明（如平台适配提示），可选。 */
+    note?: string;
 }
 
 export interface SourceCallExample {
-  label: string;
-  pattern: string;
+    label: string;
+    pattern: string;
 }
 
 export interface SourceMeta {
-  name: string;
-  title: string;
-  description: string;
-  frontmatterDescription: string;
-  callExamples: SourceCallExample[];
-  usageNote?: string;
-  isolationNote?: string;
-  includeBuildFooter?: boolean;
-  params: SourceParam[];
-  /**
+    name: string;
+    title: string;
+    description: string;
+    frontmatterDescription: string;
+    callExamples: SourceCallExample[];
+    usageNote?: string;
+    isolationNote?: string;
+    includeBuildFooter?: boolean;
+    params: SourceParam[];
+    /**
    * 阶段**意图**声明：每个阶段包含哪些步骤。
    * 阶段边界与区间标注由框架从此 + 链序推导，不要求手写。
    */
-  phases: SourcePhase[];
-  initRules?: SourceInitRule[];
-  /**
+    phases: SourcePhase[];
+    initRules?: SourceInitRule[];
+    /**
    * 哪个步骤负责 pipeline 初始化；renderer 优先从该步骤读取 initRules。
    *
    * **派生字段**：链已经声明了谁没有前驱，默认值由 `deriveInitStepId()` 算出。
    * 可省略；显式提供时用于覆盖（例如初始化规则挂在链起点之外的步骤上）。
    */
-  initStepId?: string;
-  /**
+    initStepId?: string;
+    /**
    * 流程总览的 ASCII 图。
    *
    * **派生字段**：阶段名 + 区间标注均可由 `deriveFlowOverview()` 从
@@ -498,20 +524,20 @@ export interface SourceMeta {
    * 显式提供时用于覆盖**布局**（布局属于表达，框架不垄断），
    * 但其中的区间标注不再有人校验——手写即意味着自己承担漂移风险。
    */
-  flowOverview?: string;
-  /**
+    flowOverview?: string;
+    /**
    * 调度策略（skill 级全局口径）。
    *
    * 窗口预算/并发上限/分批规则与业务无关、跨 skill 通用，封装进本字段，
    * **步骤不再登记**（消除「人工双清单」的横切散布）。构建期统一渲染到
    * SKILL.md 的「## 调度策略」公共章节。
    */
-  schedulingPolicy?: SourceSchedulingPolicy;
+    schedulingPolicy?: SourceSchedulingPolicy;
 }
 
 export interface SkillSourceModel {
-  meta: SourceMeta;
-  steps: SourceStep[];
-  contracts: SourceContract[];
-  policies: SourcePolicies;
+    meta: SourceMeta;
+    steps: SourceStep[];
+    contracts: SourceContract[];
+    policies: SourcePolicies;
 }

@@ -1,7 +1,7 @@
 # skillnomad Agent Contract
 
 > 状态：active
-> 定位：根级 agent 契约，只放跨会话不变量和分级规则。框架源码仓（TS monorepo，四包同版 0.1.0）。
+> 定位：根级 agent 契约，只放跨会话不变量和分级规则。框架源码仓（TS monorepo：框架四包同版 + `markrefs` 独立版本线）。
 > **§1 角色先行是最高优先级，凌驾于一切便利；与下文冲突时以 §1 为准。**
 
 ## 1. 角色先行（每次任务进门执行）
@@ -24,7 +24,9 @@
 
 ## 2. 项目边界
 
-- TS monorepo：`packages/skillnomad-types` / `-common` / `skillnomad` / `-validate`，同版同节奏（`release-manifest.json`）；push tag → Actions OIDC 直发 npm。
+- TS monorepo：框架四包 `packages/skillnomad-types` / `-common` / `skillnomad` / `-validate`，同版同节奏（`release-manifest.json`）；push `v*` tag → Actions OIDC 直发 npm。
+- `markrefs`（Markdown 交叉引用解析与校验）是**独立项目**：代码与发版都在独立仓 `Co-Kyo/markrefs`（tag `v*`），不随框架版本；本仓以 dependency 引用其**已发布**版本（同步成本在框架侧），**不在本仓留副本**。
+- 包内互引一律写 semver range（`^0.1.0`），**禁用 `workspace:` 协议**——npm 全系不支持（EUNSUPPORTEDPROTOCOL），`file:` 也会被原样打进发布产物；版本匹配时 npm workspaces 自动链到本地包，效果等价。**发布物 bin 值不得以 `./` 开头**（npm 新版发布归一化会判非法并删除）。
 - `renderStep` / validate / contract 行为即契约；改渲染、校验、类型就是改契约。
 - `docs/` 为 VitePress 站；`demos/` 最小用例；`release.yml` Version gate 要求 tag / manifest / 每包版本三者一致。
 - `main` 受分支保护：一切变更走分支 + PR，不直推（直推报 GH013 拒收）。
@@ -40,7 +42,7 @@
 ## 4. 冷启动
 
 1. 读 `README.md`、`CHANGELOG.md`、`release-manifest.json` 确认版本口径。
-2. 读 `packages/*/package.json` 确认四包结构。
+2. 读 `packages/*/package.json` 确认五包结构。
 3. 读 `docs/guide/contract.md` 确认契约语义。
 4. 读 `.github/workflows/release.yml` 确认发布门。
 5. 跑 `git log --oneline -10` + `git status` 确认基线。
@@ -60,6 +62,8 @@
 - CHANGELOG 版本节即 Release 正文源（工作流自动提取）：只写公开行为描述，不写内部编号（P1/P2）、下游项目名、本机路径。
 - T1/T2 把实际命令、输出摘要、改动文件和结论写入回复。
 - 推送分工（2026-09-04 确立）：分支推送 agent 可直接执行（含建分支、提交、push、开 PR）；**云端合入（merge）由用户把关，agent 不点合入**。
+
+- 代码风格：TS/JS 与 JSON 配置统一 **4 空格**缩进；提交前跑 `npm run lint`（自动修 `npm run format`）——配置 `eslint.config.mjs`（只约束缩进；模板字符串跳过，避免动到文案产物；`package-lock.json` 不纳入）。
 
 ## 7. 用户门（到达必须停下确认）
 

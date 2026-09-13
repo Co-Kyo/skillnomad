@@ -17,8 +17,8 @@ import { pathToFileURL } from 'node:url';
 const filePath = process.argv[2];
 
 if (!filePath) {
-  console.error('Usage: skillnomad-validate <path-to-pipeline-file>');
-  process.exit(1);
+    console.error('Usage: skillnomad-validate <path-to-pipeline-file>');
+    process.exit(1);
 }
 
 const absPath = resolve(process.cwd(), filePath);
@@ -27,43 +27,43 @@ console.log(`skillnomad-validate v0.1.0`);
 console.log(`Validating: ${absPath}\n`);
 
 try {
-  // Dynamic import of the pipeline file（Windows 下绝对路径必须是 file:// URL）
-  const mod = await import(pathToFileURL(absPath).href);
-  const steps = mod.default || mod.steps;
+    // Dynamic import of the pipeline file（Windows 下绝对路径必须是 file:// URL）
+    const mod = await import(pathToFileURL(absPath).href);
+    const steps = mod.default || mod.steps;
 
-  if (!steps || !Array.isArray(steps)) {
-    console.error('Pipeline file must export an array of StepDefinitions as default or named export `steps`.');
-    process.exit(1);
-  }
-
-  const { validatePipeline } = await import('./index.js');
-  const report = validatePipeline(steps);
-
-  if (report.errors.length > 0) {
-    console.error(`❌ ${report.errors.length} error(s):`);
-    for (const err of report.errors) {
-      console.error(`  [${err.stepId}] ${err.field}: ${err.message}`);
+    if (!steps || !Array.isArray(steps)) {
+        console.error('Pipeline file must export an array of StepDefinitions as default or named export `steps`.');
+        process.exit(1);
     }
-  }
 
-  if (report.warnings.length > 0) {
-    console.warn(`\n⚠️  ${report.warnings.length} warning(s):`);
-    for (const warn of report.warnings) {
-      console.warn(`  [${warn.stepId}] ${warn.field}: ${warn.message}`);
+    const { validatePipeline } = await import('./index.js');
+    const report = validatePipeline(steps);
+
+    if (report.errors.length > 0) {
+        console.error(`❌ ${report.errors.length} error(s):`);
+        for (const err of report.errors) {
+            console.error(`  [${err.stepId}] ${err.field}: ${err.message}`);
+        }
     }
-  }
 
-  if (report.pipeline) {
-    console.log(`\n✅ Pipeline is valid. Step order:`);
-    for (const step of report.pipeline.steps) {
-      console.log(`  ${String(step.seq).padStart(2, '0')}: ${step.id} — ${step.title}`);
+    if (report.warnings.length > 0) {
+        console.warn(`\n⚠️  ${report.warnings.length} warning(s):`);
+        for (const warn of report.warnings) {
+            console.warn(`  [${warn.stepId}] ${warn.field}: ${warn.message}`);
+        }
     }
-  }
 
-  process.exit(report.passed ? 0 : 1);
+    if (report.pipeline) {
+        console.log(`\n✅ Pipeline is valid. Step order:`);
+        for (const step of report.pipeline.steps) {
+            console.log(`  ${String(step.seq).padStart(2, '0')}: ${step.id} — ${step.title}`);
+        }
+    }
+
+    process.exit(report.passed ? 0 : 1);
 
 } catch (e) {
-  console.error(`\n❌ Failed to load or validate pipeline:`);
-  console.error(`  ${(e as Error).message}`);
-  process.exit(1);
+    console.error(`\n❌ Failed to load or validate pipeline:`);
+    console.error(`  ${(e as Error).message}`);
+    process.exit(1);
 }
