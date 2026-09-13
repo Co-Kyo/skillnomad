@@ -14,6 +14,8 @@
 npm install -D skillnomad          # 单包单源
 ```
 
+> **只装这一个包。** `skillnomad-types` / `-common` / `-validate` 是内部实现包（公共面全部由主包转口）——不要单独安装，也不要 `import … from 'skillnomad-types'` 之类的写法。
+
 ### 1. 声明内容模块（共享规则）
 
 `src/modules.ts` —— 一段被多个步骤共用的规则：

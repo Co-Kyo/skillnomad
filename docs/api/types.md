@@ -1,6 +1,6 @@
 # API 参考
 
-> 本页为核心类型概览；完整 API 参考由 TypeDoc 在构建时从 `skillnomad-types` 源码 JSDoc 自动生成（CI 执行，永不手写）。
+> 本页为核心类型概览；完整 API 参考由 TypeDoc 在构建时自动生成（CI 执行，永不手写）。所有类型都从 `skillnomad` 一个包导入。
 
 ## SourceRef（引用条目）
 
@@ -69,5 +69,5 @@ step(id, title)
 
 ## 更多类型
 
-完整类型集（`SkillDefinition` / `SourceStep` / `SourceFlow` / `EffectContract`…）在 `skillnomad-types` 源码中，
+完整类型集（`SkillDefinition` / `SourceStep` / `SourceFlow` / `EffectContract`…）都可从 `skillnomad` 导入，
 TypeDoc 生成后此处自动展开。

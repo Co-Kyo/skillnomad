@@ -1,12 +1,14 @@
 # skillnomad
 
-LLM 可执行 Markdown Skill 管线的打包工具。
+LLM 可执行 Markdown Skill 管线的打包工具：声明步骤与产出，构建成一份 agent 能照着做的产物。
 
 ## 安装
 
 ```bash
 npm install -D skillnomad
 ```
+
+**只需这一个包。** 类型、构建函数、校验口径全部由主包转口——不要直接安装或 import `skillnomad-types` / `-common` / `-validate`（它们是内部实现包）。
 
 ## 使用
 
@@ -25,31 +27,29 @@ export default defineConfig({
 });
 ```
 
-## 包结构
+## 可选：构建期 markdown 交叉引用校验
 
-```text
-packages/
-├── skillnomad-types/     # 类型系统 + task/seq/parallel/mapNode 等构建函数
-├── skillnomad-common/    # 校验、拓扑排序、图遍历
-├── skillnomad-build/     # 打包器 + Markdown 渲染 + CLI
-└── skillnomad-validate/  # 管线完整性校验 CLI
+在配置里声明名字表与引用登记后，构建期会校验引用（名字在表、目标存在、重复声明），诊断直指调用点 `file:line`：
+
+```ts
+import { defineConfig, createRefs } from 'skillnomad';
+
+const refs = createRefs();
+
+export default defineConfig({
+  skill: './skill.ts',
+  outputDir: './dist/skill',
+  markrefs: { keys: { entries: [{ name: 'guide', path: 'docs/guide.md' }] }, refs },
+});
 ```
 
-npm 包名：
+校验机制由独立项目 [markrefs](https://github.com/Co-Kyo/markrefs) 提供；主包只做接线，消费侧只依赖 `skillnomad`。
 
-- `skillnomad`
-- `skillnomad-types`
-- `skillnomad-common`
-- `skillnomad-validate`
+## 文档
 
-## 开发
-
-```bash
-npm install
-npm run build
-npm run typecheck
-npm run demo
-```
+- 快速上手：`docs/guide/quickstart.md`
+- 契约与口径：`docs/guide/contract.md`
+- 完整文档站：见仓库 `docs/`
 
 ## License
 
