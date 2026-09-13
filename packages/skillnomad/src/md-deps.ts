@@ -7,7 +7,7 @@
 // ============================================================
 
 import { existsSync } from 'node:fs';
-import { dirname, isAbsolute, join, relative, sep } from 'node:path';
+import { basename, dirname, isAbsolute, join, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import {
@@ -22,6 +22,11 @@ import {
 } from 'md-deps';
 
 const MODULE_DIR = dirname(fileURLToPath(import.meta.url));
+/**
+ * 站内帧的两种坐标：模块所在目录（dist/*.js 发布形态），以及它的 src/dist 兄弟目录
+ * （tsx + source map 会把栈帧还原成 src/*.ts）。只过滤这两处，不吞包内的 test/ 等目录。
+ */
+const FRAMEWORK_DIRS = [MODULE_DIR, join(dirname(MODULE_DIR), basename(MODULE_DIR) === 'src' ? 'dist' : 'src')];
 
 /** 占位符路径（工作目录/序号/短名等在运行时才实例化）构建期不可判存在性，跳过并计数。 */
 const PLACEHOLDER = /[{}*]/;
@@ -125,6 +130,7 @@ export function createMdRefs(options: MdDepsRefsOptions = {}): MdDepsRefs {
 /**
  * 取调用点位置。站内帧（本包与 node_modules）一律跳过，再按 siteDepth 上跳包装层；
  * 上跳越界时回落到最内层可解析帧。栈不可解析时返回 'unknown'（由宿主决定如何处理）。
+ * 注：按"包根"过滤而非仅 dist——tsx 的 source map 会把栈帧还原成 src/*.ts 坐标。
  */
 function captureSite(siteDepth: number): string {
     const stack = new Error().stack ?? '';
@@ -134,7 +140,7 @@ function captureSite(siteDepth: number): string {
         if (!match) continue;
         const file = toFilePath(match[1]);
         if (file.startsWith('node:') || file.includes(`${sep}node_modules${sep}`)) continue;
-        if (file.startsWith(`${MODULE_DIR}${sep}`)) continue;
+        if (FRAMEWORK_DIRS.some((dir) => file.startsWith(`${dir}${sep}`))) continue;
         frames.push({ file, line: match[2], column: match[3] });
     }
     const frame = frames[siteDepth] ?? frames[0];

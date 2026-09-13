@@ -123,6 +123,9 @@ export {
     type MdRefRecord,
 } from './md-deps.js';
 
+// md-deps 公共类型的转口（消费侧只 import 'skillnomad'，不直接依赖 md-deps）
+export type { Diagnostic, Io, KeyEntry, KeyMap, RefDecl, Resolved, RuleId, Severity } from 'md-deps';
+
 export interface SkillMeta {
     name: string;
     title?: string;
