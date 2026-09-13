@@ -1,6 +1,0 @@
-{
-    "refs": [
-        { "site": "src/one.ts:3", "name": "alpha" },
-        { "site": "src/one.ts:9", "name": "alpha" }
-    ]
-}

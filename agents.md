@@ -25,10 +25,10 @@
 ## 2. 项目边界
 
 - TS monorepo：框架四包 `packages/skillnomad-types` / `-common` / `skillnomad` / `-validate`，同版同节奏（`release-manifest.json`）；push `v*` tag → Actions OIDC 直发 npm。
-- `packages/markrefs`（Markdown 交叉引用解析与校验）是**独立项目**：独立版本线、独立发版（`markrefs-v*` tag → `release-markrefs.yml`），不随框架版本；skillnomad 以 dependency 引用其**已发布**版本（同步成本在框架侧）。
-- 包内互引一律写 semver range（`^0.1.0`），**禁用 `workspace:` 协议**——npm 全系不支持（EUNSUPPORTEDPROTOCOL），`file:` 也会被原样打进发布产物；版本匹配时 npm workspaces 自动链到本地包，效果等价。
+- `markrefs`（Markdown 交叉引用解析与校验）是**独立项目**：代码与发版都在独立仓 `Co-Kyo/markrefs`（tag `v*`），不随框架版本；本仓以 dependency 引用其**已发布**版本（同步成本在框架侧），**不在本仓留副本**。
+- 包内互引一律写 semver range（`^0.1.0`），**禁用 `workspace:` 协议**——npm 全系不支持（EUNSUPPORTEDPROTOCOL），`file:` 也会被原样打进发布产物；版本匹配时 npm workspaces 自动链到本地包，效果等价。**发布物 bin 值不得以 `./` 开头**（npm 新版发布归一化会判非法并删除）。
 - `renderStep` / validate / contract 行为即契约；改渲染、校验、类型就是改契约。
-- `docs/` 为 VitePress 站；`demos/` 最小用例；`release.yml` Version gate 要求 tag / manifest / 每包版本三者一致；`release-markrefs.yml` 同口径要求 `markrefs-v*` tag 与 `packages/markrefs` 版本一致。
+- `docs/` 为 VitePress 站；`demos/` 最小用例；`release.yml` Version gate 要求 tag / manifest / 每包版本三者一致。
 - `main` 受分支保护：一切变更走分支 + PR，不直推（直推报 GH013 拒收）。
 
 ## 3. 内容→角色映射

@@ -14,9 +14,6 @@
         },
         {
             "path": "../skillnomad-common"
-        },
-        {
-            "path": "../markrefs"
         }
     ]
 }
