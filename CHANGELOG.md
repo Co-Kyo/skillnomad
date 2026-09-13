@@ -2,6 +2,17 @@
 
 > **注意**：新线自 **0.1.0-beta.1** 独立起步（orphan 干净根提交，skillpack → skillnomad 改名）；改名前的 skillpack 时期记录已归并在该版本节内。
 
+## v0.1.4（模块一等公民 · 调度四层重做 · markrefs 构建期校验）
+
+- **feat(types)**：`SourceModule` 与 `defineModule()` 成为一等公民——模块有显式形状（`id`／`version?`／`kind`／`deps?`／`render`），与 `step` 并列从主包导出；`SourceContract.module` 双轨（缺席即原路径形态，旧写法不变）。
+- **feat(render)**：新增「模块附录」节（未声明模块时整段省略）；`sourceTrace` 的 `sourceLayer` 新增 `modules` 取值。
+- **feat(scheduling)**：调度四层重做——数据层常量（`SCHEDULING`／`STEP_MODES`／`PROACTIVE_CHECK_IDS`）、动词层纯函数与组合子（`batchParallel`／`rollingWindow`／`topoBatch`）、渲染入口（`renderPolicy`／`renderMode`／`renderBinding`／`renderModuleDoc`）；其中 `SCHEDULING`／`renderBinding`／`renderModuleDoc` 经主包转口，其余从 `skillnomad-common` 直引。`proactiveChecks` 语义收窄为「何时查＋失败怎么办」，查什么由调用方传入。
+- **feat(markrefs)**：构建期 markdown 交叉引用校验（**可选，默认不跑**）——在配置里声明名字表与引用登记后，构建输出 `markrefs：N 条引用（X 条判存在性，Y 条模板跳过）`，诊断按 `site ruleId message` 单独成区并计入失败汇总；引用位置由调用栈捕获取 `file:line`。新增依赖 `markrefs`（Markdown 交叉引用解析与校验，独立项目、独立发版）。
+- **feat(validate)**：新增两个按需调用的校验器（导出，未接入默认构建流程）：`validateBodySections`（task body 含「搜法／检测／标注／修正」任一动作词时，须同含「判据：」与「参照」字样）、`validateModules`（模块注册表 id 唯一、`deps` 无环）。
+- **fix(packaging)**：CLI 的 `bin` 元数据去掉 `./` 前缀——新版 npm 发布会把该写法判为非法并删除，安装后无可用命令。
+- 回归：typecheck 通过；全量测试 47/47。
+- 升级影响：不配置 `markrefs` 时默认路径与 0.1.3 逐字一致（模块附录缺席省略；两个新校验器按需调用）；`sourceLayer` 联合类型新增 `modules`（穷尽 switch 的消费侧会有编译期提示）；启用 `markrefs` 后 `Validation failed with N error(s)` 的 N 含其诊断数。
+
 ## v0.1.3（decision 示例分隔符 · D33）
 
 - **feat(types)**：`SourceDecisionSummary` 加 `isExample?: boolean`（语义单真相源：为 true 时全块为历史运行示例值，非本次运行时填充；缺席即事实）——few-shot 示例分隔符的机器可读边界（D33 P24 升格专案）。
