@@ -127,7 +127,7 @@ packages/
 └── skillnomad-validate/  # 管线完整性校验 CLI
 ```
 
-npm 包名：
+npm 包名（**消费者只需要 `skillnomad` 一个**；其余三包是内部实现包，由主包转口、不单独对外）：
 
 - `skillnomad`
 - `skillnomad-types`
