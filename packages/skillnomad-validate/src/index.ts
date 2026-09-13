@@ -3,24 +3,24 @@
 // ============================================================
 
 import type {
-  StepDefinition,
-  ResolvedPipeline,
-  SourcePhase,
+    StepDefinition,
+    ResolvedPipeline,
+    SourcePhase,
 } from 'skillnomad-types';
 import {
-  validateStep,
-  validateDependencyRefs,
-  validateBarrierContinuity,
-  validateStepChain,
-  validatePhaseCoverage,
-  resolveStepOrder,
+    validateStep,
+    validateDependencyRefs,
+    validateBarrierContinuity,
+    validateStepChain,
+    validatePhaseCoverage,
+    resolveStepOrder,
 } from 'skillnomad-common';
 
 export interface ValidationReport {
-  passed: boolean;
-  errors: Array<{ stepId: string; field: string; message: string }>;
-  warnings: Array<{ stepId: string; field: string; message: string }>;
-  pipeline: ResolvedPipeline | null;
+    passed: boolean;
+    errors: Array<{ stepId: string; field: string; message: string }>;
+    warnings: Array<{ stepId: string; field: string; message: string }>;
+    pipeline: ResolvedPipeline | null;
 }
 
 /**
@@ -37,66 +37,66 @@ export interface ValidationReport {
  * 否则框架算出来的区间标注不可信。
  */
 export function validatePipeline(
-  steps: StepDefinition[],
-  phases: SourcePhase[] = [],
+    steps: StepDefinition[],
+    phases: SourcePhase[] = [],
 ): ValidationReport {
-  const errors: Array<{ stepId: string; field: string; message: string }> = [];
-  const warnings: Array<{ stepId: string; field: string; message: string }> = [];
+    const errors: Array<{ stepId: string; field: string; message: string }> = [];
+    const warnings: Array<{ stepId: string; field: string; message: string }> = [];
 
-  // Step-level validation
-  errors.push(...steps.flatMap(validateStep));
+    // Step-level validation
+    errors.push(...steps.flatMap(validateStep));
 
-  // Dependency references
-  errors.push(...validateDependencyRefs(steps));
+    // Dependency references
+    errors.push(...validateDependencyRefs(steps));
 
-  // Linear chain contract
-  errors.push(...validateStepChain(steps));
+    // Linear chain contract
+    errors.push(...validateStepChain(steps));
 
-  // Phase coverage（阶段意图是派生值的唯一输入，不自洽就必须报错）
-  errors.push(...validatePhaseCoverage(steps, phases));
+    // Phase coverage（阶段意图是派生值的唯一输入，不自洽就必须报错）
+    errors.push(...validatePhaseCoverage(steps, phases));
 
-  // Barrier continuity
-  const barrierErrors = validateBarrierContinuity(steps);
-  errors.push(...barrierErrors);
+    // Barrier continuity
+    const barrierErrors = validateBarrierContinuity(steps);
+    errors.push(...barrierErrors);
 
-  // Check for duplicate step IDs
-  const ids = steps.map(s => s.id);
-  const seen = new Set<string>();
-  for (const id of ids) {
-    if (seen.has(id)) {
-      errors.push({ stepId: id, field: 'id', message: `Duplicate step id: ${id}` });
+    // Check for duplicate step IDs
+    const ids = steps.map(s => s.id);
+    const seen = new Set<string>();
+    for (const id of ids) {
+        if (seen.has(id)) {
+            errors.push({ stepId: id, field: 'id', message: `Duplicate step id: ${id}` });
+        }
+        seen.add(id);
     }
-    seen.add(id);
-  }
 
-  // Warn if a step has no dependsOn and is not the first step
-  const hasRoot = steps.some(s => !s.dependsOn);
-  if (!hasRoot) {
-    warnings.push({
-      stepId: '(pipeline)',
-      field: 'dependsOn',
-      message: 'No root step found (all steps have dependsOn). At least one step should be a root.',
-    });
-  }
-
-  // Try to resolve the dependency order
-  let pipeline: ResolvedPipeline | null = null;
-  if (errors.length === 0) {
-    try {
-      pipeline = resolveStepOrder(steps);
-    } catch (e) {
-      errors.push({
-        stepId: '(pipeline)',
-        field: 'topology',
-        message: (e as Error).message,
-      });
+    // Warn if a step has no dependsOn and is not the first step
+    const hasRoot = steps.some(s => !s.dependsOn);
+    if (!hasRoot) {
+        warnings.push({
+            stepId: '(pipeline)',
+            field: 'dependsOn',
+            message: 'No root step found (all steps have dependsOn). At least one step should be a root.',
+        });
     }
-  }
 
-  return {
-    passed: errors.length === 0,
-    errors,
-    warnings,
-    pipeline,
-  };
+    // Try to resolve the dependency order
+    let pipeline: ResolvedPipeline | null = null;
+    if (errors.length === 0) {
+        try {
+            pipeline = resolveStepOrder(steps);
+        } catch (e) {
+            errors.push({
+                stepId: '(pipeline)',
+                field: 'topology',
+                message: (e as Error).message,
+            });
+        }
+    }
+
+    return {
+        passed: errors.length === 0,
+        errors,
+        warnings,
+        pipeline,
+    };
 }

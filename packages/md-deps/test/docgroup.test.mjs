@@ -20,21 +20,21 @@ const io = { exists: (path) => existsSync(join(fixtures, path)) };
 const emptyKeys = { entries: [] };
 
 function cliRun(args) {
-  const result = spawnSync(process.execPath, [bin, ...args], { cwd: fixtures, encoding: 'utf8' });
-  return { status: result.status, stdout: result.stdout ?? '', stderr: result.stderr ?? '' };
+    const result = spawnSync(process.execPath, [bin, ...args], { cwd: fixtures, encoding: 'utf8' });
+    return { status: result.status, stdout: result.stdout ?? '', stderr: result.stderr ?? '' };
 }
 
 test('文档群：无键表、纯路径引用（含片段）全绿 → CLI 退 0', () => {
-  assert.deepEqual(validate(readJson('refs.json').refs, emptyKeys, io), []);
+    assert.deepEqual(validate(readJson('refs.json').refs, emptyKeys, io), []);
 
-  const run = cliRun(['check', '--keys', 'keys-empty.json', '--refs', 'refs.json']);
-  assert.equal(run.status, 0, run.stderr);
-  assert.match(run.stdout, /✓ 通过/);
+    const run = cliRun(['check', '--keys', 'keys-empty.json', '--refs', 'refs.json']);
+    assert.equal(run.status, 0, run.stderr);
+    assert.match(run.stdout, /✓ 通过/);
 });
 
 test('文档群：一处路径不存在 → CLI 退 1 且指出 file:line（无键表也拦得住）', () => {
-  const run = cliRun(['check', '--keys', 'keys-empty.json', '--refs', 'refs-broken.json']);
-  assert.equal(run.status, 1);
-  assert.match(run.stderr, /docs\/guide\/setup\.md:21/);
-  assert.match(run.stderr, /missing-target/);
+    const run = cliRun(['check', '--keys', 'keys-empty.json', '--refs', 'refs-broken.json']);
+    assert.equal(run.status, 1);
+    assert.match(run.stderr, /docs\/guide\/setup\.md:21/);
+    assert.match(run.stderr, /missing-target/);
 });

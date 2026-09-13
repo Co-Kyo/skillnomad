@@ -16,7 +16,7 @@ import type { NextAction, SourceRuntimeTrace, SourceSchedulingPolicy, SourceCont
 // ---------------------------------------------------------------
 
 export interface SchemaRef {
-  $ref: string;
+    $ref: string;
 }
 
 // ---------------------------------------------------------------
@@ -24,9 +24,9 @@ export interface SchemaRef {
 // ---------------------------------------------------------------
 
 export interface RetryPolicy {
-  maxRetries: number;
-  backoff: 'fixed' | 'exponential' | 'linear';
-  delayMs: number;
+    maxRetries: number;
+    backoff: 'fixed' | 'exponential' | 'linear';
+    delayMs: number;
 }
 
 // ---------------------------------------------------------------
@@ -34,19 +34,19 @@ export interface RetryPolicy {
 // ---------------------------------------------------------------
 
 export interface TaskDef {
-  id: string;
-  label: string;
-  type: 'agent' | 'script' | 'human' | 'subflow';
-  /** 收敛动作词，用于规范措辞和 align-report。 */
-  verb?: NextAction;
-  body: string;
-  /** 可选的步骤正文文件路径；构建时优先读取该文件作为完整 body。 */
-  bodyFile?: string;
-  input?: SchemaRef;
-  output?: SchemaRef;
-  tools?: string[];
-  timeout?: number;
-  retry?: RetryPolicy;
+    id: string;
+    label: string;
+    type: 'agent' | 'script' | 'human' | 'subflow';
+    /** 收敛动作词，用于规范措辞和 align-report。 */
+    verb?: NextAction;
+    body: string;
+    /** 可选的步骤正文文件路径；构建时优先读取该文件作为完整 body。 */
+    bodyFile?: string;
+    input?: SchemaRef;
+    output?: SchemaRef;
+    tools?: string[];
+    timeout?: number;
+    retry?: RetryPolicy;
 }
 
 // ---------------------------------------------------------------
@@ -56,53 +56,53 @@ export interface TaskDef {
 export type ControlNode = TaskNode | SeqNode | ParallelNode | MapNode | BranchNode | LoopNode;
 
 export interface TaskNode {
-  kind: 'task';
-  task: TaskDef;
+    kind: 'task';
+    task: TaskDef;
 }
 
 export interface SeqNode {
-  kind: 'seq';
-  id: string;
-  label: string;
-  nodes: ControlNode[];
+    kind: 'seq';
+    id: string;
+    label: string;
+    nodes: ControlNode[];
 }
 
 export interface ParallelNode {
-  kind: 'parallel';
-  id: string;
-  label: string;
-  branches: ControlNode[];
-  converge?: TaskDef;
-  gate?: QualityGate;
+    kind: 'parallel';
+    id: string;
+    label: string;
+    branches: ControlNode[];
+    converge?: TaskDef;
+    gate?: QualityGate;
 }
 
 export interface MapNode {
-  kind: 'map';
-  id: string;
-  label: string;
-  items: string;
-  worker: ControlNode;
-  maxConcurrency: number;
-  slotOccupancy?: number;
-  reduce?: TaskDef;
+    kind: 'map';
+    id: string;
+    label: string;
+    items: string;
+    worker: ControlNode;
+    maxConcurrency: number;
+    slotOccupancy?: number;
+    reduce?: TaskDef;
 }
 
 export interface BranchNode {
-  kind: 'branch';
-  id: string;
-  label: string;
-  condition: string;
-  then: ControlNode;
-  else?: ControlNode;
+    kind: 'branch';
+    id: string;
+    label: string;
+    condition: string;
+    then: ControlNode;
+    else?: ControlNode;
 }
 
 export interface LoopNode {
-  kind: 'loop';
-  id: string;
-  label: string;
-  until: string;
-  body: ControlNode;
-  maxIterations?: number;
+    kind: 'loop';
+    id: string;
+    label: string;
+    until: string;
+    body: ControlNode;
+    maxIterations?: number;
 }
 
 // ---------------------------------------------------------------
@@ -110,10 +110,10 @@ export interface LoopNode {
 // ---------------------------------------------------------------
 
 export interface QualityGate {
-  rule: string;
-  onPass: 'converge' | 'skip';
-  onFail: 'degrade' | 'halt' | 'userChoice';
-  prompt?: string;
+    rule: string;
+    onPass: 'converge' | 'skip';
+    onFail: 'degrade' | 'halt' | 'userChoice';
+    prompt?: string;
 }
 
 // ---------------------------------------------------------------
@@ -121,12 +121,12 @@ export interface QualityGate {
 // ---------------------------------------------------------------
 
 export interface FileRef {
-  path: string;
-  description: string;
-  schema?: string;
-  required?: boolean;
-  /** 8.5 裁定：条目角色标签（contract/schema/rule/reference）。仅 as==='contract' 在产物中作为契约引用渲染。缺省 'reference'。 */
-  as?: import('./model.js').SourceRefRole;
+    path: string;
+    description: string;
+    schema?: string;
+    required?: boolean;
+    /** 8.5 裁定：条目角色标签（contract/schema/rule/reference）。仅 as==='contract' 在产物中作为契约引用渲染。缺省 'reference'。 */
+    as?: import('./model.js').SourceRefRole;
 }
 
 // ---------------------------------------------------------------
@@ -134,11 +134,11 @@ export interface FileRef {
 // ---------------------------------------------------------------
 
 export interface BarrierDef {
-  checkItems: string[];
-  clarifyPrompt: string;
-  onConfirm: 'continue' | string;
-  onReject: 'rollback' | 'modify';
-  recordPath?: string;
+    checkItems: string[];
+    clarifyPrompt: string;
+    onConfirm: 'continue' | string;
+    onReject: 'rollback' | 'modify';
+    recordPath?: string;
 }
 
 // ---------------------------------------------------------------
@@ -146,14 +146,14 @@ export interface BarrierDef {
 // ---------------------------------------------------------------
 
 export interface ReuseRule {
-  checkFile: string;
-  skipDescription: string;
+    checkFile: string;
+    skipDescription: string;
 }
 
 export interface DegradeProtocol {
-  maxRetries: number;
-  onDegrade: 'continue' | 'halt';
-  fallbackTask?: string;
+    maxRetries: number;
+    onDegrade: 'continue' | 'halt';
+    fallbackTask?: string;
 }
 
 // ---------------------------------------------------------------
@@ -161,17 +161,17 @@ export interface DegradeProtocol {
 // ---------------------------------------------------------------
 
 export interface SourceTraceEntry {
-  section: string;
-  sourceField: string;
-  sourceFile: string;
-  sourceLayer?: 'steps' | 'contracts' | 'assets' | 'plugins' | 'renderer' | 'modules';
-  sourceKind?: 'content' | 'schema' | 'path' | 'rule' | 'render';
+    section: string;
+    sourceField: string;
+    sourceFile: string;
+    sourceLayer?: 'steps' | 'contracts' | 'assets' | 'plugins' | 'renderer' | 'modules';
+    sourceKind?: 'content' | 'schema' | 'path' | 'rule' | 'render';
 }
 
 export interface SourceTraceStep {
-  stepId: string;
-  sourceFile: string;
-  entries: SourceTraceEntry[];
+    stepId: string;
+    sourceFile: string;
+    entries: SourceTraceEntry[];
 }
 
 // ---------------------------------------------------------------
@@ -179,35 +179,35 @@ export interface SourceTraceStep {
 // ---------------------------------------------------------------
 
 export interface StepDefinition {
-  id: string;
-  title: string;
-  description: string;
-  /** 8.4 起收窄为单值：最多一个前驱（线性链契约的类型级保证）。缺省表示链起点。 */
-  dependsOn?: string;
-  /** 当该步骤是 pipeline 初始化步骤时，渲染为 SKILL.md 的初始化规则。 */
-  initRules?: SkillInitRule[];
-  /** 运行时事件埋点协议；渲染器会把它输出为 process 的运行记录章节。 */
-  runtimeTrace?: SourceRuntimeTrace;
-  /** 可选：由源模型生成的完整步骤正文；存在时构建器直接作为 process 正文。 */
-  body?: string;
-  /** 可选：复杂 graph 步骤的完整正文源文件；构建时追加到生成文档。 */
-  bodyFile?: string;
-  /** 生成 section 到源码字段的映射，用于 feedback 定位。 */
-  sourceTrace?: SourceTraceEntry[];
-  /** 下一步步骤 ID；用于生成文档和 align-report。 */
-  next?: string;
-  /** 控制流树 — 递归结构替代扁平图 */
-  graph: ControlNode;
-  reads: FileRef[];
-  writes: FileRef[];
-  barrier?: BarrierDef;
-  /** 可选：源侧用户检查点声明。直装配（createSkill）下由框架转换为运行时 barrier（与 createSkillFromModel 行为对齐）。 */
-  checkpoint?: import('./model.js').SourceCheckpoint;
-  decisionSummary?: import('./model.js').SourceDecisionSummary;
-  display?: import('./model.js').SourceDecisionDisplay;
-  reuse?: ReuseRule[];
-  degrade?: DegradeProtocol;
-  plugins?: string[];
+    id: string;
+    title: string;
+    description: string;
+    /** 8.4 起收窄为单值：最多一个前驱（线性链契约的类型级保证）。缺省表示链起点。 */
+    dependsOn?: string;
+    /** 当该步骤是 pipeline 初始化步骤时，渲染为 SKILL.md 的初始化规则。 */
+    initRules?: SkillInitRule[];
+    /** 运行时事件埋点协议；渲染器会把它输出为 process 的运行记录章节。 */
+    runtimeTrace?: SourceRuntimeTrace;
+    /** 可选：由源模型生成的完整步骤正文；存在时构建器直接作为 process 正文。 */
+    body?: string;
+    /** 可选：复杂 graph 步骤的完整正文源文件；构建时追加到生成文档。 */
+    bodyFile?: string;
+    /** 生成 section 到源码字段的映射，用于 feedback 定位。 */
+    sourceTrace?: SourceTraceEntry[];
+    /** 下一步步骤 ID；用于生成文档和 align-report。 */
+    next?: string;
+    /** 控制流树 — 递归结构替代扁平图 */
+    graph: ControlNode;
+    reads: FileRef[];
+    writes: FileRef[];
+    barrier?: BarrierDef;
+    /** 可选：源侧用户检查点声明。直装配（createSkill）下由框架转换为运行时 barrier（与 createSkillFromModel 行为对齐）。 */
+    checkpoint?: import('./model.js').SourceCheckpoint;
+    decisionSummary?: import('./model.js').SourceDecisionSummary;
+    display?: import('./model.js').SourceDecisionDisplay;
+    reuse?: ReuseRule[];
+    degrade?: DegradeProtocol;
+    plugins?: string[];
 }
 
 // ---------------------------------------------------------------
@@ -215,67 +215,67 @@ export interface StepDefinition {
 // ---------------------------------------------------------------
 
 export interface SkillCallExample {
-  label: string;
-  pattern: string;
+    label: string;
+    pattern: string;
 }
 
 export interface SkillParam {
-  name: string;
-  description: string;
+    name: string;
+    description: string;
 }
 
 export interface SkillPhase {
-  name: string;
-  stepIds: string[];
-  description: string;
+    name: string;
+    stepIds: string[];
+    description: string;
 }
 
 export interface SkillInitRule {
-  title: string;
-  body: string;
+    title: string;
+    body: string;
 }
 
 export interface SkillApiMetadata {
-  /** frontmatter 中的长描述；未设置时使用 SkillDefinition.description。 */
-  frontmatterDescription?: string;
-  /** 调用方式表下方的补充说明。 */
-  usageNote?: string;
-  /** 上下文隔离提示；未设置时使用默认文本。 */
-  isolationNote?: string;
-  /** 是否在 SKILL.md 尾部输出构建 footer；公开输出建议 false。 */
-  includeBuildFooter?: boolean;
-  /** 流程总览中的 ASCII 流程图；未设置时使用步骤 ID 箭头。 */
-  flowOverview?: string;
-  callExamples: SkillCallExample[];
-  params: SkillParam[];
-  phases: SkillPhase[];
-  initRules?: SkillInitRule[];
-  /** 指定哪个步骤负责 pipeline 初始化；renderer 优先从该步骤读取 initRules。 */
-  initStepId?: string;
-  /** 调度策略（skill 级全局口径，8.13/8.14 下沉）；渲染到 SKILL.md 公共章节。 */
-  schedulingPolicy?: SourceSchedulingPolicy;
+    /** frontmatter 中的长描述；未设置时使用 SkillDefinition.description。 */
+    frontmatterDescription?: string;
+    /** 调用方式表下方的补充说明。 */
+    usageNote?: string;
+    /** 上下文隔离提示；未设置时使用默认文本。 */
+    isolationNote?: string;
+    /** 是否在 SKILL.md 尾部输出构建 footer；公开输出建议 false。 */
+    includeBuildFooter?: boolean;
+    /** 流程总览中的 ASCII 流程图；未设置时使用步骤 ID 箭头。 */
+    flowOverview?: string;
+    callExamples: SkillCallExample[];
+    params: SkillParam[];
+    phases: SkillPhase[];
+    initRules?: SkillInitRule[];
+    /** 指定哪个步骤负责 pipeline 初始化；renderer 优先从该步骤读取 initRules。 */
+    initStepId?: string;
+    /** 调度策略（skill 级全局口径，8.13/8.14 下沉）；渲染到 SKILL.md 公共章节。 */
+    schedulingPolicy?: SourceSchedulingPolicy;
 }
 
 export interface SkillDefinition {
-  name: string;
-  title: string;
-  description: string;
-  steps: StepDefinition[];
-  api?: SkillApiMetadata;
-  /** 模块注册表（8.15 Step 2）：构建期模块引用一致性校验的输入 */
-  contracts?: SourceContract[];
+    name: string;
+    title: string;
+    description: string;
+    steps: StepDefinition[];
+    api?: SkillApiMetadata;
+    /** 模块注册表（8.15 Step 2）：构建期模块引用一致性校验的输入 */
+    contracts?: SourceContract[];
 }
 
 export function createSkill(config: SkillDefinition): SkillDefinition {
-  // 双装配路径行为对齐（D29 缺陷2 修复）：直装配下同样把源侧 checkpoint
-  // 转换为运行时 barrier，与 createSkillFromModel 行为一致。
-  // 已有 barrier 时以 barrier 为准（不覆盖）。
-  const steps = config.steps.map(step =>
-    step.barrier || !step.checkpoint
-      ? step
-      : { ...step, barrier: { ...step.checkpoint } },
-  );
-  return { ...config, steps };
+    // 双装配路径行为对齐（D29 缺陷2 修复）：直装配下同样把源侧 checkpoint
+    // 转换为运行时 barrier，与 createSkillFromModel 行为一致。
+    // 已有 barrier 时以 barrier 为准（不覆盖）。
+    const steps = config.steps.map(step =>
+        step.barrier || !step.checkpoint
+            ? step
+            : { ...step, barrier: { ...step.checkpoint } },
+    );
+    return { ...config, steps };
 }
 
 // ---------------------------------------------------------------
@@ -283,9 +283,9 @@ export function createSkill(config: SkillDefinition): SkillDefinition {
 // ---------------------------------------------------------------
 
 export interface PipelineDefinition {
-  name: string;
-  description: string;
-  steps: StepDefinition[];
+    name: string;
+    description: string;
+    steps: StepDefinition[];
 }
 
 // ---------------------------------------------------------------
@@ -312,16 +312,16 @@ export type RuntimeVar =
 // ---------------------------------------------------------------
 
 export interface ResolvedStep extends StepDefinition {
-  seq: number;
-  resolvedReads: string[];
-  resolvedWrites: string[];
+    seq: number;
+    resolvedReads: string[];
+    resolvedWrites: string[];
 }
 
 export interface ResolvedPipeline {
-  name: string;
-  description: string;
-  steps: ResolvedStep[];
-  stepOrder: Record<string, number>;
+    name: string;
+    description: string;
+    steps: ResolvedStep[];
+    stepOrder: Record<string, number>;
 }
 
 // ---------------------------------------------------------------
@@ -329,58 +329,58 @@ export interface ResolvedPipeline {
 // ---------------------------------------------------------------
 
 export function task(config: TaskDef): TaskNode {
-  return { kind: 'task', task: config };
+    return { kind: 'task', task: config };
 }
 
 export function seq(id: string, label: string, nodes: ControlNode[]): SeqNode {
-  return { kind: 'seq', id, label, nodes };
+    return { kind: 'seq', id, label, nodes };
 }
 
 export function parallel(
-  id: string,
-  label: string,
-  branches: ControlNode[],
-  config?: { converge?: TaskDef; gate?: QualityGate },
+    id: string,
+    label: string,
+    branches: ControlNode[],
+    config?: { converge?: TaskDef; gate?: QualityGate },
 ): ParallelNode {
-  return {
-    kind: 'parallel',
-    id,
-    label,
-    branches,
-    converge: config?.converge,
-    gate: config?.gate,
-  };
+    return {
+        kind: 'parallel',
+        id,
+        label,
+        branches,
+        converge: config?.converge,
+        gate: config?.gate,
+    };
 }
 
 export function mapNode(
-  id: string,
-  label: string,
-  items: string,
-  worker: ControlNode,
-  maxConcurrency: number = 5,
-  reduce?: TaskDef,
+    id: string,
+    label: string,
+    items: string,
+    worker: ControlNode,
+    maxConcurrency: number = 5,
+    reduce?: TaskDef,
 ): MapNode {
-  return { kind: 'map', id, label, items, worker, maxConcurrency, reduce };
+    return { kind: 'map', id, label, items, worker, maxConcurrency, reduce };
 }
 
 export function branch(
-  id: string,
-  label: string,
-  condition: string,
-  then: ControlNode,
-  elseNode?: ControlNode,
+    id: string,
+    label: string,
+    condition: string,
+    then: ControlNode,
+    elseNode?: ControlNode,
 ): BranchNode {
-  return { kind: 'branch', id, label, condition, then, else: elseNode };
+    return { kind: 'branch', id, label, condition, then, else: elseNode };
 }
 
 export function loop(
-  id: string,
-  label: string,
-  until: string,
-  body: ControlNode,
-  maxIterations?: number,
+    id: string,
+    label: string,
+    until: string,
+    body: ControlNode,
+    maxIterations?: number,
 ): LoopNode {
-  return { kind: 'loop', id, label, until, body, maxIterations };
+    return { kind: 'loop', id, label, until, body, maxIterations };
 }
 
 // ---------------------------------------------------------------
@@ -390,28 +390,28 @@ export function loop(
 export type StepStatus = 'pending' | 'running' | 'completed' | 'failed' | 'skipped';
 
 export interface StepState {
-  status: StepStatus;
-  startedAt?: string;
-  completedAt?: string;
-  outputs: string[];
-  error?: string;
-  runAttempt: number;
+    status: StepStatus;
+    startedAt?: string;
+    completedAt?: string;
+    outputs: string[];
+    error?: string;
+    runAttempt: number;
 }
 
 export interface PipelineState {
-  pipelineName: string;
-  version: string;
-  startedAt?: string;
-  updatedAt: string;
-  steps: Record<string, StepState>;
+    pipelineName: string;
+    version: string;
+    startedAt?: string;
+    updatedAt: string;
+    steps: Record<string, StepState>;
 }
 
 export interface PipelineStateManager {
-  load(pipelineName: string): PipelineState | null;
-  save(state: PipelineState): void;
-  init(pipelineName: string, steps: string[]): PipelineState;
-  markStep(state: PipelineState, stepId: string, status: StepStatus, outputs?: string[], error?: string): PipelineState;
-  getResumePoint(state: PipelineState): string | null;
+    load(pipelineName: string): PipelineState | null;
+    save(state: PipelineState): void;
+    init(pipelineName: string, steps: string[]): PipelineState;
+    markStep(state: PipelineState, stepId: string, status: StepStatus, outputs?: string[], error?: string): PipelineState;
+    getResumePoint(state: PipelineState): string | null;
 }
 
 // ---------------------------------------------------------------
@@ -419,16 +419,16 @@ export interface PipelineStateManager {
 // ---------------------------------------------------------------
 
 export interface CheckpointDef {
-  id?: string;
-  check: {
-    mode: 'file-exists' | 'step-status' | 'llm-judge' | 'user-confirm';
-    path?: string;
-    prompt?: string;
-    checkItems?: string[];
-  };
-  onPass: 'continue' | 'skip';
-  onFail: 'halt' | 'retry' | 'degrade' | 'userChoice';
-  maxRetries?: number;
+    id?: string;
+    check: {
+        mode: 'file-exists' | 'step-status' | 'llm-judge' | 'user-confirm';
+        path?: string;
+        prompt?: string;
+        checkItems?: string[];
+    };
+    onPass: 'continue' | 'skip';
+    onFail: 'halt' | 'retry' | 'degrade' | 'userChoice';
+    maxRetries?: number;
 }
 
 // ---------------------------------------------------------------
@@ -439,34 +439,34 @@ export interface CheckpointDef {
  * @deprecated v2 不再使用扁平边。改用 seq() 或 branch() 表达控制流。
  */
 export function edge(_from?: string, _to?: string, _condition?: string): never {
-  throw new Error(
-    '[skillnomad-types v2] edge() 已移除。使用 seq() 或 branch() 替代扁平边。',
-  );
+    throw new Error(
+        '[skillnomad-types v2] edge() 已移除。使用 seq() 或 branch() 替代扁平边。',
+    );
 }
 
 /**
  * @deprecated v2 使用 task({ type: "agent", ... }) 替代 agent()。
  */
 export function agent(_config?: never): never {
-  throw new Error(
-    '[skillnomad-types v2] agent() 已移除。使用 task({ type: "agent", ... }) 替代。',
-  );
+    throw new Error(
+        '[skillnomad-types v2] agent() 已移除。使用 task({ type: "agent", ... }) 替代。',
+    );
 }
 
 /**
  * @deprecated v2 使用 parallel() 替代 batch()。
  */
 export function batch(_id?: string, _label?: string, _branches?: never[], _config?: never): never {
-  throw new Error(
-    '[skillnomad-types v2] batch() 已移除。使用 parallel() 替代。',
-  );
+    throw new Error(
+        '[skillnomad-types v2] batch() 已移除。使用 parallel() 替代。',
+    );
 }
 
 /**
  * @deprecated v2 使用 mapNode() 替代 mapWork()。
  */
 export function mapWork(_id?: string, _label?: string, _itemFrom?: string, _worker?: never, _maxConcurrency?: number): never {
-  throw new Error(
-    '[skillnomad-types v2] mapWork() 已移除。使用 mapNode() 替代。',
-  );
+    throw new Error(
+        '[skillnomad-types v2] mapWork() 已移除。使用 mapNode() 替代。',
+    );
 }

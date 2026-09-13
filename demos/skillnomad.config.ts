@@ -8,7 +8,7 @@
 import { defineConfig } from 'skillnomad';
 
 export default defineConfig({
-  // 参数链接到 skill 定义文件
-  skill: './skill.ts',
-  outputDir: '../dist',
+    // 参数链接到 skill 定义文件
+    skill: './skill.ts',
+    outputDir: '../dist',
 });
