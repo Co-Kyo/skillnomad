@@ -1,6 +1,6 @@
 # 版本线与迁移
 
-> 当前版本：**0.1.5**（latest）。后续变更以 [CHANGELOG](https://github.com/Co-Kyo/skillnomad/releases) 实际发布为准，本文不预告未发布版本。
+> 当前版本：**0.1.6**（latest）。后续变更以 [CHANGELOG](https://github.com/Co-Kyo/skillnomad/releases) 实际发布为准，本文不预告未发布版本。
 
 ## 安装
 
