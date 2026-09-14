@@ -42,8 +42,9 @@
         "build": "tsc"
     },
     "dependencies": {
-        "skillnomad-types": "^0.1.0",
+        "markrefs": "^0.1.0",
+        "methodblocks": "^0.1.1",
         "skillnomad-common": "^0.1.0",
-        "markrefs": "^0.1.0"
+        "skillnomad-types": "^0.1.0"
     }
 }
