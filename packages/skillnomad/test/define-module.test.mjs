@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { validateModules, defineModule } from '../dist/index.js';
+import { defineModule } from '../dist/index.js';
+import { validateModules } from '../../skillnomad-common/dist/index.js';
 
 // D35 W2：V4 模块注册表合法性（id 唯一＋deps 环）；引用一致性随 W4 首刀来。
 test('V4 正例：空表＋合法表 → 无错误', () => {

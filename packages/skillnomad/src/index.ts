@@ -42,6 +42,7 @@ import type {
     BarrierDef,
     DegradeProtocol,
     SourceSchedulingPolicy,
+    SourceModule,
     SourceContract,
 } from 'skillnomad-types';
 import {
@@ -80,33 +81,46 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as crypto from 'node:crypto';
 
-export { resolveStepOrder };
 export {
-    CHAIN_TERMINAL,
-    validateStep,
-    validateBarrierContinuity,
-    validateDependencyRefs,
-    validateStepChain,
-    validatePhaseCoverage,
-    validateModuleUsage,
-    validateModules,
-    validateBodySections,
-    // D35 W4 首刀转口（3 值，同上）。
+    // 导出面收敛：主包只保留 3 个内容渲染值（模块作者面）；校验器/派生/解析等
+    // 全部留在 skillnomad-common（实现细节，不建议直引）。
     SCHEDULING,
     renderBinding,
     renderModuleDoc,
-    resolveChain,
-    deriveChainNext,
-    deriveInitStepId,
-    deriveFlowOverview,
-    derivePhaseIntervals,
-    formatInterval,
 };
 
-// 8.17 API 表面收敛：主包 = 唯一公共 API 表面。
-// step builder、flow 辅助（task/seq/parallel/mapNode/branch/loop）与全部类型
-// 统一从主包 re-export——用户只需 `npm install skillnomad` 一个包、`import ... from 'skillnomad'` 一个源。
-export * from 'skillnomad-types';
+// 导出面收敛：主包只转口「作者面」——构造动词 ＋ 编写 skill 所需的类型。
+// 机制面（校验器/派生器/内部 IR 类型/依赖解析等）留在各子包（实现细节，不建议直引）。
+// 快照门：packages/skillnomad/test/export-surface.test.mjs 锁定本清单（新增/删除即红）。
+export {
+    step,
+    defineModule,
+    createSkill,
+} from 'skillnomad-types';
+export {
+    task,
+    seq,
+    parallel,
+    mapNode,
+    branch,
+    loop,
+};
+export type {
+    StepDefinition,
+    SkillSourceModel,
+    NextAction,
+    SourceStep,
+    SourceRef,
+    SourceAction,
+    SourceFlow,
+    SourceContract,
+    SourcePolicies,
+    SourceSchedulingPolicy,
+    SourceFailRule,
+    SourceVerifyRule,
+    SourceCheckpoint,
+    SourceModule,
+} from 'skillnomad-types';
 
 // markrefs 集成：引用登记 + 键表 + 构建期校验（宿主侧适配层，见 ./markrefs.ts）
 import { createRefs, inspectRefs, type MarkrefsConfig } from './markrefs.js';
@@ -115,16 +129,10 @@ export {
     createRefs,
     inspectRefs,
     type MarkrefsConfig,
-    type RefsCounts,
-    type RefOptions,
-    type Refs,
-    type RefsOptions,
-    type RefsReport,
-    type MdRefRecord,
 } from './markrefs.js';
 
 // markrefs 公共类型的转口（消费侧只 import 'skillnomad'，不直接依赖 markrefs）
-export type { Diagnostic, Io, KeyEntry, KeyMap, RefDecl, Resolved, RuleId, Severity } from 'markrefs';
+export type { KeyMap } from 'markrefs';
 
 export interface SkillMeta {
     name: string;
@@ -462,6 +470,12 @@ export interface SkillnomadConfig {
    * 缺省＝不做 markrefs 校验（旧行为不变）。
    */
     markrefs?: MarkrefsConfig;
+    /**
+     * 模块注册表（可选，D35 全链路）：声明后构建期做 V4 校验（id 唯一、deps 无环、
+     * 注册表 module 引用必在册），并把模块 `render()` 结果接入引用步骤的「模块附录」。
+     * 缺省＝不声明（旧行为逐字不变）。
+     */
+    modules?: SourceModule[];
 }
 
 /** 创建 skillnomad 配置（纯类型辅助，返回传入的对象） */
@@ -620,15 +634,16 @@ function renderBarrier(step: ResolvedStep): string {
 
 // 8.5 裁定：契约引用章节由 reads.filter(as === 'contract') 派生渲染（不再人工维护 contractRefs）。
 // 契约文档只进契约引用章节，不重复进文件引用表——消除人工双清单重复登记。
-function renderFileRefs(step: ResolvedStep): string {
+function renderFileRefs(step: ResolvedStep, modulePaths?: Set<string>): string {
     const contractRefs = step.reads.filter(r => r.as === 'contract');
     const dataReads = step.reads.filter(r => r.as !== 'contract');
+    const mark = (p: string): string => (modulePaths?.has(p) ? '（模块渲染见附录）' : '');
 
     let md = '';
     if (contractRefs.length > 0) {
         md += `## 契约引用\n\n`;
         for (const ref of contractRefs) {
-            md += `- \`${ref.path}\`：${ref.description ?? ''}\n`;
+            md += `- \`${ref.path}\`：${ref.description ?? ''}${mark(ref.path)}\n`;
         }
         md += `\n`;
     }
@@ -637,7 +652,7 @@ function renderFileRefs(step: ResolvedStep): string {
     md += `| 类型 | 文件 | 说明 |\n`;
     md += `|------|------|------|\n`;
     for (const ref of dataReads) {
-        md += `| 读取 | \`${ref.path}\` | ${ref.description ?? ''} |\n`;
+        md += `| 读取 | \`${ref.path}\` | ${ref.description ?? ''}${mark(ref.path)} |\n`;
     }
     for (const ref of step.writes) {
         md += `| 产出 | \`${ref.path}\` | ${ref.description ?? ''} |\n`;
@@ -754,8 +769,19 @@ export function renderModulesAppendix(
 export function renderStep(
     step: ResolvedStep,
     stepOrder: Record<string, number>,
+    moduleCtx?: { registry: SourceContract[]; contents: Record<string, string> },
 ): string {
     const withRefs = (text: string): string => resolveStepRefs(text, stepOrder);
+    // D35 模块接线：本步骤 reads 命中的、带 module 的注册条目 → 该步的模块附录（双路径共用位）。
+    // 判定共用：registry 命中 ∧ 该步 reads 命中 ∧ render() 有内容（空内容＝缺席，标注与附录同进退，
+    // 避免标注指向不存在的正本）。
+    const stepModules = moduleCtx
+        ? moduleCtx.registry.filter(c => c.module
+            && step.reads.some(r => r.path === c.path)
+            && Boolean(moduleCtx.contents[c.module]))
+        : [];
+    const modulePaths = new Set(stepModules.map(c => c.path));
+    const appendix = moduleCtx ? renderModulesAppendix(stepModules, moduleCtx.contents) : '';
     if (step.graph.kind === 'task' && step.graph.task.bodyFile && !step.body) {
         return withRefs(resolveTaskBody(step.graph.task));
     }
@@ -765,7 +791,7 @@ export function renderStep(
     // P1 修复：早返分支追加四节声明渲染（与完整分支共用函数）。
     // 早返前四节（依赖/增量复用/降级协议/插件加载）被静默丢失，导致
     // 11/11 带正文步骤的 reuse/plugins 声明在产物中零渲染。
-        return `${withRefs(stepBody)}\n\n---\n\n${renderFileRefs(step)}${renderDependsOn(step)}\n## 调度策略\n\n${renderControlTree(step.graph, 0)}\n${renderReuse(step)}${renderDegrade(step)}${renderBarrier(step)}${renderPlugins(step)}${renderRuntimeTrace(step)}`;
+        return `${withRefs(stepBody)}\n\n---\n\n${renderFileRefs(step, modulePaths)}${renderDependsOn(step)}\n## 调度策略\n\n${renderControlTree(step.graph, 0)}\n${renderReuse(step)}${renderDegrade(step)}${renderBarrier(step)}${renderPlugins(step)}${renderRuntimeTrace(step)}${appendix}`;
     }
 
     const seqStr = String(step.seq).padStart(2, '0');
@@ -776,7 +802,7 @@ export function renderStep(
     md += `---\n\n`;
 
     // 文件引用（契约引用 + 读取/产出表，8.5 统一派生渲染）
-    md += renderFileRefs(step);
+    md += renderFileRefs(step, modulePaths);
 
     // Dependencies（与早返分支共用 renderDependsOn）
     md += renderDependsOn(step);
@@ -798,6 +824,8 @@ export function renderStep(
     md += renderPlugins(step);
 
     md += renderRuntimeTrace(step);
+
+    md += appendix;
 
     md += `\n---\n`;
     md += `*Generated by skillnomad v${SKILLNOMAD_VERSION} | Step ${seqStr} — ${step.id}*`;
@@ -976,6 +1004,7 @@ export function renderPipeline(
     pipeline: ResolvedPipeline,
     outputDir: string,
     meta: SkillMeta,
+    moduleCtx?: { registry: SourceContract[]; contents: Record<string, string> },
 ): string[] {
     const filePaths: string[] = [];
     const processesDir = path.join(outputDir, 'processes');
@@ -993,7 +1022,7 @@ export function renderPipeline(
         const seqStr = String(step.seq).padStart(2, '0');
         const fileName = `${seqStr}-${step.id}.md`;
         const filePath = path.join(processesDir, fileName);
-        const content = renderStep(step, pipeline.stepOrder);
+        const content = renderStep(step, pipeline.stepOrder, moduleCtx);
         fs.writeFileSync(filePath, content, 'utf-8');
         staleFiles.delete(fileName);
         filePaths.push(filePath);
@@ -1275,6 +1304,7 @@ export function buildPipeline(
     meta?: SkillMeta,
     registry: SourceContract[] = [],
     markrefs?: MarkrefsConfig,
+    modules: SourceModule[] = [],
 ): { pipeline: ResolvedPipeline; files: string[] } {
     const errors = [
         ...steps.flatMap(validateStep),
@@ -1283,6 +1313,7 @@ export function buildPipeline(
         ...validatePhaseCoverage(steps, meta?.api?.phases ?? []),
         ...validateBarrierContinuity(steps),
         ...validateModuleUsage(steps, registry),
+        ...validateModules(modules, registry),
         ...(meta?.api?.schedulingPolicy ? validateSchedulingPolicy(meta.api.schedulingPolicy) : []),
     ];
 
@@ -1330,7 +1361,8 @@ export function buildPipeline(
     }
 
     console.log(`\nRendering to ${outputDir}:`);
-    const files = renderPipeline(pipeline, outputDir, effectiveMeta);
+    const contents = Object.fromEntries(modules.map(m => [m.id, m.render()]));
+    const files = renderPipeline(pipeline, outputDir, effectiveMeta, { registry, contents });
     files.push(writeOutputManifest(pipeline, outputDir));
     files.push(writeArtifactManifest(pipeline, outputDir, files));
     files.push(writeDecisionSummaryManifest(pipeline, outputDir));

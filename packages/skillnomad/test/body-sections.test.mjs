@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { validateBodySections } from '../dist/index.js';
+import { validateBodySections } from '../../skillnomad-common/dist/index.js';
 
 // B1 body 三段分块（联调薄校验）：只认结构标记，不认散文内容。
 // 含"搜法"即须含"判据："与"参照"；不含"搜法"直接放行。

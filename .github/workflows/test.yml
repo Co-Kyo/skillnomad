@@ -1,0 +1,32 @@
+name: Test skillnomad
+
+# E 线导出面快照门与全量回归的 CI 兜底：
+# 此前仓库只有 docs.yml / release.yml，测试仅在本地手动跑——快照门（导出面 42 名清单）
+# 需要 CI 覆盖，否则 src 改动不重构建时门会绿读陈旧 dist。
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Test
+        run: npm test
+
+      - name: Lint
+        run: npm run lint

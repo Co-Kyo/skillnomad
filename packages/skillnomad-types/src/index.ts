@@ -302,7 +302,6 @@ export type RuntimeVar =
   | '{topic}'
   | '{seq}'
   | '{shortName}'
-  | '{capabilityId}'
   | '{dimension}'
   | '{batchId}'
   | '{agentLabel}'
@@ -431,42 +430,3 @@ export interface CheckpointDef {
     maxRetries?: number;
 }
 
-// ---------------------------------------------------------------
-// v1 弃用存根 — 提供迁移提示
-// ---------------------------------------------------------------
-
-/**
- * @deprecated v2 不再使用扁平边。改用 seq() 或 branch() 表达控制流。
- */
-export function edge(_from?: string, _to?: string, _condition?: string): never {
-    throw new Error(
-        '[skillnomad-types v2] edge() 已移除。使用 seq() 或 branch() 替代扁平边。',
-    );
-}
-
-/**
- * @deprecated v2 使用 task({ type: "agent", ... }) 替代 agent()。
- */
-export function agent(_config?: never): never {
-    throw new Error(
-        '[skillnomad-types v2] agent() 已移除。使用 task({ type: "agent", ... }) 替代。',
-    );
-}
-
-/**
- * @deprecated v2 使用 parallel() 替代 batch()。
- */
-export function batch(_id?: string, _label?: string, _branches?: never[], _config?: never): never {
-    throw new Error(
-        '[skillnomad-types v2] batch() 已移除。使用 parallel() 替代。',
-    );
-}
-
-/**
- * @deprecated v2 使用 mapNode() 替代 mapWork()。
- */
-export function mapWork(_id?: string, _label?: string, _itemFrom?: string, _worker?: never, _maxConcurrency?: number): never {
-    throw new Error(
-        '[skillnomad-types v2] mapWork() 已移除。使用 mapNode() 替代。',
-    );
-}
