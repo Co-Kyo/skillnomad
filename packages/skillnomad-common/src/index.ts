@@ -816,12 +816,16 @@ export function validateBodySections(steps: StepDefinition[]): ValidationError[]
 }
 
 /**
- * **V4 · 模块注册表合法性（D35 W2）**：`SourceModule[]` 自身合法。
- * 不碰 `validateModuleUsage(steps, registry)` 签名；引用一致性（reads 按 module 查）随 W4 首刀来。
+ * **V4 · 模块注册表合法性（D35 W2 ＋ 全链路接线）**：`SourceModule[]` 自身合法 ＋ 注册表引用在册。
+ * 不碰 `validateModuleUsage(steps, registry)` 签名。
  * - V4a：module id 唯一（重复 id 即红；R2 F-4 无 deps 降级位）；
- * - V4b：deps 环即红（DFS；无 deps 即无边，不报错）。
+ * - V4b：deps 环即红（DFS；无 deps 即无边，不报错）；
+ * - V4c：注册表条目 `module` 引用的 id 必须在册（D35 双轨：存在即认 id，未登记即红）。
  */
-export function validateModules(modules: import('skillnomad-types').SourceModule[] = []): ValidationError[] {
+export function validateModules(
+    modules: import('skillnomad-types').SourceModule[] = [],
+    registry: import('skillnomad-types').SourceContract[] = [],
+): ValidationError[] {
     const errors: ValidationError[] = [];
     const seen = new Set<string>();
     for (const m of modules) {
@@ -829,6 +833,11 @@ export function validateModules(modules: import('skillnomad-types').SourceModule
             errors.push({ stepId: '(modules)', field: 'module', message: `模块 id 重复：${m.id}（D35 V4a）` });
         }
         seen.add(m.id);
+    }
+    for (const c of registry) {
+        if (c.module && !seen.has(c.module)) {
+            errors.push({ stepId: '(modules)', field: 'module', message: `模块引用未登记：${c.id} → ${c.module}（D35 V4c）` });
+        }
     }
     const adj = new Map(modules.map((m) => [m.id, (m.deps ?? []).filter((d) => m.id !== d)]));
     const WHITE = 0, GRAY = 1, BLACK = 2;
