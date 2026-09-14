@@ -302,7 +302,6 @@ export type RuntimeVar =
   | '{topic}'
   | '{seq}'
   | '{shortName}'
-  | '{capabilityId}'
   | '{dimension}'
   | '{batchId}'
   | '{agentLabel}'
