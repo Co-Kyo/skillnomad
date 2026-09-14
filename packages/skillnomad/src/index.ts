@@ -82,14 +82,14 @@ import * as path from 'node:path';
 import * as crypto from 'node:crypto';
 
 export {
-    // E 线（导出面分账）：主包只保留 3 个内容渲染值（模块作者面）；校验器/派生/解析等
+    // 导出面收敛：主包只保留 3 个内容渲染值（模块作者面）；校验器/派生/解析等
     // 全部留在 skillnomad-common（实现细节，不建议直引）。
     SCHEDULING,
     renderBinding,
     renderModuleDoc,
 };
 
-// E 线（导出面分账）：主包只转口「作者面」——构造动词 ＋ 编写 skill 所需的类型。
+// 导出面收敛：主包只转口「作者面」——构造动词 ＋ 编写 skill 所需的类型。
 // 机制面（校验器/派生器/内部 IR 类型/依赖解析等）留在各子包（实现细节，不建议直引）。
 // 快照门：packages/skillnomad/test/export-surface.test.mjs 锁定本清单（新增/删除即红）。
 export {

@@ -3,7 +3,7 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
 
-// E 线导出面快照门（2026-09-14）：主包公开面 ＝ 作者面（33）＋ 构建面（9），共 42 名。
+// 导出面快照门（2026-09-14）：主包公开面 ＝ 作者面（33）＋ 构建 API（9），共 42 个公开导出。
 // 任一新增/删除即红——要改清单必须显式改本文件（把有意的 API 变更记录在此）。
 const AUTHORING_VALUES = [
     'step', 'defineModule', 'createSkill',
