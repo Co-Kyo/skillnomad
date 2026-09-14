@@ -1,6 +1,6 @@
 {
     "name": "skillnomad",
-    "version": "0.1.5",
+    "version": "0.1.6",
     "description": "skillnomad — build LLM-executable Markdown skills from structured pipeline definitions",
     "keywords": [
         "skillnomad",
@@ -44,7 +44,7 @@
     "dependencies": {
         "markrefs": "0.1.0",
         "methodblocks": "0.1.1",
-        "skillnomad-common": "0.1.5",
-        "skillnomad-types": "0.1.5"
+        "skillnomad-common": "0.1.6",
+        "skillnomad-types": "0.1.6"
     }
 }

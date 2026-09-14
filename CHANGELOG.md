@@ -2,6 +2,14 @@
 
 > **注意**：新线自 **0.1.0-beta.1** 独立起步（orphan 干净根提交，skillpack → skillnomad 改名）；改名前的 skillpack 时期记录已归并在该版本节内。
 
+## v0.1.6（methodblocks 集成 · 依赖固定版本号 · 工作流升版）
+
+- **feat(blocks)**：methodblocks 集成——新增 `blockModule()` 适配器（块集 → 模块，构建期渲染进产物「模块附录」）与可选 `config.structure`（构建期块结构校验：引用缺席／一字不抄／母版未进正文／同块双发布；诊断并入构建失败汇总）。缺省不声明时产物与 0.1.5 逐字一致；公开面新增 4 个导出（`blockModule` ＋ 三个类型）。新增依赖 `methodblocks`（Markdown 积木化工具集，独立项目、独立发版）。
+- **chore(deps)**：内互引与工具依赖一律改为**固定版本号**——`skillnomad-types`／`-common` 与本包精确同版（0.1.6）、`markrefs` 0.1.0、`methodblocks` 0.1.1；安装主包所得子包版本精确可预期（构思阶段整组同版策略）。
+- **chore(ci)**：工作流 action 升版（checkout／setup-node → v7，Pages 动作 → v5），运行注解清零。
+- 回归：typecheck 通过；全量测试 98/98。
+- 升级影响：新增可选配置与导出为纯加法；依赖为固定版本号——若需与其它版本组合，请显式安装对应精确版本。
+
 ## v0.1.5（模块全链路 · 公开 API 面收敛 · 测试 CI 兜底）
 
 - **feat(modules)**：模块接入构建链路——`config.modules`（可选）声明后，构建期做注册表校验（id 唯一、`deps` 无环、注册表 `module` 引用未登记即红），并把模块 `render()` 的结果渲染进引用步骤的「模块附录」（含引用表标注；未声明模块时产物逐字不变）。
