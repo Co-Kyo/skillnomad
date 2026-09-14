@@ -37,6 +37,6 @@
         "build": "tsc"
     },
     "dependencies": {
-        "skillnomad-types": "^0.1.0"
+        "skillnomad-types": "0.1.5"
     }
 }

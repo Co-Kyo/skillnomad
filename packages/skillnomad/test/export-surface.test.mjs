@@ -17,8 +17,10 @@ const AUTHORING_TYPES = [
     'SourcePolicies', 'SourceSchedulingPolicy', 'SourceFailRule', 'SourceVerifyRule',
     'SourceCheckpoint', 'SourceModule', 'KeyMap',
     'SkillMeta', 'SkillnomadConfig', 'MarkrefsConfig',
+    'BlockModuleInput', 'StructureConfig', 'StructureDocSpec',
 ];
 const BUILD_VALUES = [
+    'blockModule',
     'resolveStepRefs', 'inspectRefs', 'renderModulesAppendix',
     'renderStep', 'renderSkillMd', 'renderPipelineState', 'renderPipeline',
     'writeAlignReport', 'buildPipeline',

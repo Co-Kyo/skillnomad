@@ -124,12 +124,16 @@ export type {
 
 // markrefs 集成：引用登记 + 键表 + 构建期校验（宿主侧适配层，见 ./markrefs.ts）
 import { createRefs, inspectRefs, type MarkrefsConfig } from './markrefs.js';
+import { blockModule, runStructureChecks, type BlockModuleInput, type StructureConfig, type StructureDocSpec } from './blocks.js';
 
 export {
     createRefs,
     inspectRefs,
     type MarkrefsConfig,
 } from './markrefs.js';
+
+// methodblocks 适配器转口（P2 集成；工具协作层，同 markrefs 先例）。
+export { blockModule, type BlockModuleInput, type StructureConfig, type StructureDocSpec } from './blocks.js';
 
 // markrefs 公共类型的转口（消费侧只 import 'skillnomad'，不直接依赖 markrefs）
 export type { KeyMap } from 'markrefs';
@@ -476,6 +480,12 @@ export interface SkillnomadConfig {
      * 缺省＝不声明（旧行为逐字不变）。
      */
     modules?: SourceModule[];
+    /**
+     * 块文档结构校验（可选，P2 集成）：声明后在构建期对每份块文档跑 methodblocks `check()`
+     * （引用缺席／一字不抄／母版未进正文／同块双发布），诊断计入失败汇总。
+     * 缺省＝不声明（旧行为逐字不变）。
+     */
+    structure?: StructureConfig;
 }
 
 /** 创建 skillnomad 配置（纯类型辅助，返回传入的对象） */
@@ -1305,6 +1315,7 @@ export function buildPipeline(
     registry: SourceContract[] = [],
     markrefs?: MarkrefsConfig,
     modules: SourceModule[] = [],
+    structure?: StructureConfig,
 ): { pipeline: ResolvedPipeline; files: string[] } {
     const errors = [
         ...steps.flatMap(validateStep),
@@ -1335,14 +1346,28 @@ export function buildPipeline(
         refsErrorCount = report.blocking.length + report.problems.length;
     }
 
-    if (errors.length + refsErrorCount > 0) {
+    // 块文档结构校验（可选，P2）：诊断保持 methodblocks 自身形状（code／message），
+    // 位置以文档 id 标注——与 markrefs 同层同口径，不映射进 {stepId, field, message}。
+    let structureErrorCount = 0;
+    if (structure) {
+        const structureProblems = runStructureChecks(structure);
+        for (const { docId, diagnostic } of structureProblems) {
+            console.error(`  ✗ ${docId} ${diagnostic.code} ${diagnostic.message}`);
+        }
+        structureErrorCount = structureProblems.length;
+        if (structureErrorCount === 0) {
+            console.log(`structure：${structure.docs.length} 份块文档校验通过`);
+        }
+    }
+
+    if (errors.length + refsErrorCount + structureErrorCount > 0) {
         if (errors.length > 0) {
             console.error('Validation errors:');
             for (const err of errors) {
                 console.error(`  ❌ [${err.stepId}] ${err.field}: ${err.message}`);
             }
         }
-        throw new Error(`Validation failed with ${errors.length + refsErrorCount} error(s)`);
+        throw new Error(`Validation failed with ${errors.length + refsErrorCount + structureErrorCount} error(s)`);
     }
 
     console.log('Validation passed ✓');
