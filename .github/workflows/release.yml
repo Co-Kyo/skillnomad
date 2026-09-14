@@ -18,9 +18,9 @@ jobs:
       contents: write
       id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           registry-url: https://registry.npmjs.org/
@@ -164,7 +164,7 @@ jobs:
 
       - name: Create GitHub Release
         if: steps.version-gate.outputs.should_release == 'true'
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ env.RELEASE_TAG }}
           # 标题：beta 沿用版本号；v0.1.0 用首个稳定版定位标题；其余正式版用 plain 版本号
