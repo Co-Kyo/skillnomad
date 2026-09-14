@@ -81,33 +81,46 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as crypto from 'node:crypto';
 
-export { resolveStepOrder };
 export {
-    CHAIN_TERMINAL,
-    validateStep,
-    validateBarrierContinuity,
-    validateDependencyRefs,
-    validateStepChain,
-    validatePhaseCoverage,
-    validateModuleUsage,
-    validateModules,
-    validateBodySections,
-    // D35 W4 首刀转口（3 值，同上）。
+    // E 线（导出面分账）：主包只保留 3 个内容渲染值（模块作者面）；校验器/派生/解析等
+    // 全部留在 skillnomad-common（实现细节，不建议直引）。
     SCHEDULING,
     renderBinding,
     renderModuleDoc,
-    resolveChain,
-    deriveChainNext,
-    deriveInitStepId,
-    deriveFlowOverview,
-    derivePhaseIntervals,
-    formatInterval,
 };
 
-// 8.17 API 表面收敛：主包 = 唯一公共 API 表面。
-// step builder、flow 辅助（task/seq/parallel/mapNode/branch/loop）与全部类型
-// 统一从主包 re-export——用户只需 `npm install skillnomad` 一个包、`import ... from 'skillnomad'` 一个源。
-export * from 'skillnomad-types';
+// E 线（导出面分账）：主包只转口「作者面」——构造动词 ＋ 编写 skill 所需的类型。
+// 机制面（校验器/派生器/内部 IR 类型/依赖解析等）留在各子包（实现细节，不建议直引）。
+// 快照门：packages/skillnomad/test/export-surface.test.mjs 锁定本清单（新增/删除即红）。
+export {
+    step,
+    defineModule,
+    createSkill,
+} from 'skillnomad-types';
+export {
+    task,
+    seq,
+    parallel,
+    mapNode,
+    branch,
+    loop,
+};
+export type {
+    StepDefinition,
+    SkillSourceModel,
+    NextAction,
+    SourceStep,
+    SourceRef,
+    SourceAction,
+    SourceFlow,
+    SourceContract,
+    SourcePolicies,
+    SourceSchedulingPolicy,
+    SourceFailRule,
+    SourceVerifyRule,
+    SourceCheckpoint,
+    SourceModule,
+} from 'skillnomad-types';
 
 // markrefs 集成：引用登记 + 键表 + 构建期校验（宿主侧适配层，见 ./markrefs.ts）
 import { createRefs, inspectRefs, type MarkrefsConfig } from './markrefs.js';
@@ -116,16 +129,10 @@ export {
     createRefs,
     inspectRefs,
     type MarkrefsConfig,
-    type RefsCounts,
-    type RefOptions,
-    type Refs,
-    type RefsOptions,
-    type RefsReport,
-    type MdRefRecord,
 } from './markrefs.js';
 
 // markrefs 公共类型的转口（消费侧只 import 'skillnomad'，不直接依赖 markrefs）
-export type { Diagnostic, Io, KeyEntry, KeyMap, RefDecl, Resolved, RuleId, Severity } from 'markrefs';
+export type { KeyMap } from 'markrefs';
 
 export interface SkillMeta {
     name: string;
