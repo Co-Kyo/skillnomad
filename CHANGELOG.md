@@ -2,6 +2,14 @@
 
 > **注意**：新线自 **0.1.0-beta.1** 独立起步（orphan 干净根提交，skillpack → skillnomad 改名）；改名前的 skillpack 时期记录已归并在该版本节内。
 
+## v0.1.5（模块全链路 · 公开 API 面收敛 · 测试 CI 兜底）
+
+- **feat(modules)**：模块接入构建链路——`config.modules`（可选）声明后，构建期做注册表校验（id 唯一、`deps` 无环、注册表 `module` 引用未登记即红），并把模块 `render()` 的结果渲染进引用步骤的「模块附录」（含引用表标注；未声明模块时产物逐字不变）。
+- **breaking(api)**：公开面收敛——主包导出从 142 个收敛为 42 个（面向使用者的构造 API、类型与构建 API）；与使用方无关的内部类型与工具（校验器、派生器、内部模型类型、依赖解析等）移出主包，多数仍可从子包（`skillnomad-types`／`-common`）导入。同时清退 4 个弃用占位函数（`edge`／`agent`／`batch`／`mapWork`）与零引用占位 `'{capabilityId}'`。
+- **chore(ci)**：新增测试工作流（build → test → lint）；新增「公开面快照」测试锁定导出清单。
+- 回归：typecheck 通过；全量测试 91/91。
+- 升级影响：从 `skillnomad` 引用被移出符号的代码会编译报错——改从子包导入或不再使用；4 个弃用函数与 `'{capabilityId}'` 占位符移除（零引用）；不声明 `modules` 时构建产物与 0.1.4 逐字一致。
+
 ## v0.1.4（模块一等公民 · 调度四层重做 · markrefs 构建期校验）
 
 - **feat(types)**：`SourceModule` 与 `defineModule()` 成为一等公民——模块有显式形状（`id`／`version?`／`kind`／`deps?`／`render`），与 `step` 并列从主包导出；`SourceContract.module` 双轨（缺席即原路径形态，旧写法不变）。
