@@ -15,11 +15,11 @@
         "format": "eslint . --fix"
     },
     "devDependencies": {
-        "@stylistic/eslint-plugin": "^5.10.0",
-        "@types/node": "^26.1.0",
-        "eslint": "^9.39.5",
-        "eslint-plugin-jsonc": "^3.4.2",
-        "typescript": "^5.5.0",
-        "typescript-eslint": "^8.70.0"
+        "@stylistic/eslint-plugin": "5.10.0",
+        "@types/node": "26.5.1",
+        "eslint": "9.39.5",
+        "eslint-plugin-jsonc": "3.4.2",
+        "typescript": "5.9.3",
+        "typescript-eslint": "8.70.0"
     }
 }
