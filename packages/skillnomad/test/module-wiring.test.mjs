@@ -3,7 +3,8 @@ import test from 'node:test';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { task, buildPipeline } from '../dist/index.js';
+import { buildPipeline } from '../dist/index.js';
+import { task } from 'skillnomad-types';
 
 // D35 全链路 · V4 接线：modules 注册表 → 构建期校验（id 唯一／deps 无环／引用在册）。
 // 缺省参数＝旧行为逐字不变（向后兼容）。

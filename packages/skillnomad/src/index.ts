@@ -95,16 +95,10 @@ export {
 export {
     step,
     defineModule,
-    createSkill,
 } from 'skillnomad-types';
-export {
-    task,
-    seq,
-    parallel,
-    mapNode,
-    branch,
-    loop,
-};
+// 作者面收缩（拆包方向）：IR 构造子（task／seq／parallel／mapNode／branch／loop）与 IR 直装配
+// （createSkill）退出作者面——它们仍在 skillnomad-types 里（框架内部与测试用），
+// 但不再从主包转口；写作路径只有一条：step() 链式 ＋ createSkillFromModel（见规范）。
 export type {
     StepDefinition,
     SkillSourceModel,

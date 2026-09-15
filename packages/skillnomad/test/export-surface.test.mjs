@@ -6,8 +6,9 @@ import ts from 'typescript';
 // 导出面快照门：主包公开面 ＝ 作者面 ＋ 构建 API（含内容包装载器）。任一增删即红，须显式改本清单。
 // 任一新增/删除即红——要改清单必须显式改本文件（把有意的 API 变更记录在此）。
 const AUTHORING_VALUES = [
-    'step', 'defineModule', 'createSkill',
-    'task', 'seq', 'parallel', 'mapNode', 'branch', 'loop',
+    // 作者面收缩（拆包方向）：IR 构造子与 createSkill 已退出——写作路径只有一条
+    // （step() 链式 ＋ createSkillFromModel）。它们仍在 skillnomad-types（内部用）。
+    'step', 'defineModule',
     'createSkillFromModel', 'defineConfig', 'createRefs',
     'SCHEDULING', 'renderBinding', 'renderModuleDoc',
 ];

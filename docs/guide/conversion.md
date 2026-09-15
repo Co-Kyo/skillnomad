@@ -39,21 +39,19 @@
 
 ## 步骤 4 · 链序声明
 
-每个步骤一个声明单元：`id`/`title`/`description`/`body` + `reads`（引用实体符号名）/`writes`（产出实体）/`graph`（执行内容）。
+每个步骤一个声明单元：`step(id, title)` 链式写 `target`／`summary`／`action`／`reads`／`writes`，`.build()` 收尾。
 
 **硬约束（构建期报错，先知道少踩坑）**：
 
-- 步骤之间用 `dependsOn` 连成**单链**——两个根步骤即报 `chain is broken`，断链即报 `disconnected`。
-- `graph` 是**构造字段**（`task({...})` 的返回值），不是链式方法；旧链式 `.reads().writes().build()` 已不存在。
-- 每步需要 `description` + `body`（校验必填）。
-- `task` 从 `skillnomad` 主包导入（主包 re-export 全部类型，单包单源）。
+- 步骤之间用 `.dependsOn()` 连成**单链**——两个根步骤即报 `chain is broken`，断链即报 `disconnected`。
+- 步骤内并行／分支用 `.parallel()`／`.map()`／`.branch()`／`.loop()`；顶层步骤是线性链，可并行的动作不要拆成多个顶层步骤。
+- 装配走 `createSkillFromModel(模型对象)`（唯一装配入口）——步骤与 meta／contracts／policies 一起进模型，产物由框架渲染。
 - 构建命令需要 tsx 加载器：`npx tsx node_modules/skillnomad/dist/bin/cli.js build <config>`（裸 `npx skillnomad build` 会报 ERR_MODULE_NOT_FOUND）。
-- **装配路径二选一并写死**：`createSkillFromModel(模型对象)` 会把 `checkpoint` 转换为 barrier；`createSkill(对象字面量)` 直装配**不转换**——需要用户检查点就用前者。
 
 ## 步骤 5 · 调度与派生接管
 
 - 步骤间有并行/分批/窗口需求 → 声明 `schedulingPolicy`（skill 级一等公民）。没有就**留空**——空声明合法（机制可留空是框架弹性）。
-- 步骤内有分支/多模式 → 用步骤内 `branch`/`map`/`seq` 表达（顶层是线性链，并行只在步骤内 flow 里）。
+- 步骤内有分支/多模式 → 用步骤内 `.branch()`／`.map()`／`.seq()` 表达（顶层是线性链，并行只在步骤内 flow 里）。
 - 下一步/编号/覆盖状态等字段 → 确认它们由框架派生（`deriveChainNext`/编号/区间），从你的声明里删掉手写版本。
 
 ## 步骤 6 · 验收对照
