@@ -28,6 +28,7 @@
 - `markrefs`（Markdown 交叉引用解析与校验）是**独立项目**：代码与发版都在独立仓 `Co-Kyo/markrefs`（tag `v*`），不随框架版本；本仓以 dependency 引用其**已发布**版本（同步成本在框架侧），**不在本仓留副本**。
 - **对外只暴露 `skillnomad` 一个入口**：子包是内部实现，子包 README／对外文档一律引导到主包；消费侧只允许 `import … from 'skillnomad'`，公共面新增一律经主包转口。
 - 包内互引与工具依赖一律写**固定版本号**（精确相等，构思阶段策略：整组同版、杜绝跨号漂移；2026-09-14 作者拍板，替换原「semver range」规则）——**禁用 `workspace:` 协议**（npm 全系不支持，EUNSUPPORTEDPROTOCOL），`file:` 也会被原样打进发布产物；版本匹配时 npm workspaces 自动链到本地包，效果等价。**发版联动须同步全部 pin（四包互引＋markrefs／methodblocks）**。**发布物 bin 值不得以 `./` 开头**（npm 新版发布归一化会判非法并删除）。
+- **核心不再新增业务能力接口**（拆包方向，2026-09-15 作者拍板）：后续任何"加一种能力"的提议，先回答"为什么不能是内容包"（内容包规范见工作仓 `docs/product/skill-package-spec-v1.md`）。执行力来自两处既有机制：语义变更须作者确认（§7 用户门），新增导出触发导出清单检查即红（`packages/skillnomad/test/export-surface.test.mjs`）。
 - `renderStep` / validate / contract 行为即契约；改渲染、校验、类型就是改契约。
 - `docs/` 为 VitePress 站；`demos/` 最小用例；`release.yml` Version gate 要求 tag / manifest / 每包版本三者一致。
 - `main` 受分支保护：一切变更走分支 + PR，不直推（直推报 GH013 拒收）。

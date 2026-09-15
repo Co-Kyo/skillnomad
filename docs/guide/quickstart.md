@@ -30,28 +30,59 @@ export const modules = {
 };
 ```
 
-### 2. 定义步骤：引用符号名，不写路径
+### 2. 定义步骤：链式写法，引用符号名不写路径
 
-`src/steps/collect.ts`（对象字面量写法；另需 `description`/`body`/`graph` 三必填，见下）：
+`src/steps/collect.ts`：
 
 ```ts
-import type { StepDefinition } from 'skillnomad';
-import { task } from 'skillnomad';
+import { step } from 'skillnomad';
 
-export const collect: StepDefinition = {
-  id: 'collect', title: '收集与标注', description: '收集并标注',
-  body: '收集并标注。',
-  reads: [{ path: 'assets/common/substitution-test.md', description: '共享规则', required: true }],
-  writes: [{ path: '{workDir}/.meta/labeled.json', description: '标注结果', required: true }],
-  graph: task({ id: 'collect-do', label: '收集', type: 'agent', body: '收集并标注。' }),
-};
+export const collect = step('collect', '收集与标注')
+  .target('收集并标注。')
+  .summary('收集并标注')
+  .action('parse', 'collect-do', '收集', '收集并标注。')
+  .reads({ path: 'assets/common/substitution-test.md', description: '共享规则', required: true })
+  .writes({ path: '{workDir}/.meta/labeled.json', description: '标注结果', required: true })
+  .build();
 ```
 
-`src/steps/review.ts` 同上，加一行 `dependsOn: 'collect'`（线性链契约：多步必须连成单链，第二个根即断链报错）。
+`src/steps/review.ts` 同上，加一行 `.dependsOn('collect')`（线性链契约：多步必须连成单链，第二个根即断链报错）。
 
-> 坑位提示（agent 实测 2026-09-05）：旧链式 `.reads().writes().build()` 已不存在；`graph` 是构造字段不是链式方法；`task` 从 `skillnomad` 主包导入（re-export）；缺 `dependsOn` 报"chain is disconnected"，缺 `graph` 报"Control tree graph is required"。
+> 坑位提示：`step()` 返回的每一步都要 `.build()` 收尾；步骤内并行／分批用 `.parallel()`／`.map()`（见[契约](contract)）；顶层步骤是线性链，不要把可并行的动作拆成多个顶层步骤。
 
 ### 3. 组装并构建
+
+`skill.ts`（把步骤收进模型，`createSkillFromModel` 是唯一的装配入口）：
+
+```ts
+import type { SkillSourceModel } from 'skillnomad';
+import { createSkillFromModel } from 'skillnomad';
+import { collect } from './src/steps/collect.js';
+import { review } from './src/steps/review.js';
+
+const model: SkillSourceModel = {
+  meta: {
+    name: 'my-skill',
+    title: '我的技能',
+    description: '一句话说明这个技能做什么',
+    frontmatterDescription: '一句话说明这个技能做什么',
+    callExamples: [],
+    params: [],
+    phases: [],
+  },
+  steps: [collect, review],
+  contracts: [],
+  policies: {
+    contextIsolation: false,
+    reuseByFileExistence: false,
+    checkpointRequired: false,
+    traceFields: [],
+    runtimeTrace: { enabled: false, logDir: '', eventTypes: [] },
+  },
+};
+
+export const skill = createSkillFromModel(model);
+```
 
 `skillnomad.config.ts`：
 
