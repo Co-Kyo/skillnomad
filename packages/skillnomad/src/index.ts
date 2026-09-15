@@ -138,6 +138,20 @@ export { blockModule, type BlockModuleInput, type StructureConfig, type Structur
 // markrefs 公共类型的转口（消费侧只 import 'skillnomad'，不直接依赖 markrefs）
 export type { KeyMap } from 'markrefs';
 
+// 内容包装载器（声明式包：读 skill.json ＋ blocks ＋ compose，自行组合成模块）
+export {
+    readPackageManifest,
+    loadPackage,
+    checkPackage,
+    blockingPackageDiagnostics,
+    packageModule,
+} from './package.js';
+export type {
+    PackageManifest,
+    PackageBlockSpec,
+    LoadedPackage,
+} from './package.js';
+
 export interface SkillMeta {
     name: string;
     title?: string;

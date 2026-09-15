@@ -1,0 +1,11 @@
+{
+    "standard": "skillnomad-skill-package/v1",
+    "tier": "incubating",
+    "method": { "id": "demo-method", "title": "演示方法" },
+    "compose": ["demo-when", "demo-how"],
+    "blocks": [
+        { "id": "demo-when", "role": "target", "file": "blocks/when.md" },
+        { "id": "demo-how", "role": "useMethod", "file": "blocks/how.md", "whenToUse": "演示时" }
+    ],
+    "module": { "id": "demo-methods", "kind": "method", "version": "0.1.0" }
+}
