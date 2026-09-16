@@ -49,7 +49,7 @@ markrefs → （零运行时依赖，不认识任何宿主）
 
 ## 从模板开始
 
-最小可构建 skill（两步线性链，与快速上手同形状）：[`templates/starter`](../../templates/starter)。
+最小可构建 skill（两步线性链，与快速上手同形状）：本仓目录 `templates/starter`。
 
 ```bash
 cp -r <skillnomad-repo>/templates/starter my-skill && cd my-skill
