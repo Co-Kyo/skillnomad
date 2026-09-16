@@ -136,6 +136,8 @@ npm 包名（**消费者只需要 `skillnomad` 一个**；其余三包是内部�
 
 构建期 markdown 交叉引用校验由 [`markrefs`](https://github.com/Co-Kyo/markrefs)（独立项目，独立版本线）提供，本仓以 dependency 引用其已发布版本。
 
+写作块结构校验由 [`methodblocks`](https://github.com/Co-Kyo/methodblocks)（独立项目，独立版本线）提供，本仓以 dependency 引用其已发布版本；三工具的组合关系见 `docs/guide/toolchain.md`（官方工具组合）。
+
 ## 开发
 
 ```bash

@@ -1,0 +1,17 @@
+{
+    "name": "my-skill",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "tsx node_modules/skillnomad/dist/bin/cli.js build skillnomad.config.ts",
+        "typecheck": "tsc -p tsconfig.json"
+    },
+    "dependencies": {
+        "skillnomad": "0.1.6"
+    },
+    "devDependencies": {
+        "tsx": "4.20.6",
+        "typescript": "5.9.3"
+    }
+}
