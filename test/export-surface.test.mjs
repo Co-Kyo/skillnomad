@@ -19,8 +19,12 @@ const AUTHORING_TYPES = [
     'SkillMeta', 'SkillnomadConfig', 'MarkrefsConfig',
     'BlockModuleInput', 'StructureConfig', 'StructureDocSpec',
     'PackageManifest', 'PackageBlockSpec', 'LoadedPackage',
+    // 发布布局（角色 → 发布路径派生；消费仓组装脚本与此同一份实现）
+    'PublishableAsset', 'PublishDiagnostic',
 ];
 const BUILD_VALUES = [
+    // 发布布局：官方目录（references/assets/scripts）＋ steps/ 扩展
+    'PUBLISH_DIRS', 'STEP_ENTRY_FILE', 'publishPath', 'checkPublishLayout', 'scanSourcePaths',
     'blockModule',
     // 内容包装载器（声明式包）：读清单 → 组合 → 模块对象；包不再需要自带可执行入口
     'readPackageManifest', 'loadPackage', 'checkPackage', 'blockingPackageDiagnostics', 'packageModule',

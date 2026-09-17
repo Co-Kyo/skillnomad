@@ -84,7 +84,7 @@ test('组合：blockModule 模块进产物附录 ＋ 同一块集过结构校验
         registry: REGISTRY,
     });
     try {
-        const md = readFileSync(join(out, 'processes', '00-a.md'), 'utf8');
+        const md = readFileSync(join(out, 'steps', '00-a', 'step.md'), 'utf8');
         assert.match(md, /^## 模块附录$/m);
         assert.ok(md.includes('目标：把这件事按方法做完。'));
         assert.ok(md.includes('<!-- module:mod-a -->'));

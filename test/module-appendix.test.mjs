@@ -35,11 +35,11 @@ test('模块附录：早返路径（build 全链）渲染附录＋契约引用�
     const out = mkdtempSync(join(tmpdir(), 'skillnomad-appendix-'));
     try {
         buildPipeline([stepA], out, META, REGISTRY, undefined, MODULES);
-        const md = readFileSync(join(out, 'processes', '00-a.md'), 'utf8');
+        const md = readFileSync(join(out, 'steps', '00-a', 'step.md'), 'utf8');
         assert.match(md, /^## 模块附录$/m);
         assert.ok(md.includes('MODULE-RENDERED-CONTENT-A'));
         assert.ok(md.includes('<!-- module:mod-a -->'));
-        assert.ok(md.includes('（模块渲染见附录）'));
+        assert.ok(md.includes('（见附录：模块 `mod-a`）'));
         assert.ok(!existsSync(join(out, CONTRACT_PATH)), '模块内容应来自 render()，不落路径文件');
     } finally {
         rmSync(out, { recursive: true, force: true });
@@ -61,7 +61,7 @@ test('模块附录：完整路径（renderStep 直调）同样渲染＋文件引
     const md = renderStep(stepB, { a: 0, b: 1 }, { registry: REGISTRY, contents: { 'mod-a': 'MODULE-RENDERED-CONTENT-A' } });
     assert.match(md, /^## 模块附录$/m);
     assert.ok(md.includes('MODULE-RENDERED-CONTENT-A'));
-    assert.ok(md.includes('| 读取 | `assets/common/mod.md` | 模块 A 读取（模块渲染见附录） |'));
+    assert.ok(md.includes('| 读取 | （见附录：模块 `mod-a`） | 模块 A 读取 |'));
 });
 
 test('模块空内容：标注与附录同进退（不指向不存在的正本）', () => {
@@ -69,9 +69,9 @@ test('模块空内容：标注与附录同进退（不指向不存在的正本�
     try {
         const emptyModules = [{ id: 'mod-a', kind: 'data', render: () => '' }];
         buildPipeline([stepA], out, META, REGISTRY, undefined, emptyModules);
-        const md = readFileSync(join(out, 'processes', '00-a.md'), 'utf8');
+        const md = readFileSync(join(out, 'steps', '00-a', 'step.md'), 'utf8');
         assert.ok(!md.includes('模块附录'));
-        assert.ok(!md.includes('（模块渲染见附录）'));
+        assert.ok(!md.includes('（见附录：模块'));
     } finally {
         rmSync(out, { recursive: true, force: true });
     }
@@ -83,9 +83,9 @@ test('模块缺席：产物不含模块附录（旧行为逐字不变）', () =>
         const registryNoModule = [{ id: 'c-plain', kind: 'data', path: CONTRACT_PATH, description: '普通条目', scope: 'skill' }];
         const stepPlain = { ...stepA, reads: [{ path: CONTRACT_PATH, description: '普通读取' }] };
         buildPipeline([stepPlain], out, META, registryNoModule);
-        const md = readFileSync(join(out, 'processes', '00-a.md'), 'utf8');
+        const md = readFileSync(join(out, 'steps', '00-a', 'step.md'), 'utf8');
         assert.ok(!md.includes('模块附录'));
-        assert.ok(!md.includes('（模块渲染见附录）'));
+        assert.ok(!md.includes('（见附录：模块'));
     } finally {
         rmSync(out, { recursive: true, force: true });
     }

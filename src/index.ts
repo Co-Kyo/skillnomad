@@ -103,12 +103,32 @@ export type {
 // markrefs 集成：引用登记 + 键表 + 构建期校验（宿主侧适配层，见 ./markrefs.ts）
 import { createRefs, inspectRefs, type MarkrefsConfig } from './markrefs.js';
 import { blockModule, runStructureChecks, type BlockModuleInput, type StructureConfig, type StructureDocSpec } from './blocks.js';
+import {
+    PUBLISH_DIRS,
+    STEP_ENTRY_FILE,
+    publishPath,
+    checkPublishLayout,
+    scanSourcePaths,
+    type PublishableAsset,
+    type PublishDiagnostic,
+} from './publish.js';
 
 export {
     createRefs,
     inspectRefs,
     type MarkrefsConfig,
 } from './markrefs.js';
+
+// 发布布局：角色 → 发布路径的派生（消费仓组装脚本与此同一份实现）。
+export {
+    PUBLISH_DIRS,
+    STEP_ENTRY_FILE,
+    publishPath,
+    checkPublishLayout,
+    scanSourcePaths,
+    type PublishableAsset,
+    type PublishDiagnostic,
+} from './publish.js';
 
 // methodblocks 适配器转口（P2 集成；工具协作层，同 markrefs 先例）。
 export { blockModule, type BlockModuleInput, type StructureConfig, type StructureDocSpec } from './blocks.js';
@@ -635,16 +655,26 @@ function renderBarrier(step: ResolvedStep): string {
 
 // 8.5 裁定：契约引用章节由 reads.filter(as === 'contract') 派生渲染（不再人工维护 contractRefs）。
 // 契约文档只进契约引用章节，不重复进文件引用表——消除人工双清单重复登记。
-function renderFileRefs(step: ResolvedStep, modulePaths?: Set<string>): string {
+function renderFileRefs(
+    step: ResolvedStep,
+    modulePaths?: Map<string, string>,
+    published?: Map<string, string>,
+): string {
     const contractRefs = step.reads.filter(r => r.as === 'contract');
     const dataReads = step.reads.filter(r => r.as !== 'contract');
-    const mark = (p: string): string => (modulePaths?.has(p) ? '（模块渲染见附录）' : '');
+    // 模块承载的读取没有文件实体（正文在「模块附录」）：印附录锚，不印路径——
+    // 否则产物里会留下一个找不到的"像路径的标识"（发布物里每个非 {workDir} 路径都必须可解析）。
+    const pub = (p: string): string => {
+        const mod = modulePaths?.get(p);
+        if (mod) return `（见附录：模块 \`${mod}\`）`;
+        return `\`${published?.get(p) ?? p}\``;
+    };
 
     let md = '';
     if (contractRefs.length > 0) {
         md += `## 契约引用\n\n`;
         for (const ref of contractRefs) {
-            md += `- \`${ref.path}\`：${ref.description ?? ''}${mark(ref.path)}\n`;
+            md += `- ${pub(ref.path)}：${ref.description ?? ''}\n`;
         }
         md += `\n`;
     }
@@ -653,7 +683,7 @@ function renderFileRefs(step: ResolvedStep, modulePaths?: Set<string>): string {
     md += `| 类型 | 文件 | 说明 |\n`;
     md += `|------|------|------|\n`;
     for (const ref of dataReads) {
-        md += `| 读取 | \`${ref.path}\` | ${ref.description ?? ''}${mark(ref.path)} |\n`;
+        md += `| 读取 | ${pub(ref.path)} | ${ref.description ?? ''} |\n`;
     }
     for (const ref of step.writes) {
         md += `| 产出 | \`${ref.path}\` | ${ref.description ?? ''} |\n`;
@@ -770,8 +800,9 @@ export function renderModulesAppendix(
 export function renderStep(
     step: ResolvedStep,
     stepOrder: Record<string, number>,
-    moduleCtx?: { registry: SourceContract[]; contents: Record<string, string> },
+    moduleCtx?: { registry: SourceContract[]; contents: Record<string, string>; published?: Map<string, string> },
 ): string {
+    const published = moduleCtx?.published;
     const withRefs = (text: string): string => resolveStepRefs(text, stepOrder);
     // D35 模块接线：本步骤 reads 命中的、带 module 的注册条目 → 该步的模块附录（双路径共用位）。
     // 判定共用：registry 命中 ∧ 该步 reads 命中 ∧ render() 有内容（空内容＝缺席，标注与附录同进退，
@@ -781,7 +812,7 @@ export function renderStep(
             && step.reads.some(r => r.path === c.path)
             && Boolean(moduleCtx.contents[c.module]))
         : [];
-    const modulePaths = new Set(stepModules.map(c => c.path));
+    const modulePaths = new Map(stepModules.map(c => [c.path, String(c.module)]));
     const appendix = moduleCtx ? renderModulesAppendix(stepModules, moduleCtx.contents) : '';
     if (step.graph.kind === 'task' && step.graph.task.bodyFile && !step.body) {
         return withRefs(resolveTaskBody(step.graph.task));
@@ -792,7 +823,7 @@ export function renderStep(
     // P1 修复：早返分支追加四节声明渲染（与完整分支共用函数）。
     // 早返前四节（依赖/增量复用/降级协议/插件加载）被静默丢失，导致
     // 11/11 带正文步骤的 reuse/plugins 声明在产物中零渲染。
-        return `${withRefs(stepBody)}\n\n---\n\n${renderFileRefs(step, modulePaths)}${renderDependsOn(step)}\n## 调度策略\n\n${renderControlTree(step.graph, 0)}\n${renderReuse(step)}${renderDegrade(step)}${renderBarrier(step)}${renderPlugins(step)}${renderRuntimeTrace(step)}${appendix}`;
+        return `${withRefs(stepBody)}\n\n---\n\n${renderFileRefs(step, modulePaths, published)}${renderDependsOn(step)}\n## 调度策略\n\n${renderControlTree(step.graph, 0)}\n${renderReuse(step)}${renderDegrade(step)}${renderBarrier(step)}${renderPlugins(step)}${renderRuntimeTrace(step)}${appendix}`;
     }
 
     const seqStr = String(step.seq).padStart(2, '0');
@@ -803,7 +834,7 @@ export function renderStep(
     md += `---\n\n`;
 
     // 文件引用（契约引用 + 读取/产出表，8.5 统一派生渲染）
-    md += renderFileRefs(step, modulePaths);
+    md += renderFileRefs(step, modulePaths, published);
 
     // Dependencies（与早返分支共用 renderDependsOn）
     md += renderDependsOn(step);
@@ -937,7 +968,7 @@ export function renderSkillMd(
     // 执行协议
     md += `\n## 执行\n\n`;
     md += `执行 Step N 时引用 Step N+1 文件内容即为违规。\n`;
-    md += `每步只读 processes/ 中对应文件 + assets/ 中该步声明的文件。\n`;
+    md += `每步只读 steps/ 中该步的 ${STEP_ENTRY_FILE} + 该步声明的文件（references/ 与 assets/）。\n`;
 
     if (api?.includeBuildFooter !== false) {
         md += `\n---\n`;
@@ -966,42 +997,54 @@ export function renderPipeline(
     pipeline: ResolvedPipeline,
     outputDir: string,
     meta: SkillMeta,
-    moduleCtx?: { registry: SourceContract[]; contents: Record<string, string> },
+    moduleCtx?: { registry: SourceContract[]; contents: Record<string, string>; published?: Map<string, string> },
 ): string[] {
     const filePaths: string[] = [];
-    const processesDir = path.join(outputDir, 'processes');
+    const stepsDir = path.join(outputDir, PUBLISH_DIRS.steps);
 
-    if (!fs.existsSync(processesDir)) {
-        fs.mkdirSync(processesDir, { recursive: true });
-    }
-
-    const staleFiles = new Set(
-        fs.readdirSync(processesDir).filter(name => name.endsWith('.md')),
-    );
-
-    // Render step files → processes/
+    // 先全部渲染到内存：产物文本要过一遍「不得含源码形态路径」校验，过了才落盘。
+    const rendered: { rel: string; content: string }[] = [];
     for (const step of pipeline.steps) {
         const seqStr = String(step.seq).padStart(2, '0');
-        const fileName = `${seqStr}-${step.id}.md`;
-        const filePath = path.join(processesDir, fileName);
-        const content = renderStep(step, pipeline.stepOrder, moduleCtx);
-        fs.writeFileSync(filePath, content, 'utf-8');
-        staleFiles.delete(fileName);
+        rendered.push({
+            rel: `${PUBLISH_DIRS.steps}/${seqStr}-${step.id}/${STEP_ENTRY_FILE}`,
+            content: renderStep(step, pipeline.stepOrder, moduleCtx),
+        });
+    }
+    rendered.push({ rel: 'SKILL.md', content: renderSkillMd(pipeline, meta) });
+
+    const sourcePathHits = scanSourcePaths(rendered);
+    if (sourcePathHits.length > 0) {
+        console.error('Publish layout errors（产物含源码形态路径，须写发布形态）：');
+        for (const hit of sourcePathHits) {
+            console.error(`  ✗ ${hit.rel}:${hit.line} ${hit.snippet}`);
+        }
+        throw new Error(`Publish layout failed with ${sourcePathHits.length} source path(s)`);
+    }
+
+    // 落盘：每步一个目录（steps/<NN>-<步id>/），并清掉上一轮的过期条目
+    fs.mkdirSync(stepsDir, { recursive: true });
+    const expectedDirs = new Set<string>();
+    for (const file of rendered) {
+        const filePath = path.join(outputDir, file.rel);
+        fs.mkdirSync(path.dirname(filePath), { recursive: true });
+        fs.writeFileSync(filePath, file.content, 'utf-8');
         filePaths.push(filePath);
-        console.log(`  ✓ processes/${fileName}`);
+        const segments = file.rel.split('/');
+        if (segments.length > 2) expectedDirs.add(segments[1]);
+        console.log(`  ✓ ${file.rel}`);
     }
-
-    for (const stale of staleFiles) {
-        fs.unlinkSync(path.join(processesDir, stale));
-        console.log(`  - removed stale processes/${stale}`);
+    for (const entry of fs.readdirSync(stepsDir)) {
+        if (expectedDirs.has(entry)) continue;
+        fs.rmSync(path.join(stepsDir, entry), { recursive: true, force: true });
+        console.log(`  - removed stale ${PUBLISH_DIRS.steps}/${entry}`);
     }
-
-    // Render SKILL.md
-    const skillContent = renderSkillMd(pipeline, meta);
-    const skillPath = path.join(outputDir, 'SKILL.md');
-    fs.writeFileSync(skillPath, skillContent, 'utf-8');
-    filePaths.push(skillPath);
-    console.log(`  ✓ SKILL.md`);
+    // 旧布局（processes/）残留清理：改布局后不再有读者
+    const legacyDir = path.join(outputDir, 'processes');
+    if (fs.existsSync(legacyDir)) {
+        fs.rmSync(legacyDir, { recursive: true, force: true });
+        console.log('  - removed legacy processes/');
+    }
 
     return filePaths;
 }
@@ -1311,14 +1354,26 @@ export function buildPipeline(
         }
     }
 
-    if (errors.length + refsErrorCount + structureErrorCount > 0) {
+    // 发布布局校验：由角色派生发布路径，查归属步存在／保留名／同名冲突。
+    // 缺省（registry 无文件背条目）＝ 零诊断，旧行为不变。
+    const publishAssets: PublishableAsset[] = registry
+        .filter((c) => !c.module)
+        .map((c) => (c.scope === 'step' ? { path: c.path, scope: 'step' as const, step: c.step } : { path: c.path, scope: 'skill' as const }));
+    const seqOfStep = (id: string): number | undefined => resolveStepOrder(steps).steps.find((s) => s.id === id)?.seq;
+    const publishDiagnostics: PublishDiagnostic[] = checkPublishLayout(publishAssets, resolveStepOrder(steps).steps.map((s) => ({ id: s.id, seq: s.seq })));
+    for (const diagnostic of publishDiagnostics) {
+        console.error(`  \u2717 publish ${diagnostic.message}`);
+    }
+    const publishErrorCount = publishDiagnostics.length;
+
+    if (errors.length + refsErrorCount + structureErrorCount + publishErrorCount > 0) {
         if (errors.length > 0) {
             console.error('Validation errors:');
             for (const err of errors) {
                 console.error(`  ❌ [${err.stepId}] ${err.field}: ${err.message}`);
             }
         }
-        throw new Error(`Validation failed with ${errors.length + refsErrorCount + structureErrorCount} error(s)`);
+        throw new Error(`Validation failed with ${errors.length + refsErrorCount + structureErrorCount + publishErrorCount} error(s)`);
     }
 
     console.log('Validation passed ✓');
@@ -1338,7 +1393,13 @@ export function buildPipeline(
 
     console.log(`\nRendering to ${outputDir}:`);
     const contents = Object.fromEntries(modules.map(m => [m.id, m.render()]));
-    const files = renderPipeline(pipeline, outputDir, effectiveMeta, { registry, contents });
+    // 源路径 → 发布路径（角色派生）：渲染期翻译，读表里印发布形态
+    const published = new Map<string, string>();
+    for (const asset of publishAssets) {
+        const target = publishPath(asset, seqOfStep);
+        if (target !== null) published.set(asset.path, target);
+    }
+    const files = renderPipeline(pipeline, outputDir, effectiveMeta, { registry, contents, published });
     files.push(writeOutputManifest(pipeline, outputDir));
     files.push(writeArtifactManifest(pipeline, outputDir, files));
     files.push(writeDecisionSummaryManifest(pipeline, outputDir));
