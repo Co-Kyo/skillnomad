@@ -24,7 +24,7 @@ const AUTHORING_TYPES = [
 ];
 const BUILD_VALUES = [
     // 发布布局：官方目录（references/assets/scripts）＋ steps/ 扩展
-    'PUBLISH_DIRS', 'STEP_ENTRY_FILE', 'publishPath', 'checkPublishLayout', 'scanSourcePaths',
+    'PUBLISH_DIRS', 'STEP_ENTRY_FILE', 'publishPath', 'checkPublishLayout', 'scanSourcePaths', 'scanDanglingRefs',
     'blockModule',
     // 内容包装载器（声明式包）：读清单 → 组合 → 模块对象；包不再需要自带可执行入口
     'readPackageManifest', 'loadPackage', 'checkPackage', 'blockingPackageDiagnostics', 'packageModule',

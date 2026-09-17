@@ -119,6 +119,36 @@ export function checkPublishLayout(
 /** 源码形态路径：以 `src/` 起始段的路径（`experiment/src/` 这类运行期路径不算）。 */
 const SOURCE_PATH_RE = /(?<![\w./-])src\/[A-Za-z0-9_./*{}-]*/g;
 
+// 引用前缀＝发布目录名（PUBLISH_DIRS）＋ 源码侧遗留名（历史布局：写了就是断链）
+const REF_PREFIXES = [...Object.values(PUBLISH_DIRS), 'src', 'processes', 'plugins'];
+
+/** 包内路径引用：以发布目录名起始、带文件段的路径（`steps/` 这类裸目录名不算）。 */
+const PACKAGE_REF_RE = new RegExp(
+    `(?<![\\w./{}-])((?:${REF_PREFIXES.join('|')})\\/[A-Za-z0-9_][A-Za-z0-9_./-]*)`,
+    'g',
+);
+
+/** 校验 2b：随包文本里的包内路径引用必须能在包内解析。
+ *  判据由调用方给（组装期＝磁盘实存；测试期＝派生目标集合），
+ *  这样"包内自洽"这条规则只有一处定义，不缺读者。
+ *  运行期模板（含 {}）与通配（含 *）不参与：它们不是路径，是模板。 */
+export function scanDanglingRefs(
+    files: readonly { rel: string; content: string }[],
+    resolve: (ref: string) => boolean,
+): { rel: string; line: number; ref: string }[] {
+    const hits: { rel: string; line: number; ref: string }[] = [];
+    for (const file of files) {
+        file.content.split('\n').forEach((text, index) => {
+            for (const match of text.matchAll(PACKAGE_REF_RE)) {
+                const ref = match[1].replace(/[./]+$/, '');
+                if (ref.includes('{') || ref.includes('*')) continue;
+                if (!resolve(ref)) hits.push({ rel: file.rel, line: index + 1, ref });
+            }
+        });
+    }
+    return hits;
+}
+
 /**
  * 校验 1b：渲染产物文本里不得出现源码形态路径。
  * 结构化字段已在渲染期翻译成发布形态；这里专抓散文（内容域字符串）里手写的源码路径。

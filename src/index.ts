@@ -109,6 +109,7 @@ import {
     publishPath,
     checkPublishLayout,
     scanSourcePaths,
+    scanDanglingRefs,
     type PublishableAsset,
     type PublishDiagnostic,
 } from './publish.js';
@@ -126,6 +127,7 @@ export {
     publishPath,
     checkPublishLayout,
     scanSourcePaths,
+    scanDanglingRefs,
     type PublishableAsset,
     type PublishDiagnostic,
 } from './publish.js';
