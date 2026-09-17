@@ -1,8 +1,5 @@
 // ============================================================
 // skillnomad — Resolver + Markdown generator
-//
-// renderSchedule 不再 switch(mode)，
-// 而是遍历 ScheduleGraph，按节点 kind 逐个渲染
 // ============================================================
 
 import { createRequire } from 'node:module';
@@ -41,7 +38,6 @@ import type {
     ReuseRule,
     BarrierDef,
     DegradeProtocol,
-    SourceSchedulingPolicy,
     SourceModule,
     SourceContract,
 } from 'skillnomad-types';
@@ -61,15 +57,9 @@ import {
     validateDependencyRefs,
     validateStepChain,
     validatePhaseCoverage,
-    validateSchedulingPolicy,
     validateModuleUsage,
     validateModules,
     validateBodySections,
-    // D35 W4 首刀转口（3 值）：消费实例只用 SCHEDULING/renderBinding/renderModuleDoc；
-    // 其余动词组合子走 skillnomad-common 直引（8.17 单源口径守住，转口膨胀可控）。
-    SCHEDULING,
-    renderBinding,
-    renderModuleDoc,
     resolveChain,
     deriveChainNext,
     deriveInitStepId,
@@ -81,14 +71,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as crypto from 'node:crypto';
 
-export {
-    // 导出面收敛：主包只保留 3 个内容渲染值（模块作者面）；校验器/派生/解析等
-    // 全部留在 skillnomad-common（实现细节，不建议直引）。
-    SCHEDULING,
-    renderBinding,
-    renderModuleDoc,
-};
-
+// markrefs 集成：引用登记 + 键表 + 构建期校验（宿主侧适配层，见 ./markrefs.js）
 // 导出面收敛：主包只转口「作者面」——构造动词 ＋ 编写 skill 所需的类型。
 // 机制面（校验器/派生器/内部 IR 类型/依赖解析等）留在各子包（实现细节，不建议直引）。
 // 快照门：packages/skillnomad/test/export-surface.test.mjs 锁定本清单（新增/删除即红）。
@@ -109,7 +92,6 @@ export type {
     SourceFlow,
     SourceContract,
     SourcePolicies,
-    SourceSchedulingPolicy,
     SourceFailRule,
     SourceVerifyRule,
     SourceCheckpoint,
@@ -441,7 +423,6 @@ export function createSkillFromModel(model: SkillSourceModel): SkillDefinition {
             initRules: model.meta.initRules,
             initStepId,
             flowOverview,
-            schedulingPolicy: model.meta.schedulingPolicy,
         },
         steps: model.steps.map(step => ({
             id: step.id,
@@ -855,40 +836,6 @@ export function renderStep(
 // SKILL.md render
 // ---------------------------------------------------------------
 
-/**
- * 渲染「调度策略」公共章节（8.13/8.14 下沉的三类声明）。
- *
- * 只在存在 schedulingPolicy 时输出；否则整段省略，避免空章节干扰。
- */
-function renderSchedulingPolicy(policy: SourceSchedulingPolicy): string {
-    let md = `## 调度策略\n\n`;
-
-    if (policy.concurrencyLimit != null) {
-        md += `- **全局并发上限**：${policy.concurrencyLimit} 个 Task Group\n`;
-    }
-
-    if (policy.windowBudget) {
-        const w = policy.windowBudget;
-        md += `- **窗口预算**：单次调用窗口数上限 ${w.maxWindowSize ?? '—'}；输入摘要 ${w.inputChunkTokens ?? '—'} tokens；素材摘要 ${w.itemSummaryTokens ?? '—'} tokens\n`;
-    }
-
-    if (policy.batchPolicy) {
-        const b = policy.batchPolicy;
-        const modeLabel: Record<string, string> = {
-            batch_parallel: '批量并行',
-            rolling_window: '滚动窗口',
-            topo_batch: '拓扑分批',
-        };
-        md += `- **分批规则**：模式 ${modeLabel[b.mode] ?? b.mode}；每批最多 ${b.maxBatchSize ?? '—'} 个 Task Group；单任务槽位 ${b.slotOccupancy ?? 1}\n`;
-    }
-
-    if (policy.note) {
-        md += `\n${policy.note}\n`;
-    }
-
-    return md;
-}
-
 /** 从 pipeline 生成 SKILL.md */
 export function renderSkillMd(
     pipeline: ResolvedPipeline,
@@ -983,11 +930,6 @@ export function renderSkillMd(
             md += `${index + 1}. **${rule.title}**：${rule.body}\n`;
         });
         md += '\n';
-    }
-
-    // 调度策略（8.13/8.14 下沉的三类声明，公共章节）
-    if (api?.schedulingPolicy) {
-        md += renderSchedulingPolicy(api.schedulingPolicy);
     }
 
     // 执行协议
@@ -1333,7 +1275,6 @@ export function buildPipeline(
         ...validateBarrierContinuity(steps),
         ...validateModuleUsage(steps, registry),
         ...validateModules(modules, registry),
-        ...(meta?.api?.schedulingPolicy ? validateSchedulingPolicy(meta.api.schedulingPolicy) : []),
     ];
 
     // markrefs 校验（可选）：诊断保持 markrefs 自身格式（site ruleId message），不映射进

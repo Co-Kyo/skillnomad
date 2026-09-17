@@ -10,12 +10,11 @@ const AUTHORING_VALUES = [
     // （step() 链式 ＋ createSkillFromModel）。它们仍在 skillnomad-types（内部用）。
     'step', 'defineModule',
     'createSkillFromModel', 'defineConfig', 'createRefs',
-    'SCHEDULING', 'renderBinding', 'renderModuleDoc',
 ];
 const AUTHORING_TYPES = [
     'StepDefinition', 'SkillSourceModel', 'NextAction',
     'SourceStep', 'SourceRef', 'SourceAction', 'SourceFlow', 'SourceContract',
-    'SourcePolicies', 'SourceSchedulingPolicy', 'SourceFailRule', 'SourceVerifyRule',
+    'SourcePolicies', 'SourceFailRule', 'SourceVerifyRule',
     'SourceCheckpoint', 'SourceModule', 'KeyMap',
     'SkillMeta', 'SkillnomadConfig', 'MarkrefsConfig',
     'BlockModuleInput', 'StructureConfig', 'StructureDocSpec',
