@@ -12,11 +12,11 @@
         "declaration": true,
         "declarationMap": true,
         "sourceMap": true,
-        "outDir": "${configDir}/dist",
-        "rootDir": "${configDir}/src"
+        "composite": true,
+        "outDir": "./dist",
+        "rootDir": "./src"
     },
-    "include": [],
-    "references": [
-        { "path": "packages/skillnomad" }
+    "include": [
+        "src"
     ]
 }

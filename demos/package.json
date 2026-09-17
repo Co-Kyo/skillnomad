@@ -4,7 +4,7 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "start": "tsx ../packages/skillnomad/src/bin/cli.ts build skillnomad.config.ts"
+        "start": "tsx ../src/bin/cli.ts build skillnomad.config.ts"
     },
     "dependencies": {
         "skillnomad": "0.1.6"
