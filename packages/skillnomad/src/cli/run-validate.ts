@@ -1,33 +1,26 @@
 #!/usr/bin/env node
 
-// ============================================================
-// skillnomad-validate CLI — Entry point for command-line validation
-// ============================================================
-//
-// Usage:
-//   skillnomad-validate <path-to-pipeline-file>
-//
-// The pipeline file should export an array of StepDefinitions as default.
-// ============================================================
+// skillnomad validate —— 管线完整性校验子命令（原独立校验包并入，现为子命令）。
+// 用法：skillnomad validate <path-to-pipeline-file>
+// 管线文件须默认导出 StepDefinition 数组（或具名导出 steps）。
 
-import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { validatePipeline } from '../cli/validate.js';
 
-const filePath = process.argv[2];
+const filePath = process.argv[3];
 
 if (!filePath) {
-    console.error('Usage: skillnomad-validate <path-to-pipeline-file>');
+    console.error('Usage: skillnomad validate <path-to-pipeline-file>');
     process.exit(1);
 }
 
 const absPath = resolve(process.cwd(), filePath);
 
-console.log(`skillnomad-validate v0.1.0`);
+console.log(`skillnomad validate`);
 console.log(`Validating: ${absPath}\n`);
 
 try {
-    // Dynamic import of the pipeline file（Windows 下绝对路径必须是 file:// URL）
     const mod = await import(pathToFileURL(absPath).href);
     const steps = mod.default || mod.steps;
 
@@ -36,7 +29,6 @@ try {
         process.exit(1);
     }
 
-    const { validatePipeline } = await import('./index.js');
     const report = validatePipeline(steps);
 
     if (report.errors.length > 0) {
@@ -61,7 +53,6 @@ try {
     }
 
     process.exit(report.passed ? 0 : 1);
-
 } catch (e) {
     console.error(`\n❌ Failed to load or validate pipeline:`);
     console.error(`  ${(e as Error).message}`);

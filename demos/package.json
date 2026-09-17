@@ -7,8 +7,6 @@
         "start": "tsx ../packages/skillnomad/src/bin/cli.ts build skillnomad.config.ts"
     },
     "dependencies": {
-        "skillnomad-types": "0.1.6",
-        "skillnomad-common": "0.1.6",
         "skillnomad": "0.1.6"
     },
     "devDependencies": {

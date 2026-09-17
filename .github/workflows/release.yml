@@ -60,10 +60,7 @@ jobs:
 
           should_release=false
           for pkg in \
-            packages/skillnomad-types \
-            packages/skillnomad-common \
-            packages/skillnomad \
-            packages/skillnomad-validate
+            packages/skillnomad
           do
             name=$(node -p "require('./$pkg/package.json').name")
             package_version=$(node -p "require('./$pkg/package.json').version")
@@ -107,10 +104,7 @@ jobs:
         run: |
           set -euo pipefail
           for pkg in \
-            packages/skillnomad-types \
-            packages/skillnomad-common \
-            packages/skillnomad \
-            packages/skillnomad-validate
+            packages/skillnomad
           do
             name=$(node -p "require('./$pkg/package.json').name")
             manifest_version=$(node -p "require('./release-manifest.json').packages['$name']")
@@ -133,10 +127,7 @@ jobs:
           mkdir -p dist-release
           git archive --format=zip -o dist-release/source.zip "$RELEASE_TAG"
           for pkg in \
-            packages/skillnomad-types \
-            packages/skillnomad-common \
-            packages/skillnomad \
-            packages/skillnomad-validate
+            packages/skillnomad
           do
             npm pack --workspace "$pkg" --pack-destination dist-release
           done

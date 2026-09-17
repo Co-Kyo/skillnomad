@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { createSkill, task } from 'skillnomad-types';
+import { createSkill, task } from '../dist/types/index.js';
 
 // D29 缺陷2 回归：双装配路径行为对齐。
 // 修复前 createSkill 直装配不转 checkpoint→barrier（与 createSkillFromModel 不一致），

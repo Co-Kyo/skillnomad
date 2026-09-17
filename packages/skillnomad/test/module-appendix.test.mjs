@@ -4,7 +4,7 @@ import { mkdtempSync, readFileSync, rmSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { buildPipeline, renderStep } from '../dist/index.js';
-import { task } from 'skillnomad-types';
+import { task } from '../dist/types/index.js';
 
 // D35 全链路 · 模块附录 e2e：模块 render() → 引用步骤的「模块附录」（双路径）＋引用表标注。
 // 内容源是 render()，路径只是逻辑标识——不落盘、不读盘。

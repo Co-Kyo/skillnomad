@@ -7,7 +7,7 @@ import ts from 'typescript';
 // 任一新增/删除即红——要改清单必须显式改本文件（把有意的 API 变更记录在此）。
 const AUTHORING_VALUES = [
     // 作者面收缩（拆包方向）：IR 构造子与 createSkill 已退出——写作路径只有一条
-    // （step() 链式 ＋ createSkillFromModel）。它们仍在 skillnomad-types（内部用）。
+    // （step() 链式 ＋ createSkillFromModel）。它们仍在 src/types/（内部用）。
     'step', 'defineModule',
     'createSkillFromModel', 'defineConfig', 'createRefs',
 ];

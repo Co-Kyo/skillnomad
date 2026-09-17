@@ -8,7 +8,7 @@ LLM 可执行 Markdown Skill 管线的打包工具：声明步骤与产出，构
 npm install -D skillnomad
 ```
 
-**只需这一个包。** 作者面（构造动词、类型、模块、构建函数）全部由主包转口；校验器/派生器等实现细节留在各子包（不建议直引）。不要直接安装或 import `skillnomad-types` / `-common` / `-validate`。
+**只需这一个包。** 类型、校验、构建全部在包内（`src/types/`、`src/check/`、`src/compiler/`）；`skillnomad validate <pipeline-file>` 做管线完整性校验。另见 `docs/guide/toolchain.md`（官方工具组合）。
 
 ## 使用
 

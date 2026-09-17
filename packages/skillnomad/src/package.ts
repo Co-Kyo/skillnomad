@@ -16,7 +16,7 @@ import { isAbsolute, join } from 'node:path';
 import { Registry, check, doc, type Diagnostic as BlockDiagnostic, type DocPart } from 'methodblocks';
 import { isBlocking, validate as validateRefs, type Diagnostic as RefDiagnostic, type Io, type KeyMap, type RefDecl } from 'markrefs';
 
-import type { SourceModule, SourceModuleKind } from 'skillnomad-types';
+import type { SourceModule, SourceModuleKind } from './types/index.js';
 
 /** 包清单里的块声明。 */
 export interface PackageBlockSpec {

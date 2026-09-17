@@ -10,9 +10,16 @@ async function main() {
     const args = process.argv.slice(2);
     const command = args[0];
 
+    if (command === 'validate') {
+        // validate 子命令：实现见 ../cli/run-validate.ts（原独立校验包并入，现为子命令）
+        await import('../cli/run-validate.js');
+        return;
+    }
+
     if (command !== 'build') {
-        console.error('Usage: skillnomad build [config-file]');
-        console.error('  Config file defaults to skillnomad.config.ts in cwd');
+        console.error('Usage: skillnomad <build|validate> [config-file|pipeline-file]');
+        console.error('  build: skillnomad build [config-file] (defaults to skillnomad.config.ts in cwd)');
+        console.error('  validate: skillnomad validate <path-to-pipeline-file>');
         process.exit(1);
     }
 

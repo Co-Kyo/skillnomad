@@ -43,8 +43,6 @@
     },
     "dependencies": {
         "markrefs": "0.1.0",
-        "methodblocks": "0.1.1",
-        "skillnomad-common": "0.1.6",
-        "skillnomad-types": "0.1.6"
+        "methodblocks": "0.1.1"
     }
 }

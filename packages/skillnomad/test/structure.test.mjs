@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { Registry } from 'methodblocks';
 import { blockModule, buildPipeline } from '../dist/index.js';
-import { task } from 'skillnomad-types';
+import { task } from '../dist/types/index.js';
 
 // P2 结构校验（config.structure）：校验期跑 methodblocks check()，诊断计入失败汇总；
 // 缺省不声明＝旧行为逐字不变。

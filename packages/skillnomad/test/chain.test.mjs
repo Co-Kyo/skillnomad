@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
+    validateStepChain,
+    validatePhaseCoverage,
+} from '../dist/check/validators.js';
+import {
     CHAIN_TERMINAL,
     resolveChain,
     deriveChainNext,
@@ -8,9 +12,7 @@ import {
     derivePhaseIntervals,
     deriveFlowOverview,
     formatInterval,
-    validateStepChain,
-    validatePhaseCoverage,
-} from '../../skillnomad-common/dist/index.js';
+} from '../dist/compiler/internal.js';
 
 // ---------------------------------------------------------------
 // 真实数据：sp-skill 的 11 步全序与其 6 个阶段

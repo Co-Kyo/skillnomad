@@ -1,5 +1,5 @@
 // ============================================================
-// skillnomad-types v2 — Control-flow tree primitives for LLM skill pipelines
+// skillnomad types — Control-flow tree primitives for LLM skill pipelines
 //
 // 设计哲学:
 //   - 递归树替代扁平图+边，表达力更强

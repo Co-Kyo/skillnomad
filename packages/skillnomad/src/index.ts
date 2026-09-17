@@ -40,7 +40,7 @@ import type {
     DegradeProtocol,
     SourceModule,
     SourceContract,
-} from 'skillnomad-types';
+} from './types/index.js';
 import {
     task,
     seq,
@@ -48,10 +48,8 @@ import {
     mapNode,
     branch,
     loop,
-} from 'skillnomad-types';
+} from './types/index.js';
 import {
-    CHAIN_TERMINAL,
-    resolveStepOrder,
     validateStep,
     validateBarrierContinuity,
     validateDependencyRefs,
@@ -60,13 +58,17 @@ import {
     validateModuleUsage,
     validateModules,
     validateBodySections,
+} from './check/validators.js';
+import {
+    CHAIN_TERMINAL,
+    resolveStepOrder,
     resolveChain,
     deriveChainNext,
     deriveInitStepId,
     deriveFlowOverview,
     derivePhaseIntervals,
     formatInterval,
-} from 'skillnomad-common';
+} from './compiler/internal.js';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as crypto from 'node:crypto';
@@ -78,9 +80,9 @@ import * as crypto from 'node:crypto';
 export {
     step,
     defineModule,
-} from 'skillnomad-types';
+} from './types/index.js';
 // 作者面收缩（拆包方向）：IR 构造子（task／seq／parallel／mapNode／branch／loop）与 IR 直装配
-// （createSkill）退出作者面——它们仍在 skillnomad-types 里（框架内部与测试用），
+// （createSkill）退出作者面——它们仍在 src/types/ 里（框架内部与测试用），
 // 但不再从主包转口；写作路径只有一条：step() 链式 ＋ createSkillFromModel（见规范）。
 export type {
     StepDefinition,
@@ -96,7 +98,7 @@ export type {
     SourceVerifyRule,
     SourceCheckpoint,
     SourceModule,
-} from 'skillnomad-types';
+} from './types/index.js';
 
 // markrefs 集成：引用登记 + 键表 + 构建期校验（宿主侧适配层，见 ./markrefs.ts）
 import { createRefs, inspectRefs, type MarkrefsConfig } from './markrefs.js';
@@ -745,7 +747,7 @@ function renderRuntimeTrace(step: ResolvedStep): string {
  * 早返＋完整双路径共用（P1 同构）。
  */
 export function renderModulesAppendix(
-    registry: import('skillnomad-types').SourceContract[] = [],
+    registry: import('./types/index.js').SourceContract[] = [],
     contents: Record<string, string> = {},
 ): string {
     const mods = registry.filter((c) => c.module);

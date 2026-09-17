@@ -1,20 +1,22 @@
 // ============================================================
-// skillnomad-validate — Reference integrity checker for skill pipelines
+// skillnomad/cli/validate —— 校验命令的库部分（报告类型＋validatePipeline）
 // ============================================================
 
 import type {
     StepDefinition,
     ResolvedPipeline,
     SourcePhase,
-} from 'skillnomad-types';
+} from '../types/index.js';
 import {
     validateStep,
     validateDependencyRefs,
     validateBarrierContinuity,
     validateStepChain,
     validatePhaseCoverage,
+} from '../check/validators.js';
+import {
     resolveStepOrder,
-} from 'skillnomad-common';
+} from '../compiler/internal.js';
 
 export interface ValidationReport {
     passed: boolean;

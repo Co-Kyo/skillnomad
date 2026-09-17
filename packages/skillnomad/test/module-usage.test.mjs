@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { validateModuleUsage } from '../../skillnomad-common/dist/index.js';
+import { validateModuleUsage } from '../dist/check/validators.js';
 
 // 8.15 Step 2：模块引用一致性校验（角色×归属 + 私有可见性）
 const step = (id, reads = []) => ({ id, dependsOn: 'x', reads, writes: [] });

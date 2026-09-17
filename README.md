@@ -57,7 +57,7 @@ export default defineConfig({
    即 `next` 已从「必须手写的字段」降为「可选覆盖的派生值」。
 
 违反契约（多依赖 / 成环 / 断链 / 悬空引用）会在构建期报错，**不会静默线性化**。
-校验由 `validateStepChain()` 实现（`skillnomad-common`），在 `skillnomad build` 与 `skillnomad validate` 两处都会执行；
+校验由 `validateStepChain()` 实现（包内 `src/check/`），在 `skillnomad build` 与 `skillnomad validate` 两处都会执行；
 所有推导函数在链不成立时一律**返回空而不猜测**，交由校验报错说明原因。
 
 末步用终止标记 `done` 结束链；`next` 若指向未定义的步骤会直接报错。
@@ -120,19 +120,17 @@ step('scan', '广域扫描')
 ## 包结构
 
 ```text
-packages/
-├── skillnomad-types/     # 类型系统 + task/seq/parallel/mapNode 等构建函数
-├── skillnomad-common/    # 校验、图遍历与链推导
-├── skillnomad/           # 打包器 + Markdown 渲染 + CLI
-└── skillnomad-validate/  # 管线完整性校验 CLI
+packages/skillnomad/        # 唯一发布的包：对外只暴露 skillnomad 一个品牌
+  src/types/                # 形状＋构造动词
+  src/check/                # 声明自洽检查（库函数）
+  src/compiler/             # 链派生＋图遍历（内部件，不承诺稳定）
+  src/cli/                  # build（已有）＋ validate（管线完整性校验子命令）
+  src/blocks.ts             # methodblocks 适配
+  src/package.ts            # 内容包装载器
+  src/markrefs.ts           # 引用校验适配
 ```
 
-npm 包名（**消费者只需要 `skillnomad` 一个**；其余三包是内部实现包，由主包转口、不单独对外）：
-
-- `skillnomad`
-- `skillnomad-types`
-- `skillnomad-common`
-- `skillnomad-validate`
+npm 包名（只有一个）：`skillnomad`。类型、校验、构建全部在包内；`skillnomad validate <pipeline-file>` 做管线完整性校验。
 
 构建期 markdown 交叉引用校验由 [`markrefs`](https://github.com/Co-Kyo/markrefs)（独立项目，独立版本线）提供，本仓以 dependency 引用其已发布版本。
 

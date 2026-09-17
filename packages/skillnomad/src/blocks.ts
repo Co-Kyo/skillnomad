@@ -7,7 +7,7 @@
 
 import { check, doc } from 'methodblocks';
 import type { Diagnostic, DocPart, Registry } from 'methodblocks';
-import type { SourceModule, SourceModuleKind } from 'skillnomad-types';
+import type { SourceModule, SourceModuleKind } from './types/index.js';
 
 /** blockModule 输入：id／kind／version 构成模块身份；registry ＋ body 构成内容源（render ＝ doc(registry, body)）。 */
 export interface BlockModuleInput {
