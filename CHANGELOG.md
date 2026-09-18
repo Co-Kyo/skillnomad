@@ -2,6 +2,15 @@
 
 > **注意**：新线自 **0.1.0-beta.1** 独立起步（orphan 干净根提交，skillpack → skillnomad 改名）；改名前的 skillpack 时期记录已归并在该版本节内。
 
+## v0.2.0（单包单仓 · 发布布局 steps/ · 调度口径移除）
+
+- **breaking(structure)**：单包单仓——`skillnomad-types`／`-common`／`-validate` 三包并入主包（`src/types`＋`src/check`＋`src/compiler`＋`src/cli`），`packages/` 层删除；三旧包停止发版（0.1.6 为其最终版，请改装 `skillnomad` 本体）。依赖只剩 `markrefs` 0.1.0、`methodblocks` 0.1.1（独立项目、独立版本线）。
+- **breaking(layout)**：产物布局 `processes/<NN>-<id>.md` → `steps/<NN>-<id>/step.md`；读表改印**发布路径**（角色派生：步自有进 `steps/<NN>-<步id>/`、skill 级文档进 `references/`、数据进 `assets/`），模块承载的读取改印**附录锚**；SKILL.md 执行节同步。「源 → 发布」映射由框架派生（`publishPath`＋`checkPublishLayout`＋`scanSourcePaths`＋`scanDanglingRefs`），消费侧只声明角色 scope/step，不写发布路径。
+- **breaking(api)**：调度口径移除——框架零调度（删 `scheduling.ts`／类型／透传／校验／渲染／转口；`src` 零调度字样）。公开面 42 → 26 个导出；作者面只剩一条路（IR 构造子与 `createSkill` 退出主包，指南统一到链式）。
+- **feat(toolchain)**：官方工具组合文档页（`docs/guide/toolchain.md`）＋ starter 模板（模板两步链，构建验证通过）。
+- 回归：typecheck 通过；全量测试 105/105。
+- 升级影响：旧三包导入改从主包导入；产物路径与调度相关产物需按新布局重建；P2 仍缓。
+
 ## v0.1.6（methodblocks 集成 · 依赖固定版本号 · 工作流升版）
 
 - **feat(blocks)**：methodblocks 集成——新增 `blockModule()` 适配器（块集 → 模块，构建期渲染进产物「模块附录」）与可选 `config.structure`（构建期块结构校验：引用缺席／一字不抄／母版未进正文／同块双发布；诊断并入构建失败汇总）。缺省不声明时产物与 0.1.5 逐字一致；公开面新增 4 个导出（`blockModule` ＋ 三个类型）。新增依赖 `methodblocks`（Markdown 积木化工具集，独立项目、独立发版）。

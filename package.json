@@ -1,6 +1,6 @@
 {
     "name": "skillnomad",
-    "version": "0.1.6",
+    "version": "0.2.0",
     "description": "skillnomad — build LLM-executable Markdown skills from structured pipeline definitions",
     "keywords": [
         "skillnomad",
@@ -58,6 +58,5 @@
     },
     "publishConfig": {
         "access": "public"
-    },
-    "private": true
+    }
 }
