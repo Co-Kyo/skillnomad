@@ -14,5 +14,6 @@
     "hideBreadcrumbs": true,
     "compilerOptions": {
         "types": []
-    }
+    },
+    "skipErrorChecking": true
 }
