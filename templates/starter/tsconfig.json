@@ -9,14 +9,7 @@
         "esModuleInterop": true,
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true,
-        "declaration": true,
-        "declarationMap": true,
-        "sourceMap": true,
-        "composite": true,
-        "outDir": "./dist",
-        "rootDir": "./src"
+        "noEmit": true
     },
-    "include": [
-        "src"
-    ]
+    "include": ["skill.ts", "skillnomad.config.ts", "src/**/*.ts"]
 }

@@ -59,27 +59,20 @@ jobs:
           fi
 
           should_release=false
-          for pkg in \
-            packages/skillnomad-types \
-            packages/skillnomad-common \
-            packages/skillnomad \
-            packages/skillnomad-validate
-          do
-            name=$(node -p "require('./$pkg/package.json').name")
-            package_version=$(node -p "require('./$pkg/package.json').version")
-            manifest_version=$(node -p "require('./release-manifest.json').packages['$name']")
-            if [ "$package_version" != "$manifest_version" ]; then
-              echo "should_release=false" >> "$GITHUB_OUTPUT"
-              echo "reason=package-version-mismatch" >> "$GITHUB_OUTPUT"
-              exit 0
-            fi
-            if npm view "$name@$manifest_version" --registry=https://registry.npmjs.org/ >/dev/null 2>&1; then
-              echo "exists $name@$manifest_version"
-            else
-              echo "missing $name@$manifest_version"
-              should_release=true
-            fi
-          done
+          name=$(node -p "require('./package.json').name")
+          package_version=$(node -p "require('./package.json').version")
+          manifest_version=$(node -p "require('./release-manifest.json').packages['$name']")
+          if [ "$package_version" != "$manifest_version" ]; then
+            echo "should_release=false" >> "$GITHUB_OUTPUT"
+            echo "reason=package-version-mismatch" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if npm view "$name@$manifest_version" --registry=https://registry.npmjs.org/ >/dev/null 2>&1; then
+            echo "exists $name@$manifest_version"
+          else
+            echo "missing $name@$manifest_version"
+            should_release=true
+          fi
 
           if gh api "repos/Co-Kyo/skillnomad/releases/tags/${RELEASE_TAG}" >/dev/null 2>&1; then
             echo "release exists"
@@ -106,25 +99,18 @@ jobs:
         if: steps.version-gate.outputs.should_release == 'true'
         run: |
           set -euo pipefail
-          for pkg in \
-            packages/skillnomad-types \
-            packages/skillnomad-common \
-            packages/skillnomad \
-            packages/skillnomad-validate
-          do
-            name=$(node -p "require('./$pkg/package.json').name")
-            manifest_version=$(node -p "require('./release-manifest.json').packages['$name']")
-            if npm view "$name@$manifest_version" >/dev/null 2>&1; then
-              echo "exists $name@$manifest_version"
+          name=$(node -p "require('./package.json').name")
+          manifest_version=$(node -p "require('./release-manifest.json').packages['$name']")
+          if npm view "$name@$manifest_version" >/dev/null 2>&1; then
+            echo "exists $name@$manifest_version"
+          else
+            # 预发布版本（含 "-"）走 beta dist-tag，不占 latest
+            if [[ "$manifest_version" == *-* ]]; then
+              npm publish --access public --tag beta
             else
-              # 预发布版本（含 "-"）走 beta dist-tag，不占 latest
-              if [[ "$manifest_version" == *-* ]]; then
-                npm publish --workspace "$pkg" --access public --tag beta
-              else
-                npm publish --workspace "$pkg" --access public
-              fi
+              npm publish --access public
             fi
-          done
+          fi
 
       - name: Pack release artifacts
         if: steps.version-gate.outputs.should_release == 'true'
@@ -132,14 +118,7 @@ jobs:
           set -euo pipefail
           mkdir -p dist-release
           git archive --format=zip -o dist-release/source.zip "$RELEASE_TAG"
-          for pkg in \
-            packages/skillnomad-types \
-            packages/skillnomad-common \
-            packages/skillnomad \
-            packages/skillnomad-validate
-          do
-            npm pack --workspace "$pkg" --pack-destination dist-release
-          done
+          npm pack --pack-destination dist-release
 
       - name: Extract release notes from CHANGELOG
         if: steps.version-gate.outputs.should_release == 'true'

@@ -1,7 +1,7 @@
 # skillnomad Agent Contract
 
 > 状态：active
-> 定位：根级 agent 契约，只放跨会话不变量和分级规则。框架源码仓（TS monorepo：框架四包同版 + `markrefs` 独立版本线）。
+> 定位：根级 agent 契约，只放跨会话不变量和分级规则。框架源码仓（TS 单包 + `markrefs`／`methodblocks` 独立版本线）。
 > **§1 角色先行是最高优先级，凌驾于一切便利；与下文冲突时以 §1 为准。**
 
 ## 1. 角色先行（每次任务进门执行）
@@ -24,10 +24,11 @@
 
 ## 2. 项目边界
 
-- TS monorepo：框架四包 `packages/skillnomad-types` / `-common` / `skillnomad` / `-validate`，同版同节奏（`release-manifest.json`）；push `v*` tag → Actions OIDC 直发 npm。
+- 单包单仓：`package.json` 即发版位（`release-manifest.json` 单键）；push `v*` tag → Actions OIDC 直发 npm。内部目录（`src/types/`、`src/check/`、`src/compiler/`、`src/cli/`）不独立发版。
 - `markrefs`（Markdown 交叉引用解析与校验）是**独立项目**：代码与发版都在独立仓 `Co-Kyo/markrefs`（tag `v*`），不随框架版本；本仓以 dependency 引用其**已发布**版本（同步成本在框架侧），**不在本仓留副本**。
-- **对外只暴露 `skillnomad` 一个入口**：子包是内部实现，子包 README／对外文档一律引导到主包；消费侧只允许 `import … from 'skillnomad'`，公共面新增一律经主包转口。
-- 包内互引与工具依赖一律写**固定版本号**（精确相等，构思阶段策略：整组同版、杜绝跨号漂移；2026-09-14 作者拍板，替换原「semver range」规则）——**禁用 `workspace:` 协议**（npm 全系不支持，EUNSUPPORTEDPROTOCOL），`file:` 也会被原样打进发布产物；版本匹配时 npm workspaces 自动链到本地包，效果等价。**发版联动须同步全部 pin（四包互引＋markrefs／methodblocks）**。**发布物 bin 值不得以 `./` 开头**（npm 新版发布归一化会判非法并删除）。
+- **对外只暴露 `skillnomad` 一个入口**：消费侧只允许 `import … from 'skillnomad'`；`skillnomad validate` 做管线完整性校验（CLI 子命令）。
+- 包内互引与工具依赖一律写**固定版本号**（精确相等，构思阶段策略：整组同版、杜绝跨号漂移；2026-09-14 作者拍板，替换原「semver range」规则）——**禁用 `workspace:` 协议**（npm 全系不支持，EUNSUPPORTEDPROTOCOL），`file:` 也会被原样打进发布产物；版本匹配时 npm workspaces 自动链到本地包，效果等价。**发版联动须同步全部 pin（markrefs／methodblocks）**。**全局禁 `^` 与 `~`：任何依赖字段（含 devDependencies／peerDependencies）一律写固定版本号**（2026-09-15 作者重申）。**发布物 bin 值不得以 `./` 开头**（npm 新版发布归一化会判非法并删除）。
+- **核心不再新增业务能力接口**（拆包方向，2026-09-15 作者拍板）：后续任何"加一种能力"的提议，先回答"为什么不能是内容包"（内容包规范见工作仓 `docs/product/skill-package-spec-v1.md`）。执行力来自两处既有机制：语义变更须作者确认（§7 用户门），新增导出触发导出清单检查即红（`test/export-surface.test.mjs`）。
 - `renderStep` / validate / contract 行为即契约；改渲染、校验、类型就是改契约。
 - `docs/` 为 VitePress 站；`demos/` 最小用例；`release.yml` Version gate 要求 tag / manifest / 每包版本三者一致。
 - `main` 受分支保护：一切变更走分支 + PR，不直推（直推报 GH013 拒收）。
@@ -43,7 +44,7 @@
 ## 4. 冷启动
 
 1. 读 `README.md`、`CHANGELOG.md`、`release-manifest.json` 确认版本口径。
-2. 读 `packages/*/package.json` 确认五包结构。
+2. 读 `package.json` 确认单包结构。
 3. 读 `docs/guide/contract.md` 确认契约语义。
 4. 读 `.github/workflows/release.yml` 确认发布门。
 5. 跑 `git log --oneline -10` + `git status` 确认基线。

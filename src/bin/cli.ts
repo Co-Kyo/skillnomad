@@ -1,0 +1,72 @@
+#!/usr/bin/env node
+
+import { resolve, dirname } from 'node:path';
+import { pathToFileURL } from 'node:url';
+import { existsSync } from 'node:fs';
+import { buildPipeline } from '../index.js';
+import type { SkillnomadConfig } from '../index.js';
+
+async function main() {
+    const args = process.argv.slice(2);
+    const command = args[0];
+
+    if (command === 'validate') {
+        // validate 子命令：实现见 ../cli/run-validate.ts（原独立校验包并入，现为子命令）
+        await import('../cli/run-validate.js');
+        return;
+    }
+
+    if (command !== 'build') {
+        console.error('Usage: skillnomad <build|validate> [config-file|pipeline-file]');
+        console.error('  build: skillnomad build [config-file] (defaults to skillnomad.config.ts in cwd)');
+        console.error('  validate: skillnomad validate <path-to-pipeline-file>');
+        process.exit(1);
+    }
+
+    const cwd = process.cwd();
+    const configFile = resolve(cwd, args[1] || 'skillnomad.config.ts');
+
+    if (!existsSync(configFile)) {
+        console.error(`Config file not found: ${configFile}`);
+        process.exit(1);
+    }
+
+    // Import config (use file:// URL for Windows compat)
+    const configUrl = pathToFileURL(configFile).href;
+    const config: SkillnomadConfig = (await import(configUrl)).default;
+
+    // Resolve skill path relative to config file's directory
+    const skillPath = resolve(dirname(configFile), config.skill);
+
+    if (!existsSync(skillPath)) {
+        console.error(`Skill file not found: ${skillPath} (from config.skill: "${config.skill}")`);
+        process.exit(1);
+    }
+
+    // Import skill definition (must export `skill` from createSkill())
+    const skillUrl = pathToFileURL(skillPath).href;
+    const mod = await import(skillUrl);
+
+    if (!mod.skill || !mod.skill.steps) {
+        console.error(`Skill file must export \`skill\` via createSkill()`);
+        process.exit(1);
+    }
+
+    const { name, title, description, api, steps, contracts } = mod.skill;
+
+    // Merge meta: skill's defaults + config overrides
+    const meta = {
+        name,
+        title,
+        description,
+        api,
+        ...(config.meta || {}),
+    };
+
+    buildPipeline(steps, config.outputDir, meta, contracts, config.markrefs, config.modules, config.structure);
+}
+
+main().catch((err) => {
+    console.error('Build failed:', err);
+    process.exit(1);
+});

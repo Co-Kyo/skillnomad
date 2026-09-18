@@ -24,6 +24,7 @@ export default defineConfig({
                     { text: '核心契约（公开承诺）', link: '/guide/contract' },
                     { text: '顶层引导与反模式', link: '/guide/anti-patterns' },
                     { text: '调优指南（权重经验与案例）', link: '/guide/tuning' },
+                    { text: '官方工具组合', link: '/guide/toolchain' },
                     {
                         text: '概念',
                         items: [
