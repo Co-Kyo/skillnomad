@@ -55,7 +55,7 @@
 
 ## v0.1.2（ref 承载形态清退 · D29 缺陷修复版）
 
-- **breaking(types)**：清退 `SourceRef.ref` 概念引用声明形态（删字段与注释块），`SourceRef.path` 转必填——该形态自 beta.9 发布起零真实用例：两次真实转化（sp-skill、narrative-focus port）均自发选择用户侧 `refOf` helper 达成同一不变量「步骤层零路径字面量」，原定验证路径被真实转化绕开而非采用。路径解析归用户侧，框架不承载概念引用形态——「不做领域模型抽象」的边界收得更紧。
+- **breaking(types)**：清退 `SourceRef.ref` 概念引用声明形态（删字段与注释块），`SourceRef.path` 转必填——该形态自 beta.9 发布起零真实用例：两次真实转化（sp-skill 与另一移植案例）均自发选择用户侧 `refOf` helper 达成同一不变量「步骤层零路径字面量」，原定验证路径被真实转化绕开而非采用。路径解析归用户侧，框架不承载概念引用形态——「不做领域模型抽象」的边界收得更紧。
 - **refactor(core)**：删除两处「未解析概念引用」运行时 throw 防护（`sourceRef` 与 map over）——`path` 必填后为死代码（实测删除后全量测试仍全绿）；缺失路径由运行时 throw 改为编译期报错。
 - **fix(core)**（随本版发版生效）：工作区三包补 `main`/`exports` 导出；`createSkill` 直装配路径 checkpoint 正确转 barrier（含 3 回归用例）。
 - 升级影响：源码声明 `{ ref: '…' }` 不带 `path` 由运行时 throw 改为编译期报错；两真实转化仓 grep 实测零改动。`docs/api/types.md` 概览已同步；`SourceVerifyRule.ref`（校验清单条目引用）为另一独立字段，不受影响。
@@ -78,7 +78,7 @@
 
 - **M1 安装面**：四包 + release-manifest 统一 0.1.0；`latest` dist-tag 自本版起首次指向正式版（此前停留 beta.1，默认安装落后 8 个版本）
 - **M2 契约对账**：`contract.md` 12 条公开承诺逐条对账全绿（框架 45 测试 case + `skillnomad-validate` 独立入口实测）
-- **M3 悬空清零**：第二用例 narrative-focus-port 归位（纳入版本控制）并升级至本版本
+- **M3 悬空清零**：第二用例（移植案例）归位（纳入版本控制）并升级至本版本
 - **M4 形态反证**：`SourceRef.ref` 由第二用例以 **ref 声明模式**落地（`{ ref: 'name' }` + 领域 resolver），框架未解析防护正反用例 4/4 通过；与 sp-skill 的实体常量模式互为反证
 - **M5 变更出口**：README 冻结点表述修正，升级风险判断口径唯一
 
@@ -101,7 +101,7 @@
 
 - **主包 = 唯一公共 API 表面**：`skillnomad/src/index.ts` 追加 `export * from 'skillnomad-types'` —— `step` builder、flow 辅助（task/seq/parallel/mapNode/branch/loop）与全部类型统一从主包出。
 - 用户端体验收敛为：`npm install skillnomad -D` 一条命令 + `import ... from 'skillnomad'` 一个源；types/common 保留为内部组织（传递依赖）。
-- 配套 sp-skill：18 处 `skillnomad-types` import 收敛 + package.json 只声明 skillnomad；第二用例 narrative-focus-port 同步收敛。
+- 配套 sp-skill：18 处 `skillnomad-types` import 收敛 + package.json 只声明 skillnomad；第二用例（移植案例）同步收敛。
 - 验证：tsc + 16 测试全绿；sp-skill 44 测试全绿、产物无新增差异。
 
 ## v0.1.0-beta.7（8.15 Step 2 候选）
