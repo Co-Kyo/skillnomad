@@ -2,8 +2,10 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { renderStep } from '../dist/index.js';
 
-// D33 示例分隔符：decision 示例块加 `isExample: true` 后渲染带示例区块标注；
+// D33 示例分隔符：decision 示例块加 `isExample: true` 后渲染带示例区块题注；
 // 缺席时与改前逐字一致（不变量：渲染零静默变化）。风格仿 renderstep-p1.test.mjs。
+// v0.2.2 散文修复：示例语义只由区块题注一处承载——行级"（示例）"前后缀撤除，
+// 杜绝与消费数据自带标注叠加（双注入弹）。
 
 const decisionBase = {
     gateType: 'human_gate',
@@ -32,12 +34,15 @@ const baseStep = {
 
 const order = { 'demo-step': 4 };
 
-test('isExample: true 的 decision 渲染含示例标注（metrics/selection/barrier_summary 三处）', () => {
+test('isExample: true 的 decision 渲染：区块题注承载示例语义，行级零叠加', () => {
     const md = renderStep({ ...baseStep, decisionSummary: { ...decisionBase, isExample: true } }, order);
     assert.match(md, /示例值——以下为历史运行示例/);
-    assert.match(md, /metrics（示例）/);
-    assert.match(md, /selection（示例）/);
-    assert.match(md, /【示例】/);
+    // 行级前后缀已撤除：示例语义一处（题注）承载，不与数据自带标注叠加
+    assert.doesNotMatch(md, /metrics（示例）/);
+    assert.doesNotMatch(md, /selection（示例）/);
+    assert.doesNotMatch(md, /【示例】/);
+    assert.match(md, /- metrics: 命题=10/);
+    assert.match(md, /- selection: 示例：10\/10 已选/);
 });
 
 test('isExample 缺席时渲染与改前逐字一致（零静默变化）', () => {
