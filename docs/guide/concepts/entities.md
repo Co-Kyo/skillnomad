@@ -43,7 +43,7 @@ import { refOf, schemaRef } from '../domain/entities.js';
 .verify(verify.file(refOf('scanIndex').path, 'index.json 已生成'))
 ```
 
-`refOf` / `schemaRef` / `verify.file` 都是**用户侧 helper**（自己仓里的几行工厂函数）——框架只承载形态、不做领域模型抽象，解析归你（裁定详情 → [设计裁定](../decisions#不承载概念引用形态)）。
+`refOf` / `schemaRef` / `verify.file` 都是**用户侧 helper**（自己仓里的几行工厂函数）——框架只承载形态、不做领域模型抽象，解析归你（为什么 → [为什么是这些限制](../decisions#为什么概念名路径的解析要我自己写)）。
 
 ## 效果契约同源
 

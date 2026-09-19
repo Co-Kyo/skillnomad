@@ -18,15 +18,18 @@ npm install -D skillnomad
 
 ### 1. 注册共享内容模块（带角色）
 
-`src/contracts.ts` —— 一段被多个步骤共用的规则，注册进模块注册表。你只声明**它的角色**（skill 级共享），发布位置由框架派生：
+`src/contracts.ts` —— 一段被多个步骤共用的规则，注册进模块注册表。你只声明**它的角色**（skill 级共享），发布位置由框架派生。注意：`contracts` 字段是这张**登记表**的名字，与本站《核心契约》页里"框架的承诺"那个"契约"是两回事。
+
+先声明条目对象，后面步骤直接展开引用，路径只写这一次：
 
 ```ts
-export const contracts = [
-  { id: 'substitution-test', kind: 'policy' as const,
-    path: 'src/rules/substitution-test.md',      // 源路径：文件放哪自由
-    description: '替代测试：判定细节角色的共享规则',
-    scope: 'skill' as const },                    // 角色：skill 级 → 发布到 references/
-];
+export const substitutionTest = {
+  id: 'substitution-test', kind: 'policy' as const,
+  path: 'src/rules/substitution-test.md',        // 源路径：文件放哪自由，只写这一处
+  description: '替代测试：判定细节角色的共享规则',
+  scope: 'skill' as const,                        // 角色：skill 级 → 发布到 references/
+};
+export const contracts = [substitutionTest];
 ```
 
 ### 2. 定义步骤：链式写法，引用符号名不写路径
@@ -35,12 +38,13 @@ export const contracts = [
 
 ```ts
 import { step } from 'skillnomad';
+import { substitutionTest } from '../contracts.js';
 
 export const collect = step('collect', '收集与标注')
   .target('收集并标注。')
   .summary('收集并标注')
   .action('parse', 'collect-do', '收集', '收集并标注。')
-  .reads({ path: 'src/rules/substitution-test.md', description: '共享规则', as: 'contract' })
+  .reads({ ...substitutionTest, as: 'contract' })   // 符号名引用，不重复写路径
   .writes({ path: '{workDir}/.meta/labeled.json', description: '标注结果', required: true })
   .checkpoint({
     checkItems: ['标注结果是否完整'],
@@ -53,7 +57,7 @@ export const collect = step('collect', '收集与标注')
 
 `src/steps/review.ts` 同上，加一行 `.dependsOn('collect')`（线性链契约：多步必须连成单链，第二个根即断链报错）。
 
-> 坑位提示：`step()` 的每一步都要 `.build()` 收尾；对齐报告要求每步**动作正文＋检查点＋产出**三件套齐全（缺 `.checkpoint()` 构建即红），这也是给消费者的交付质量线；步骤内并行／分批用 `.parallel()`／`.map()`（见[契约](contract)）；顶层步骤是线性链，不要把可并行的动作拆成多个顶层步骤。
+> 坑位提示：`step()` 的每一步都要 `.build()` 收尾；构建会生成一份**对齐报告**（`align-report.md`，逐步核对每步的呈现是否齐全），它要求每步**动作正文＋检查点＋产出**三件套齐全（缺 `.checkpoint()` 构建即红），这也是给消费者的交付质量线；步骤内并行／分批用 `.parallel()`／`.map()`（见[契约](contract)）；顶层步骤是线性链，不要把可并行的动作拆成多个顶层步骤。
 
 ### 3. 组装并构建
 
@@ -145,6 +149,6 @@ skillnomad 的做法：**共用规则是模块，步骤引用的是符号名，�
 
 - 发布布局与角色派生 → [发布布局](concepts/publish-layout)
 - 模块化导入的完整语义 → [模块抽象](concepts/modules)
-- 为什么这样写才不漂移 → [设计裁定与不走的路](decisions)
-- 范式在真实管线里改变了什么 → [案例交代](case-study)
+- 被规则顶到了，想知道凭什么 → [为什么是这些限制](decisions)
+- 范式在真实管线里改变了什么 → [实例：构建与定向优化](case-study)
 - 类型参考 → [API 参考](../api/types)

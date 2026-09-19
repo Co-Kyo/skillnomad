@@ -1,6 +1,6 @@
 # API 导览
 
-> 本页按「你要做什么」组织公开面：每张表的符号都链接到自动生成的参考页（签名、字段、设计注释以生成页为准，永不手写、永不漂移）。想读某条设计背后的取舍 → [设计裁定与不走的路](../guide/decisions)。
+> 本页按「你要做什么」组织公开面：每张表的符号都链接到自动生成的参考页（签名、字段、设计注释以生成页为准，永不手写、永不漂移）。想读每条限制为什么划在这 → [为什么是这些限制](../guide/decisions)。
 
 ## 写 skill 的你（作者面）
 
@@ -16,7 +16,7 @@
 | `defineModule` / `SourceModule` | [functions/defineModule](reference/functions/defineModule.md) · [interfaces/SourceModule](reference/interfaces/SourceModule.md) | [模块抽象](../guide/concepts/modules) |
 
 ::: tip 为什么只有这一条路
-框架曾同时提供 IR 构造子（`task`/`seq`/`parallel`…）与链式两种写法。两次真实转化证明：所有消费者自发选了链式，IR 面只剩框架自己用——两条路没有带来第二种人，只带来了第二份要维护的语义。裁定详情 → [设计裁定](../guide/decisions#一条写作路径)。
+一套语义、一套文档、学一次就够——框架不为同一件事提供第二种写法。边界与松动条件 → [为什么是这些限制](../guide/decisions#为什么写作路径只有一条)。
 :::
 
 ## 做发布组装的你（组装面）

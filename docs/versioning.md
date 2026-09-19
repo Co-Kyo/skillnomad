@@ -1,6 +1,6 @@
 # 版本线
 
-> **写给谁**：准备升级或首次安装的人。当前该用什么 → 本页；为什么长成这样 → [设计裁定](guide/decisions)。
+> **写给谁**：准备升级或首次安装的人。当前该用什么 → 本页；为什么长成这样 → [为什么是这些限制](guide/decisions)。
 
 > 当前版本：**0.2.2**（latest）。后续变更以 [CHANGELOG](https://github.com/Co-Kyo/skillnomad/releases) 实际发布为准，本文不预告未发布版本。
 

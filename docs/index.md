@@ -10,8 +10,8 @@ hero:
       text: 快速上手
       link: /guide/quickstart
     - theme: alt
-      text: 核心契约
-      link: /guide/contract
+      text: 存量 skill 怎么迁
+      link: /guide/conversion
 
 features:
   - title: 局部可扫描
@@ -40,13 +40,13 @@ features:
 | 判断值不值得上框架 | [为什么需要 skillnomad](guide/why) | 适合/不适合的判据＋一个实测案例 |
 | 跑通第一个管道 | [快速上手](guide/quickstart) | 一个可构建的示例工程 |
 | 把存量 markdown skill 迁进来 | [转化手册](guide/conversion) | 六步操作清单 |
-| 对某一步做质量扫描与定向优化 | [案例交代](guide/case-study) | 最小评估回路的实跑操作 |
+| 对某一步做质量扫描与定向优化 | [实例：构建与定向优化](guide/case-study) | 四步回路的实跑操作 |
 | 写得更准、调运行时表现 | [调优指南](guide/tuning) | 权重与案例的手法 |
 | 发布成标准 skill 包 | [发布布局](guide/concepts/publish-layout) | 角色→路径的派生规则 |
 | 查某个 API 的签名与字段 | [API 导览](api/types) | 按任务分组的完整参考 |
-| 想知道"为什么这样设计" | [设计裁定与不走的路](guide/decisions) | 每条边界的事故与触发条件 |
+| 被某条规则顶到了，想知道凭什么 | [为什么是这些限制](guide/decisions) | 每条限制的结论、代价与松动条件 |
 
-![skillnomad 顶层叙事：AI 负责写得出来，我们负责活得下去](/svg/hero-narrative.svg)
+![skillnomad 定位：AI 负责写得出来，我们负责活得下去](/svg/hero-narrative.svg)
 
 <script setup>
 import { withBase } from 'vitepress'
