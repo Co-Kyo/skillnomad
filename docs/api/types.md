@@ -41,7 +41,7 @@
 | `buildPipeline` | [functions/buildPipeline](reference/functions/buildPipeline.md) | [核心契约](../guide/contract) |
 | `renderSkillMd` / `renderStep` / `renderPipeline` / `renderPipelineState` / `renderModulesAppendix` / `writeAlignReport` | [functions/renderSkillMd](reference/functions/renderSkillMd.md) | — |
 | `resolveStepRefs` | [functions/resolveStepRefs](reference/functions/resolveStepRefs.md) | [产物路径投射](../guide/concepts/entities) |
-| 散文质量门：`scanMetaDiscourse` / `scanMarkerDuplication` / `ProseHit` | [functions/scanMetaDiscourse](reference/functions/scanMetaDiscourse.md) · [functions/scanMarkerDuplication](reference/functions/scanMarkerDuplication.md) | [发布布局](../guide/concepts/publish-layout) |
+| 组装文本扫描器：`scanMetaDiscourse` / `scanMarkerDuplication` / `ProseHit` | [functions/scanMetaDiscourse](reference/functions/scanMetaDiscourse.md) · [functions/scanMarkerDuplication](reference/functions/scanMarkerDuplication.md) | [发布布局](../guide/concepts/publish-layout) |
 | markrefs 整合：`createRefs` / `inspectRefs` / `MarkrefsConfig` / `KeyMap` | [functions/createRefs](reference/functions/createRefs.md) | [官方工具组合](../guide/toolchain) |
 | methodblocks 整合：`blockModule` / `BlockModuleInput` / `StructureConfig` / `StructureDocSpec` | [functions/blockModule](reference/functions/blockModule.md) | [官方工具组合](../guide/toolchain) |
 
