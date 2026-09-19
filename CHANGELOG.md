@@ -2,6 +2,19 @@
 
 > **注意**：新线自 **0.1.0-beta.1** 独立起步（orphan 干净根提交，skillpack → skillnomad 改名）；改名前的 skillpack 时期记录已归并在该版本节内。
 
+## v0.2.2（散文质量：修渲染器自身污染＋通用散文门）
+
+> 背景：sp-skill 发布产物散文审计（三路取证＋双证伪）抓出的框架侧缺陷——框架注入的文本自己就在制造不通顺。本版先修自己，再立门为证。
+
+- **fix(render)**：示例标注撤除行级前后缀——`isExample` 区块的 `metrics（示例）:`／`selection（示例）:`／`> 【示例】` 三处机械叠加注入全部撤除，示例语义由区块题注一处承载（兑现 D33 档案"渲染层统一处理"）；消费数据自带标注不再被叠加成 `命题（示例）=10` 双注。只动 `isExample===true` 分支，缺席路径逐字不变承诺零影响。
+- **fix(render)**：附录注入文本去元话语——"本节由构建期模块渲染生成（D35）"与"［构建时渲染，版本随产物 manifest 锁定］"中性化（内部编号与构建过程话术不进执行体）。
+- **fix(render)**：插件加载撤假断言——`renderPlugins` 不再无条件印"条件性加载"（声明层无条件字段，框架不替作者宣称加载语义），仅列插件名。
+- **fix(manifest)**：`output-manifest.json` 的 `processFile` 由旧布局残留 `<NN>-<id>.md` 修正为 `steps/<NN>-<id>/step.md`。
+- **feat(gates)**：散文质量门两把（`scanMetaDiscourse` 元话语黑名单／`scanMarkerDuplication` 标记叠加检测，`src/check/prose-gates.ts`）——判据由调用方给（仿 `scanDanglingRefs` 分工，框架不垄断黑名单）；公开面 51 → 54 符号（＋2 值＋1 类型，快照门清单同步）。框架渲染产物自证测试：注入文本必须过自家门。
+- **docs(site)**：contract.md 新增「承诺什么（文本质量）」正面节（撤销"质量不在承诺内"免责口径）；publish-layout.md 修正"就地展开"名不副实表述（实为 step.md 文末集中展开，SKILL.md 无附录入口）＋补写作提醒（域绑定动作写正文、通用方法论留包）；API 导览补散文门行。
+- 回归：typecheck／lint 通过；全量测试 115/115（110＋decision-example 改判＋prose-gates 5）。
+- 升级影响：无破坏性变更。含示例 decision 或模块附录的产物文本变化（污染撤除方向）；消费仓若曾把"（示例）"写进数据 label，本版后只剩数据侧一层——建议消费仓随后清理自带标注（sp-skill-dev v1.5.2 承接）。
+
 ## v0.2.1（map 输入派生 · 文档站对齐 v0.2.0 口径）
 
 - **feat(render)**：map 输入派生（B' 裁定）——`.map()` 的 over 输入是作者已声明的事实，构建期自动补进产物「文件引用」表（派生行标注「map 输入，派生」），作者不必在 reads 双写；去重按剥 `#fragment` 的基路径比对 reads∪writes，命中不重复。数据模型不动；规范工程（reads 已声明）产物逐字不变，仅漏声明时表变完备。新增回归 5 用例（含嵌套 map 全树收集）。
