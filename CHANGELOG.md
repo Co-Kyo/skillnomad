@@ -2,6 +2,14 @@
 
 > **注意**：新线自 **0.1.0-beta.1** 独立起步（orphan 干净根提交，skillpack → skillnomad 改名）；改名前的 skillpack 时期记录已归并在该版本节内。
 
+## v0.2.1（map 输入派生 · 文档站对齐 v0.2.0 口径）
+
+- **feat(render)**：map 输入派生（B' 裁定）——`.map()` 的 over 输入是作者已声明的事实，构建期自动补进产物「文件引用」表（派生行标注「map 输入，派生」），作者不必在 reads 双写；去重按剥 `#fragment` 的基路径比对 reads∪writes，命中不重复。数据模型不动；规范工程（reads 已声明）产物逐字不变，仅漏声明时表变完备。新增回归 5 用例（含嵌套 map 全树收集）。
+- **docs(api)**：公开面全量 TSDoc 分类（`@category` 五组：作者面／发布布局／内容包／工具整合／构建与渲染）——文档站 TypeDoc 改 `src/index.ts` 单入口，51 个获批符号全部有生成页；源码注释清退内部裁定编号（含用户可见报错文案一处）。
+- **docs(site)**：文档站整体对齐 v0.2.0 口径——API 参考改角色导览页＋生成区通链；新增「设计裁定与不走的路」「案例交代」「发布布局」三页；反模式页解散（盖房子阶段不立反例）；对外统一标准名 scenario-pipeline；案例数字按可复算口径重算（Before 锚点 bundle 固化，失实数字清退）。
+- 回归：typecheck／lint 通过；全量测试 110/110（105＋5）。
+- 升级影响：无破坏性变更；含 map 且未在 reads 声明 over 输入的工程，产物「文件引用」表新增派生行（内容完备化，非行为变化）。
+
 ## v0.2.0（单包单仓 · 发布布局 steps/ · 调度口径移除）
 
 - **breaking(structure)**：单包单仓——`skillnomad-types`／`-common`／`-validate` 三包并入主包（`src/types`＋`src/check`＋`src/compiler`＋`src/cli`），`packages/` 层删除；三旧包停止发版（0.1.6 为其最终版，请改装 `skillnomad` 本体）。依赖只剩 `markrefs` 0.1.0、`methodblocks` 0.1.1（独立项目、独立版本线）。
