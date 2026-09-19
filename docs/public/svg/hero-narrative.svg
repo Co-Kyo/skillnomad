@@ -14,14 +14,14 @@
   <text x="450" y="34" text-anchor="middle" class="t" font-size="20" font-weight="700" fill="#0F172A">AI 负责「写得出来」，<tspan fill="#EA580C">我们负责「活得下去」</tspan></text>
 
   <!-- 左栏：迭代者场景（本例） -->
-  <text x="20" y="78" class="t" font-size="14" font-weight="600" fill="#993C1D">迭代者场景（本例 sp-skill）</text>
+  <text x="20" y="78" class="t" font-size="14" font-weight="600" fill="#993C1D">迭代者场景（本例 scenario-pipeline）</text>
   <g class="t" font-size="12" fill="#993C1D">
     <rect x="20" y="90" width="252" height="34" rx="6" fill="#FAECE7" stroke="#D85A30" stroke-width="0.5"/>
-    <text x="32" y="111">越长越大，单文件直奔万字（本例 8,506）</text>
+    <text x="32" y="111">越长越大，单文件直奔万字</text>
     <rect x="26" y="132" width="246" height="34" rx="6" fill="#FAECE7" stroke="#D85A30" stroke-width="0.5"/>
     <text x="38" y="153">AI 每次迭代都加需求，上下文越叠越乱</text>
     <rect x="22" y="174" width="250" height="34" rx="6" fill="#FAECE7" stroke="#D85A30" stroke-width="0.5"/>
-    <text x="34" y="195">想自己介入：14.7 万字符（本例）压不住</text>
+    <text x="34" y="195">想自己介入：十几万字符压不住</text>
     <rect x="28" y="216" width="244" height="34" rx="6" fill="#FAECE7" stroke="#D85A30" stroke-width="0.5"/>
     <text x="40" y="237">依赖问题没解决，插一步全篇跟着动</text>
     <rect x="23" y="258" width="249" height="34" rx="6" fill="#FAECE7" stroke="#D85A30" stroke-width="0.5"/>
@@ -40,7 +40,7 @@
   <text x="628" y="78" class="t" font-size="14" font-weight="600" fill="#085041">你拿回控制权</text>
   <g class="t" font-size="12" fill="#085041">
     <rect x="628" y="90" width="252" height="34" rx="6" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.5"/>
-    <text x="640" y="111">只声明一次，单文件瘦身 -64%（本例）</text>
+    <text x="640" y="111">只声明一次，单文件不再复写</text>
     <rect x="634" y="132" width="246" height="34" rx="6" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.5"/>
     <text x="646" y="153">改错当场告诉你，契约内不会悄悄坏</text>
     <rect x="630" y="174" width="250" height="34" rx="6" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.5"/>
@@ -48,12 +48,12 @@
     <rect x="636" y="216" width="244" height="34" rx="6" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.5"/>
     <text x="648" y="237">契约内改动，每处都验证过</text>
     <rect x="631" y="258" width="249" height="34" rx="6" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.5"/>
-    <text x="643" y="279">整体体量 -38%（本例），越改越轻</text>
+    <text x="643" y="279">序号引用全派生，越改越轻</text>
   </g>
 
   <!-- 底部：三类入口提示 + 口径 -->
   <line x1="20" y1="316" x2="880" y2="316" stroke="#E5E7EB" stroke-width="1" stroke-dasharray="4,4"/>
   <text x="450" y="348" text-anchor="middle" class="t" font-size="14" font-weight="600" fill="#0F172A">三类入口：自写者少抄一遍 · 生成者不被打扰（产物仍是 markdown）· 迭代者拿回控制权</text>
-  <text x="450" y="378" text-anchor="middle" class="t" font-size="12" fill="#94A3B8">数据口径：官方示例 sp-skill（团队自用 skill），release vs main 实测，wc -m 口径可复现 · 适合持续迭代的长流程 skill，小 skill 用不上</text>
+  <text x="450" y="378" text-anchor="middle" class="t" font-size="12" fill="#94A3B8">官方示例 scenario-pipeline（团队自用 skill）· 适合持续迭代的长流程 skill，小 skill 用不上</text>
   <text x="450" y="400" text-anchor="middle" class="t" font-size="12" fill="#EA580C" font-weight="600">不是「框架怎么打包」，是「生成之后，你的 skill 怎么活得下去」</text>
 </svg>

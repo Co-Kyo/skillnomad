@@ -22,13 +22,15 @@ export default defineConfig({
                     { text: '快速上手', link: '/guide/quickstart' },
                     { text: '转化手册（markdown skill → 管道）', link: '/guide/conversion' },
                     { text: '核心契约（公开承诺）', link: '/guide/contract' },
-                    { text: '顶层引导与反模式', link: '/guide/anti-patterns' },
+                    { text: '设计裁定与不走的路', link: '/guide/decisions' },
+                    { text: '案例交代（scenario-pipeline）', link: '/guide/case-study' },
                     { text: '调优指南（权重经验与案例）', link: '/guide/tuning' },
                     { text: '官方工具组合', link: '/guide/toolchain' },
                     {
                         text: '概念',
                         items: [
                             { text: '模块抽象', link: '/guide/concepts/modules' },
+                            { text: '发布布局（角色→路径派生）', link: '/guide/concepts/publish-layout' },
                             { text: '产物路径投射', link: '/guide/concepts/entities' },
                         ],
                     },
@@ -37,7 +39,8 @@ export default defineConfig({
             {
                 text: 'API 参考',
                 items: [
-                    { text: '类型参考', link: '/api/types' },
+                    { text: 'API 导览（按任务）', link: '/api/types' },
+                    { text: '完整参考索引', link: '/api/reference/README' },
                 ],
             },
         ],

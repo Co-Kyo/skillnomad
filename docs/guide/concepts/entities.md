@@ -1,5 +1,7 @@
 # 概念：产物路径投射
 
+> **写给谁**：步骤多了、开始被"改一处路径漏三处"困扰的作者。刚上手先看[快速上手](../quickstart)。
+
 > 路径是业务顶层的投射物——**步骤层零路径字面量**，这是「声明事实，框架推导其余」的终局。
 
 ## 为什么路径要退出步骤层
@@ -41,6 +43,8 @@ import { refOf, schemaRef } from '../domain/entities.js';
 .verify(verify.file(refOf('scanIndex').path, 'index.json 已生成'))
 ```
 
+`refOf` / `schemaRef` / `verify.file` 都是**用户侧 helper**（自己仓里的几行工厂函数）——框架只承载形态、不做领域模型抽象，解析归你（裁定详情 → [设计裁定](../decisions#不承载概念引用形态)）。
+
 ## 效果契约同源
 
 `effects.ts` 的保证（如 `E-ladder-judgment`）从实体取值：
@@ -53,3 +57,8 @@ artifact: entities.ladder.artifact,   // ← 同源，ladder 路径双写消失
 
 - 步骤源码 grep 无 `{workDir}` / `assets/` **代码级字面量**（提示词文本除外）
 - 路径只存在于：`entities.ts`（实体声明）+ 构建产物（SKILL.md 展开）
+
+## 下一步
+
+- 共享规则怎么模块化 → [模块抽象](modules)
+- 发布物目录怎么排 → [发布布局](publish-layout)
