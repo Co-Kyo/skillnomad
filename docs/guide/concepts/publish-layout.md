@@ -77,7 +77,7 @@ dist/skill/
 | `publishPath(asset, seqOf)` | 由角色派生发布路径 |
 | `checkPublishLayout(assets, steps)` | 三道布局校验（构建期自动接入） |
 | `scanSourcePaths(files)` / `scanDanglingRefs(files, resolve)` | 文本级扫描（产物无源码路径／包内引用自洽） |
-| `scanMetaDiscourse(files, blacklist)` / `scanMarkerDuplication(files, markers)` | 散文质量门（元话语黑名单／标记叠加检测；判据由调用方给） |
+| `scanMetaDiscourse(files, blacklist)` / `scanMarkerDuplication(files, markers)` | 组装文本扫描（元话语黑名单／标记叠加检测——查机械痕迹，属组装质量；语义质量不在其范围，判据由调用方给） |
 
 消费仓组装脚本与框架用同一份实现，派生逻辑不会两套口径。
 
