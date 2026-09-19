@@ -100,6 +100,10 @@ export interface StepBuilder {
     build(): SourceStep;
 }
 
+/**
+ * **步骤构造入口**：链式声明一个步骤（写作路径的唯一原子）；`build()` 收尾产出 `SourceStep`。
+ * @category 作者面
+ */
 export function step(id: string, title: string): StepBuilder {
     return new StepBuilderImpl(id, title);
 }
@@ -371,8 +375,9 @@ class StepBuilderImpl implements StepBuilder {
 }
 
 /**
- * **模块装配入口（D35 W1 · 与 `step()` 并列的一等公民）**：对象参数（R2 F-2 推荐），
+ * **模块装配入口（与 `step()` 并列的一等公民）**：对象参数，
  * 注册表形态（`Map<id, ModuleDef>`）由消费侧持有（框架只定形状，不管实例）。
+ * @category 作者面
  */
 export function defineModule(module: SourceModule): SourceModule {
     return module;

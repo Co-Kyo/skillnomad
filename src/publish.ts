@@ -13,7 +13,10 @@
 
 import { basename, extname } from 'node:path';
 
-/** 官方目录 ＋ 唯一扩展。 */
+/**
+ * 官方目录 ＋ 唯一扩展。
+ * @category 发布布局
+ */
 export const PUBLISH_DIRS = {
     steps: 'steps',
     references: 'references',
@@ -21,13 +24,19 @@ export const PUBLISH_DIRS = {
     scripts: 'scripts',
 } as const;
 
-/** 每步的执行文件名（steps/<NN>-<步id>/ 内的保留名）。 */
+/**
+ * 每步的执行文件名（`steps/<NN>-<步id>/` 内的保留名）。
+ * @category 发布布局
+ */
 export const STEP_ENTRY_FILE = 'step.md';
 
 /** 文档类扩展名 → references/；其余（数据文件、脚本等）→ assets/。 */
 const DOC_EXTENSIONS = new Set(['.md', '.markdown']);
 
-/** 一条「随包分发」的资产声明：源路径 ＋ 角色。 */
+/**
+ * 一条「随包分发」的资产声明：源路径 ＋ 角色。
+ * @category 发布布局
+ */
 export interface PublishableAsset {
     /** 源路径（消费者自由决定文件放哪） */
     path: string;
@@ -37,7 +46,10 @@ export interface PublishableAsset {
     step?: string;
 }
 
-/** 发布布局诊断（与既有校验同形：stepId／field／message）。 */
+/**
+ * 发布布局诊断（与既有校验同形：stepId／field／message）。
+ * @category 发布布局
+ */
 export interface PublishDiagnostic {
     stepId: string;
     field: string;
@@ -46,9 +58,10 @@ export interface PublishDiagnostic {
 
 /**
  * 由角色派生发布路径。
- * - scope='step' → `steps/<NN>-<步id>/<文件名>`（NN 与 steps/<NN>-<步id>/step.md 同源，两位补零）
+ * - scope='step' → `steps/<NN>-<步id>/<文件名>`（NN 与 `steps/<NN>-<步id>/step.md` 同源，两位补零）
  * - scope='skill' → 文档进 `references/<文件名>`；数据文件进 `assets/<文件名>`
  * 返回 null 表示无法派生（归属步不存在），由 checkPublishLayout 报错。
+ * @category 发布布局
  */
 export function publishPath(
     asset: PublishableAsset,
@@ -67,7 +80,10 @@ export function publishPath(
         : `${PUBLISH_DIRS.assets}/${name}`;
 }
 
-/** 校验：① 归属步存在；② 保留名未被占用；③ 派生目标全局唯一（重名即红，不自动改名）。 */
+/**
+ * 校验：① 归属步存在；② 保留名未被占用；③ 派生目标全局唯一（重名即红，不自动改名）。
+ * @category 发布布局
+ */
 export function checkPublishLayout(
     assets: readonly PublishableAsset[],
     steps: readonly { id: string; seq: number }[],
@@ -132,6 +148,7 @@ const PACKAGE_REF_RE = new RegExp(
  *  判据由调用方给（组装期＝磁盘实存；测试期＝派生目标集合），
  *  这样"包内自洽"这条规则只有一处定义，不缺读者。
  *  运行期模板（含 {}）与通配（含 *）不参与：它们不是路径，是模板。 */
+/** @category 发布布局 */
 export function scanDanglingRefs(
     files: readonly { rel: string; content: string }[],
     resolve: (ref: string) => boolean,
@@ -152,6 +169,7 @@ export function scanDanglingRefs(
 /**
  * 校验 1b：渲染产物文本里不得出现源码形态路径。
  * 结构化字段已在渲染期翻译成发布形态；这里专抓散文（内容域字符串）里手写的源码路径。
+ * @category 发布布局
  */
 export function scanSourcePaths(
     files: readonly { rel: string; content: string }[],

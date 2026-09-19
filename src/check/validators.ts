@@ -455,7 +455,7 @@ export function validateModuleUsage(
                 errors.push({
                     stepId: step.id,
                     field: 'reads',
-                    message: `as:'contract' 引用 ${ref.path} 未在模块注册表中登记（8.15：契约引用须指向已注册模块）`,
+                    message: `as:'contract' 引用 ${ref.path} 未在模块注册表中登记（契约引用须指向已注册模块）`,
                 });
             } else if (reg.scope !== 'skill') {
                 errors.push({

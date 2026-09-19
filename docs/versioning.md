@@ -1,24 +1,24 @@
-# 版本线与迁移
+# 版本线
 
-> 当前版本：**0.1.6**（latest）。后续变更以 [CHANGELOG](https://github.com/Co-Kyo/skillnomad/releases) 实际发布为准，本文不预告未发布版本。
+> **写给谁**：准备升级或首次安装的人。当前该用什么 → 本页；为什么长成这样 → [设计裁定](guide/decisions)。
+
+> 当前版本：**0.2.1**（latest）。后续变更以 [CHANGELOG](https://github.com/Co-Kyo/skillnomad/releases) 实际发布为准，本文不预告未发布版本。
 
 ## 安装
 
 ```bash
-npm install skillnomad
+npm install -D skillnomad
 ```
 
-## 版本历程（beta → 0.1.0）
+`skillnomad` 一个包承载全部：step builder、类型、校验、发布布局派生、内容包装载器、CLI（公开面清单由快照测试锁定，增删即构建红）。
 
-0.1.0 定型前经过 6 个 beta 预发布，每个对应一个里程碑：
+## 框架形态（当前）
 
-| 预发布 | 里程碑 | 关键变更 |
-| :--- | :--- | :--- |
-| beta.4/5 | 契约收窄 | `dependsOn` 数组 → 单值；删除 `contractRefs`（收拢进 reads + `as` 标签）|
-| beta.6 | 调度策略 | `meta.schedulingPolicy` 成为一等公民；步骤不再各自登记调度 |
-| beta.7 | 模块抽象 | `SourceContract.scope` 归属层；构建期 `validateModuleUsage` 校验 |
-| beta.8 | API 表面收敛 | **单包**：`step`/类型统一从 `skillnomad` 导出；删除对 `skillnomad-types` 的直接 import |
-| beta.9 | 概念引用 | `SourceRef.path` 可选 + `ref?` 概念引用形态 |
-| **0.1.0** | **首个稳定版** | 接口定型，`latest` dist-tag |
+- **一个包**：所有公开能力从 `skillnomad` 导入。
+- **一条写作路径**：`step()` 链式声明 ＋ `createSkillFromModel` 装配，别无二路。
+- **零调度**：框架不承载调度策略；步骤内并行/分批/分支用 flow 声明（`.parallel()` / `.map()` / `.branch()` / `.loop()`），顶层步骤是线性链。
+- **发布布局派生**：产物按 `steps/<NN>-<id>/step.md` 组织；随包文件按角色（skill 级 / step 级归属）派生到 `steps/`、`references/`、`assets/`、`scripts/`，消费侧不写发布路径。
 
-> beta 预发布已停止维护，仅供历史回溯（npm dist-tag `beta` 指向 0.1.0-beta.9）。
+## semver 口径
+
+0.x 阶段：minor 即可包含破坏性变更；**契约冻结发生在 1.0**。本版承诺「默认安装即可用」；升级风险逐条以 CHANGELOG 为准。

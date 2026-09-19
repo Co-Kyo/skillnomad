@@ -1,73 +1,54 @@
-# API 参考
+# API 导览
 
-> 本页为核心类型概览；完整 API 参考由 TypeDoc 在构建时自动生成（CI 执行，永不手写）。**作者面类型**从 `skillnomad` 一个包导入；其余类型属实现细节，留在子包（不建议直引）。
+> 本页按「你要做什么」组织公开面：每张表的符号都链接到自动生成的参考页（签名、字段、设计注释以生成页为准，永不手写、永不漂移）。想读某条设计背后的取舍 → [设计裁定与不走的路](../guide/decisions)。
 
-## SourceRef（引用条目）
+## 写 skill 的你（作者面）
 
-```ts
-interface SourceRef {
-  path: string;               // 源产物路径（必填）
-  schema?: string;
-  required?: boolean;
-  dynamic?: boolean;
-  description?: string;
-  as?: SourceRefRole;         // 'contract' | 'schema' | 'rule' | 'method' | 'reference'
-}
-```
+一条写作路径：`step()` 链式声明步骤 → `createSkillFromModel` 装配 → `defineConfig` 配置构建。步骤引用的共享内容经 `contracts` 注册表登记（[模块抽象](../guide/concepts/modules)），内容模块可用 `defineModule` 或内容包装载器产出（[发布布局](../guide/concepts/publish-layout)）。
 
-- `as: 'contract'` 的条目在产物中派生渲染「契约引用」章节
-- 路径解析（如概念名→路径）归用户侧 helper（`refOf` 模式），框架不承载概念引用形态（`ref` 声明形态已清退）
+| 符号 | 参考页 | 指南 |
+| :--- | :--- | :--- |
+| `step()` | [functions/step](reference/functions/step.md) | [快速上手](../guide/quickstart) |
+| `createSkillFromModel` | [functions/createSkillFromModel](reference/functions/createSkillFromModel.md) | [快速上手](../guide/quickstart) |
+| `defineConfig` / `SkillnomadConfig` | [functions/defineConfig](reference/functions/defineConfig.md) · [interfaces/SkillnomadConfig](reference/interfaces/SkillnomadConfig.md) | [核心契约](../guide/contract) |
+| `SkillSourceModel` / `SourceStep` / `SourceFlow` / `SourceAction` / `SourceRef` / `SourceContract` / `SourcePolicies` / `SourceCheckpoint` / `SourceVerifyRule` / `SourceFailRule` / `NextAction` | [interfaces/…](reference/interfaces/SkillSourceModel.md) · [type-aliases/…](reference/type-aliases/NextAction.md) | [核心契约](../guide/contract) |
+| `StepDefinition` / `SkillMeta` | [interfaces/StepDefinition](reference/interfaces/StepDefinition.md) · [interfaces/SkillMeta](reference/interfaces/SkillMeta.md) | — |
+| `defineModule` / `SourceModule` | [functions/defineModule](reference/functions/defineModule.md) · [interfaces/SourceModule](reference/interfaces/SourceModule.md) | [模块抽象](../guide/concepts/modules) |
 
-## SourceContract（模块注册表条目）
+::: tip 为什么只有这一条路
+框架曾同时提供 IR 构造子（`task`/`seq`/`parallel`…）与链式两种写法。两次真实转化证明：所有消费者自发选了链式，IR 面只剩框架自己用——两条路没有带来第二种人，只带来了第二份要维护的语义。裁定详情 → [设计裁定](../guide/decisions#一条写作路径)。
+:::
 
-```ts
-interface SourceContract {
-  id: string;
-  kind: 'policy' | 'schema' | 'method' | 'rule';
-  path: string;
-  description: string;
-  scope: 'skill' | 'step';    // 归属层：skill 级共享 / step 级私有
-  step?: string;              // step 级时归属的步骤 id
-}
-```
+## 做发布组装的你（组装面）
 
-## schedulingPolicy（skill 级调度声明）
+构建只渲染 `SKILL.md` 与 `steps/`；随包文件的**发布路径由角色派生**，你的组装脚本拿同一份实现拷贝落盘（[发布布局](../guide/concepts/publish-layout)）。
 
-```ts
-interface SchedulingPolicy {
-  concurrencyLimit: number;       // 全局并发上限（Task Group）
-  windowBudget: {
-    maxWindowSize: number;        // 单次调用窗口数上限
-    inputChunkTokens: number;
-    itemSummaryTokens: number;
-  };
-  batchPolicy: {
-    mode: 'rolling_window';
-    maxBatchSize: number;
-    slotOccupancy: number;
-  };
-}
-```
+| 符号 | 参考页 | 指南 |
+| :--- | :--- | :--- |
+| `PUBLISH_DIRS` / `STEP_ENTRY_FILE` | [variables/PUBLISH_DIRS](reference/variables/PUBLISH_DIRS.md) | [发布布局](../guide/concepts/publish-layout) |
+| `publishPath` / `checkPublishLayout` | [functions/publishPath](reference/functions/publishPath.md) · [functions/checkPublishLayout](reference/functions/checkPublishLayout.md) | [发布布局](../guide/concepts/publish-layout) |
+| `scanSourcePaths` / `scanDanglingRefs` | [functions/scanSourcePaths](reference/functions/scanSourcePaths.md) · [functions/scanDanglingRefs](reference/functions/scanDanglingRefs.md) | [发布布局](../guide/concepts/publish-layout) |
+| `PublishableAsset` / `PublishDiagnostic` | [interfaces/PublishableAsset](reference/interfaces/PublishableAsset.md) | — |
+| 内容包装载器：`readPackageManifest` / `loadPackage` / `checkPackage` / `blockingPackageDiagnostics` / `packageModule` | [functions/loadPackage](reference/functions/loadPackage.md) · [functions/packageModule](reference/functions/packageModule.md) | [官方工具组合](../guide/toolchain) |
+| `PackageManifest` / `PackageBlockSpec` / `LoadedPackage` | [interfaces/PackageManifest](reference/interfaces/PackageManifest.md) | — |
 
-声明在 `meta.schedulingPolicy`——SKILL.md 公共级章节；步骤内控制流用 `parallel` / `map`（`maxConcurrency`）表达，两层不混淆。
+## 读机制的你（构建与整合面）
 
-## step builder（构造步骤）
+构建链路与工具整合的入口——日常写 skill 不需要直引，排查产物或做深度集成时用。
 
-```ts
-import { step } from 'skillnomad';   // 单包导出
+| 符号 | 参考页 | 指南 |
+| :--- | :--- | :--- |
+| `buildPipeline` | [functions/buildPipeline](reference/functions/buildPipeline.md) | [核心契约](../guide/contract) |
+| `renderSkillMd` / `renderStep` / `renderPipeline` / `renderPipelineState` / `renderModulesAppendix` / `writeAlignReport` | [functions/renderSkillMd](reference/functions/renderSkillMd.md) | — |
+| `resolveStepRefs` | [functions/resolveStepRefs](reference/functions/resolveStepRefs.md) | [产物路径投射](../guide/concepts/entities) |
+| markrefs 整合：`createRefs` / `inspectRefs` / `MarkrefsConfig` / `KeyMap` | [functions/createRefs](reference/functions/createRefs.md) | [官方工具组合](../guide/toolchain) |
+| methodblocks 整合：`blockModule` / `BlockModuleInput` / `StructureConfig` / `StructureDocSpec` | [functions/blockModule](reference/functions/blockModule.md) | [官方工具组合](../guide/toolchain) |
 
-step(id, title)
-  .summary(...)
-  .dependsOn('prev-step')            // 单值（单值收窄）
-  .reads(...)                        // SourceRef[]（符号名/概念引用）
-  .writes(...)
-  .inputs(...) / .outputs(...)
-  .parallel(...) / .map(...) / .branch(...) / .loop(...)   // 步内控制流
-  .checkpoint(...)
-  .build();
-```
+## 完整参考
 
-## 更多类型
+全部公开符号的分组目录 → [API 参考索引](reference/README.md)（TypeDoc 构建期自动生成：签名、字段、源码注释里的设计理由一并呈现）。
 
-完整类型集（`SkillDefinition` / `SourceStep` / `SourceFlow` / `EffectContract`…）都可从 `skillnomad` 导入，
-TypeDoc 生成后此处自动展开。
+::: warning 诚实边界
+- 参考页中部分字段类型（如 `SourceMeta`、`SourceRuntimeTrace`）是**公开类型的可达成员**，本身不在公开面清单里——读字段够用，不承诺独立导入路径。
+- 公开面清单由快照测试锁定，增删即构建红；本页与生成区都在其管辖内。1.0 前 minor 可含破坏性变更（[版本线](../versioning)）。
+:::

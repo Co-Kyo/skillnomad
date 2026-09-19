@@ -1,7 +1,6 @@
 {
     "entryPoints": [
-        "../src/types/model.ts",
-        "../src/types/builder.ts"
+        "../src/index.ts"
     ],
     "out": "api/reference",
     "plugin": [
@@ -12,6 +11,15 @@
     "excludePrivate": true,
     "excludeInternal": true,
     "hideBreadcrumbs": true,
+    "outputFileStrategy": "members",
+    "categoryOrder": [
+        "作者面",
+        "发布布局",
+        "内容包",
+        "工具整合",
+        "构建与渲染",
+        "*"
+    ],
     "compilerOptions": {
         "types": []
     },

@@ -6,28 +6,27 @@
 > 2. 有可命名的中间产物吗（计划文件/测试报告/文档对象）？
 > 3. 有并行/分批/顺序约束，或可推导字段（下一步/覆盖状态/校验结果）吗？
 >
-> 判据来源：应用面评估（top20 命中 3/20）。单步问答、无中间产物、无调度需求的 skill 用 skillnomad 收益小于迁移成本。
+> 判据来源：应用面评估（GitHub 高 star 前 20 个 skill 抽样，命中 3/20 ≈ 15%；样本与判定为一次性人工评估，非可复跑基准）。单步问答、无中间产物的 skill 用 skillnomad 收益小于迁移成本。
 
 ## 5 分钟跑通
 
 ```bash
-npm install -D skillnomad          # 单包单源
+npm install -D skillnomad
 ```
 
-> **只装这一个包。** `skillnomad-types` / `-common` / `-validate` 随主包同版发布，但属于实现与工具侧（作者面由主包转口）——不要单独安装，也不要 `import … from 'skillnomad-types'` 之类的写法。
+`skillnomad` 一个包承载全部：step builder、类型、校验、发布布局派生、内容包装载器、CLI。
 
-### 1. 声明内容模块（共享规则）
+### 1. 注册共享内容模块（带角色）
 
-`src/modules.ts` —— 一段被多个步骤共用的规则：
+`src/contracts.ts` —— 一段被多个步骤共用的规则，注册进模块注册表。你只声明**它的角色**（skill 级共享），发布位置由框架派生：
 
 ```ts
-export const modules = {
-  substitutionTest: {
-    path: 'assets/common/substitution-test.md',
+export const contracts = [
+  { id: 'substitution-test', kind: 'policy' as const,
+    path: 'src/rules/substitution-test.md',      // 源路径：文件放哪自由
     description: '替代测试：判定细节角色的共享规则',
-    required: true,
-  },
-};
+    scope: 'skill' as const },                    // 角色：skill 级 → 发布到 references/
+];
 ```
 
 ### 2. 定义步骤：链式写法，引用符号名不写路径
@@ -41,14 +40,20 @@ export const collect = step('collect', '收集与标注')
   .target('收集并标注。')
   .summary('收集并标注')
   .action('parse', 'collect-do', '收集', '收集并标注。')
-  .reads({ path: 'assets/common/substitution-test.md', description: '共享规则', required: true })
+  .reads({ path: 'src/rules/substitution-test.md', description: '共享规则', as: 'contract' })
   .writes({ path: '{workDir}/.meta/labeled.json', description: '标注结果', required: true })
+  .checkpoint({
+    checkItems: ['标注结果是否完整'],
+    clarifyPrompt: '收集完成，确认后进入复核。',
+    onConfirm: 'continue',
+    onReject: 'rollback',
+  })
   .build();
 ```
 
 `src/steps/review.ts` 同上，加一行 `.dependsOn('collect')`（线性链契约：多步必须连成单链，第二个根即断链报错）。
 
-> 坑位提示：`step()` 的每一步都要 `.build()` 收尾；步骤内并行／分批用 `.parallel()`／`.map()`（见[契约](contract)）；顶层步骤是线性链，不要把可并行的动作拆成多个顶层步骤。
+> 坑位提示：`step()` 的每一步都要 `.build()` 收尾；对齐报告要求每步**动作正文＋检查点＋产出**三件套齐全（缺 `.checkpoint()` 构建即红），这也是给消费者的交付质量线；步骤内并行／分批用 `.parallel()`／`.map()`（见[契约](contract)）；顶层步骤是线性链，不要把可并行的动作拆成多个顶层步骤。
 
 ### 3. 组装并构建
 
@@ -59,6 +64,7 @@ import type { SkillSourceModel } from 'skillnomad';
 import { createSkillFromModel } from 'skillnomad';
 import { collect } from './src/steps/collect.js';
 import { review } from './src/steps/review.js';
+import { contracts } from './src/contracts.js';
 
 const model: SkillSourceModel = {
   meta: {
@@ -71,7 +77,7 @@ const model: SkillSourceModel = {
     phases: [],
   },
   steps: [collect, review],
-  contracts: [],
+  contracts,
   policies: {
     contextIsolation: false,
     reuseByFileExistence: false,
@@ -96,19 +102,35 @@ export default defineConfig({
 ```
 
 ```bash
-npx skillnomad build skillnomad.config.ts
+npm install -D tsx                    # TS 加载器（starter 模板同款）
+npx tsx node_modules/skillnomad/dist/bin/cli.js build skillnomad.config.ts
 ```
 
-构建产物 `SKILL.md` 里，每个步骤的「读取」章节展开为**带路径的完整引用**——
-路径只存在于产物，源码里是干净的符号名。
+> 为什么带 tsx：`skill.ts` 里 `import … from './src/steps/collect.js'` 是 TypeScript 的标准写法（`.js` 说明符指向编译产物），运行期由加载器解析回 `.ts` 源文件；tsx 就是干这个的。Node ≥ 22.18 的原生类型剥离（不带 tsx 直接 `npx skillnomad build …`）只认 `.ts` 说明符，工程里别混用两种。
+
+## 构建产物：发布布局
+
+`skillnomad build` 渲染出 `SKILL.md` 与 `steps/<NN>-<id>/step.md`；注册表里登记的随包文件由你的组装脚本按**派生路径**拷入输出目录，拼成完整的可发布 Agent Skill 包——发布路径始终由框架派生（`publishPath`），你不手写：
+
+```text
+dist/skill/
+├── SKILL.md                       # 总览：调用方式、流程总览、步骤详情
+├── steps/
+│   ├── 00-collect/step.md         # 每步一组文件：<NN>-<步id>/step.md
+│   └── 01-review/step.md
+└── references/
+    └── substitution-test.md       # skill 级共享文档（组装脚本拷入派生路径）
+```
+
+`step.md` 里「文件引用」表印的是**发布路径**（`references/substitution-test.md`），不是你的源路径——消费侧读到的引用永远指向包内实存文件；派生冲突、断链在构建期即红。布局细节见[发布布局](concepts/publish-layout)。
 
 ## 为什么是这样：共用规则应该是模块
 
-当你的 skill 出现这些征兆：**步骤越来越多、步骤之间有依赖、需要并行抓取/分析、产物文件一堆、共享规则在多个步骤重复**——手写 markdown 维护它，顺序、编号、路径、调度迟早漂移成一场事故。
+当你的 skill 出现这些征兆：**步骤越来越多、步骤之间有依赖、需要并行抓取/分析、产物文件一堆、共享规则在多个步骤重复**——手写 markdown 维护它，顺序、编号、路径迟早漂移成一场事故。
 
 skillnomad 为这个场景而生：你只声明事实，框架推导其余。
 
-写 markdown skill 时，共用规则无法模块化：一段规则想被三个步骤共用，只能靠 `assets/common/xxx.md` 这种路径引用——既不是 markdown 里有的能力，又不符合代码哲学。
+写 markdown skill 时，共用规则无法模块化：一段规则想被三个步骤共用，只能靠路径引用——既不是 markdown 里有的能力，又不符合代码哲学。
 
 skillnomad 的做法：**共用规则是模块，步骤引用的是符号名，路径是构建期的派生物**。
 
@@ -116,11 +138,13 @@ skillnomad 的做法：**共用规则是模块，步骤引用的是符号名，�
 
 - 单步知识问答（无链序，链推导零收益）。
 - 产物散在对话里、无从建模（无实体依赖）。
-- 严格串行无分支（调度策略无处安放）。
+- 严格串行无分支（步骤内控制流无处安放）。
 - 一切字段全靠人写（推导无对象）。
 
 ## 下一步
 
+- 发布布局与角色派生 → [发布布局](concepts/publish-layout)
 - 模块化导入的完整语义 → [模块抽象](concepts/modules)
-- 哪些写法是反模式 → [顶层引导与反模式](anti-patterns)
+- 为什么这样写才不漂移 → [设计裁定与不走的路](decisions)
+- 范式在真实管线里改变了什么 → [案例交代](case-study)
 - 类型参考 → [API 参考](../api/types)

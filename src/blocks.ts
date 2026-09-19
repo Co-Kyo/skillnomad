@@ -9,7 +9,10 @@ import { check, doc } from 'methodblocks';
 import type { Diagnostic, DocPart, Registry } from 'methodblocks';
 import type { SourceModule, SourceModuleKind } from './types/index.js';
 
-/** blockModule 输入：id／kind／version 构成模块身份；registry ＋ body 构成内容源（render ＝ doc(registry, body)）。 */
+/**
+ * blockModule 输入：id／kind／version 构成模块身份；registry ＋ body 构成内容源（render ＝ doc(registry, body)）。
+ * @category 工具整合
+ */
 export interface BlockModuleInput {
     id: string;
     kind?: SourceModuleKind;
@@ -18,7 +21,10 @@ export interface BlockModuleInput {
     body: DocPart[];
 }
 
-/** 块集 → SourceModule（内容源）：render 即 `doc(registry, body)`——拼装在构建期执行，产物取正文文字（不翻译散文）。 */
+/**
+ * 块集 → SourceModule（内容源）：render 即 `doc(registry, body)`——拼装在构建期执行，产物取正文文字（不翻译散文）。
+ * @category 工具整合
+ */
 export function blockModule(input: BlockModuleInput): SourceModule {
     return {
         id: input.id,
@@ -28,7 +34,10 @@ export function blockModule(input: BlockModuleInput): SourceModule {
     };
 }
 
-/** 结构校验声明（可选）：一份块文档 ＝ id ＋ registry ＋ body（＋ references＝只进 references/ 的块）。 */
+/**
+ * 结构校验声明（可选）：一份块文档 ＝ id ＋ registry ＋ body（＋ references＝只进 references/ 的块）。
+ * @category 工具整合
+ */
 export interface StructureDocSpec {
     id: string;
     registry: Registry;
@@ -36,7 +45,10 @@ export interface StructureDocSpec {
     references?: DocPart[];
 }
 
-/** config.structure 的形状：逐份声明待校验的块文档。 */
+/**
+ * config.structure 的形状：逐份声明待校验的块文档。
+ * @category 工具整合
+ */
 export interface StructureConfig {
     docs: StructureDocSpec[];
 }

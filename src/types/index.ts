@@ -178,6 +178,7 @@ export interface SourceTraceStep {
 // Step 定义
 // ---------------------------------------------------------------
 
+/** @category 作者面 */
 export interface StepDefinition {
     id: string;
     title: string;

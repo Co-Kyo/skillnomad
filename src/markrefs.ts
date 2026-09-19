@@ -65,6 +65,7 @@ export interface RefsOptions {
     siteDepth?: number;
 }
 
+/** @category 工具整合 */
 export interface MarkrefsConfig {
     keys: KeyMap;
     refs: Refs;
@@ -91,6 +92,7 @@ export interface RefsReport {
     counts: RefsCounts;
 }
 
+/** @category 工具整合 */
 export function createRefs(options: RefsOptions = {}): Refs {
     const siteDepth = options.siteDepth ?? 1;
     const records: MdRefRecord[] = [];
@@ -163,6 +165,7 @@ function toFilePath(file: string): string {
 /**
  * 跑一遍 markrefs 校验：键表类 + 引用类诊断 + 宿主级问题 + 计数。
  * io 由本函数提供：占位符路径跳过存在性（构建期不可判），其余按 cwd 解析。
+ * @category 工具整合
  */
 export function inspectRefs(
     config: MarkrefsConfig,

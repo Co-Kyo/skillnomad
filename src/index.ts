@@ -68,6 +68,7 @@ import {
     deriveFlowOverview,
     derivePhaseIntervals,
     formatInterval,
+    walkGraph,
 } from './compiler/internal.js';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
@@ -152,6 +153,7 @@ export type {
     LoadedPackage,
 } from './package.js';
 
+/** @category 作者面 */
 export interface SkillMeta {
     name: string;
     title?: string;
@@ -398,6 +400,7 @@ function sourceTraceForStep(step: SourceStep): SourceTraceEntry[] {
     return entries;
 }
 
+/** @category 作者面 */
 export function resolveStepRefs(
     text: string,
     stepOrder: Record<string, number>,
@@ -417,6 +420,7 @@ export function resolveStepRefs(
     );
 }
 
+/** @category 作者面 */
 export function createSkillFromModel(model: SkillSourceModel): SkillDefinition {
     // 线性链契约：顺序的副产物一律由框架推导，不要求开发者手写。
     // 在渲染步骤正文之前算好，renderInstruction 会把推导值作为回落。
@@ -475,6 +479,7 @@ export function createSkillFromModel(model: SkillSourceModel): SkillDefinition {
 // Config: skillnomad.config.ts 的类型 + 辅助函数
 // ---------------------------------------------------------------
 
+/** @category 作者面 */
 export interface SkillnomadConfig {
     /** 链接到 skill 定义文件的路径（如 ./skill.ts） */
     skill: string;
@@ -501,7 +506,10 @@ export interface SkillnomadConfig {
     structure?: StructureConfig;
 }
 
-/** 创建 skillnomad 配置（纯类型辅助，返回传入的对象） */
+/**
+ * 创建 skillnomad 配置（纯类型辅助，返回传入的对象）
+ * @category 作者面
+ */
 export function defineConfig(config: SkillnomadConfig): SkillnomadConfig {
     return config;
 }
@@ -657,6 +665,29 @@ function renderBarrier(step: ResolvedStep): string {
 
 // 8.5 裁定：契约引用章节由 reads.filter(as === 'contract') 派生渲染（不再人工维护 contractRefs）。
 // 契约文档只进契约引用章节，不重复进文件引用表——消除人工双清单重复登记。
+
+/**
+ * map 输入派生（B' 裁定 2026-09-19）：flow 树里 `.map()` 的 over 输入是作者已声明的事实，
+ * 但作者不必（也不该）在 reads 再抄一遍——那是要消灭的双写。渲染「文件引用」表时
+ * 把未出现在 reads 中的 over 输入补为派生行：表完备、数据模型不动、作者零双写。
+ * over 路径可带 `#fragment`（如 `…json#propositions`）：去重按剥 fragment 后的基路径比对，
+ * 派生行保留完整 over 形态（worker 逐条取用的就是那个切片）。
+ */
+function deriveMapInputs(step: ResolvedStep): { path: string; label: string }[] {
+    const seen = new Set<string>();
+    const out: { path: string; label: string }[] = [];
+    const declared = new Set(step.reads.map(r => r.path.split('#')[0]));
+    for (const w of step.writes) declared.add(w.path.split('#')[0]);
+    walkGraph(step.graph, (node) => {
+        if (node.kind !== 'map') return;
+        const base = node.items.split('#')[0];
+        if (declared.has(base) || seen.has(node.items)) return;
+        seen.add(node.items);
+        out.push({ path: node.items, label: node.label });
+    });
+    return out;
+}
+
 function renderFileRefs(
     step: ResolvedStep,
     modulePaths?: Map<string, string>,
@@ -686,6 +717,9 @@ function renderFileRefs(
     md += `|------|------|------|\n`;
     for (const ref of dataReads) {
         md += `| 读取 | ${pub(ref.path)} | ${ref.description ?? ''} |\n`;
+    }
+    for (const m of deriveMapInputs(step)) {
+        md += `| 读取 | ${pub(m.path.split('#')[0])}${m.path.includes('#') ? `（${m.path.slice(m.path.indexOf('#'))}）` : ''} | ${m.label}（map 输入，派生） |\n`;
     }
     for (const ref of step.writes) {
         md += `| 产出 | \`${ref.path}\` | ${ref.description ?? ''} |\n`;
@@ -777,6 +811,7 @@ function renderRuntimeTrace(step: ResolvedStep): string {
  * 查 `contents[moduleId]` 拼装（D34 附录版式为参照：标注＋来源；不复用 SourceInline 语义——
  * 路径内联 vs 构成渲染两码事）。缺席（无模块条目或查表无内容）整段省略；
  * 早返＋完整双路径共用（P1 同构）。
+ * @category 构建与渲染
  */
 export function renderModulesAppendix(
     registry: import('./types/index.js').SourceContract[] = [],
@@ -798,7 +833,10 @@ export function renderModulesAppendix(
 // Full step render
 // ---------------------------------------------------------------
 
-/** Render a single resolved step to a complete Markdown process file */
+/**
+ * Render a single resolved step to a complete Markdown process file
+ * @category 构建与渲染
+ */
 export function renderStep(
     step: ResolvedStep,
     stepOrder: Record<string, number>,
@@ -871,7 +909,10 @@ export function renderStep(
 // SKILL.md render
 // ---------------------------------------------------------------
 
-/** 从 pipeline 生成 SKILL.md */
+/**
+ * 从 pipeline 生成 SKILL.md
+ * @category 构建与渲染
+ */
 export function renderSkillMd(
     pipeline: ResolvedPipeline,
     meta: SkillMeta,
@@ -980,6 +1021,7 @@ export function renderSkillMd(
     return md;
 }
 
+/** @category 构建与渲染 */
 export function renderPipelineState(state: PipelineState): string {
     let md = '## 管道状态\n\n';
     md += '| 步骤 | 状态 | 重试次数 |\n';
@@ -995,6 +1037,7 @@ export function renderPipelineState(state: PipelineState): string {
 // Pipeline render
 // ---------------------------------------------------------------
 
+/** @category 构建与渲染 */
 export function renderPipeline(
     pipeline: ResolvedPipeline,
     outputDir: string,
@@ -1115,6 +1158,7 @@ function writeArtifactManifest(
     return filePath;
 }
 
+/** @category 构建与渲染 */
 export function writeAlignReport(
     pipeline: ResolvedPipeline,
     outputDir: string,
@@ -1305,6 +1349,7 @@ function writeDecisionSummaryManifest(pipeline: ResolvedPipeline, outputDir: str
     return filePath;
 }
 
+/** @category 构建与渲染 */
 export function buildPipeline(
     steps: StepDefinition[],
     outputDir: string,
