@@ -16,24 +16,28 @@ export default defineConfig({
         ],
         sidebar: [
             {
-                text: '指南',
+                text: '上手',
                 items: [
-                    { text: '为什么需要 skillnomad', link: '/guide/why' },
                     { text: '快速上手', link: '/guide/quickstart' },
                     { text: '转化手册（markdown skill → 管道）', link: '/guide/conversion' },
-                    { text: '核心契约（公开承诺）', link: '/guide/contract' },
-                    { text: '设计裁定与不走的路', link: '/guide/decisions' },
-                    { text: '案例交代（scenario-pipeline）', link: '/guide/case-study' },
+                    { text: '实例：构建与定向优化', link: '/guide/case-study' },
                     { text: '调优指南（权重经验与案例）', link: '/guide/tuning' },
+                ],
+            },
+            {
+                text: '概念',
+                items: [
+                    { text: '发布布局（角色→路径派生）', link: '/guide/concepts/publish-layout' },
+                    { text: '模块抽象', link: '/guide/concepts/modules' },
+                    { text: '产物路径投射', link: '/guide/concepts/entities' },
+                ],
+            },
+            {
+                text: '设计与参考',
+                items: [
+                    { text: '核心契约（公开承诺）', link: '/guide/contract' },
+                    { text: '为什么是这些限制', link: '/guide/decisions' },
                     { text: '官方工具组合', link: '/guide/toolchain' },
-                    {
-                        text: '概念',
-                        items: [
-                            { text: '模块抽象', link: '/guide/concepts/modules' },
-                            { text: '发布布局（角色→路径派生）', link: '/guide/concepts/publish-layout' },
-                            { text: '产物路径投射', link: '/guide/concepts/entities' },
-                        ],
-                    },
                 ],
             },
             {

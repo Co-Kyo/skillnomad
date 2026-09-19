@@ -57,7 +57,6 @@ import {
     validatePhaseCoverage,
     validateModuleUsage,
     validateModules,
-    validateBodySections,
 } from './check/validators.js';
 import {
     CHAIN_TERMINAL,
