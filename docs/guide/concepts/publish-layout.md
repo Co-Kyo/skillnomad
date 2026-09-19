@@ -57,10 +57,16 @@ dist/skill/
 
 - `scanSourcePaths`（构建期自动）：产物里出现源码形态路径（`src/…`）即红——散文也不行，逼内容域只说发布形态。
 - `scanDanglingRefs`（供组装脚本调用，判据由调用方给）：随包文本里引用了 `steps/…`／`references/…` 等包内路径，但解析不到即红（含历史布局遗留名——写了就是断链）。模板（含 `{}`）与通配（含 `*`）不参与。
+- `scanMetaDiscourse`（供组装脚本调用，黑名单由调用方给）：产物文本含构建过程话术（"构建期渲染""manifest 锁定"类）即报——这类词对执行侧读者是噪声。
+- `scanMarkerDuplication`（供组装脚本调用，标记表由调用方给）：同一标记在同一行出现 ≥2 次即报（渲染器与数据各加一层标注的叠加痕迹）。
 
 ## 模块读取：附录锚
 
-模块承载的读取不印路径——步骤产物里给的是「模块附录」锚点（正文在 SKILL.md/step.md 的模块附录节就地展开），读者顺着锚走，不需要知道任何文件在哪。
+模块承载的读取不印路径——步骤产物里给的是「模块附录」锚点；正文**集中展开在该 step.md 文末的「模块附录」节**（不在正文处内联，也不进 SKILL.md），读者顺着锚到文末取正本，不需要知道任何文件在哪。
+
+::: tip 写作提醒
+指针与正文同文件但相距可能上百行——域绑定的具体动作（校验哪个字段、编织哪个关系）请写在任务正文里，包附录只承载通用方法论；否则执行侧按正文行事时会断供。
+:::
 
 ## API 一览
 
@@ -71,6 +77,7 @@ dist/skill/
 | `publishPath(asset, seqOf)` | 由角色派生发布路径 |
 | `checkPublishLayout(assets, steps)` | 三道布局校验（构建期自动接入） |
 | `scanSourcePaths(files)` / `scanDanglingRefs(files, resolve)` | 文本级扫描（产物无源码路径／包内引用自洽） |
+| `scanMetaDiscourse(files, blacklist)` / `scanMarkerDuplication(files, markers)` | 散文质量门（元话语黑名单／标记叠加检测；判据由调用方给） |
 
 消费仓组装脚本与框架用同一份实现，派生逻辑不会两套口径。
 

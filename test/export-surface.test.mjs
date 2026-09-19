@@ -21,10 +21,14 @@ const AUTHORING_TYPES = [
     'PackageManifest', 'PackageBlockSpec', 'LoadedPackage',
     // 发布布局（角色 → 发布路径派生；消费仓组装脚本与此同一份实现）
     'PublishableAsset', 'PublishDiagnostic',
+    // 散文质量门命中形状
+    'ProseHit',
 ];
 const BUILD_VALUES = [
     // 发布布局：官方目录（references/assets/scripts）＋ steps/ 扩展
     'PUBLISH_DIRS', 'STEP_ENTRY_FILE', 'publishPath', 'checkPublishLayout', 'scanSourcePaths', 'scanDanglingRefs',
+    // 散文质量门（产物文本层；判据由调用方给）
+    'scanMetaDiscourse', 'scanMarkerDuplication',
     'blockModule',
     // 内容包装载器（声明式包）：读清单 → 组合 → 模块对象；包不再需要自带可执行入口
     'readPackageManifest', 'loadPackage', 'checkPackage', 'blockingPackageDiagnostics', 'packageModule',

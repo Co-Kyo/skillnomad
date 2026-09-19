@@ -133,6 +133,13 @@ export {
     type PublishDiagnostic,
 } from './publish.js';
 
+// 散文质量门（产物文本层机器校验；判据由调用方给，仿 scanDanglingRefs 分工）。
+export {
+    scanMetaDiscourse,
+    scanMarkerDuplication,
+    type ProseHit,
+} from './check/prose-gates.js';
+
 // methodblocks 适配器转口（P2 集成；工具协作层，同 markrefs 先例）。
 export { blockModule, type BlockModuleInput, type StructureConfig, type StructureDocSpec } from './blocks.js';
 
@@ -648,17 +655,11 @@ function renderBarrier(step: ResolvedStep): string {
         md += `- gate_type: \`${decision.gateType}\`\n`;
         if (decision.confirm) md += `- confirm: ${decision.confirm}\n`;
         if (decision.metrics && decision.metrics.length > 0) {
-            md += ex
-                ? `- metrics（示例）: ${decision.metrics.map(metric => `${metric.label}=${metric.value}`).join('; ')}\n`
-                : `- metrics: ${decision.metrics.map(metric => `${metric.label}=${metric.value}`).join('; ')}\n`;
+            md += `- metrics: ${decision.metrics.map(metric => `${metric.label}=${metric.value}`).join('; ')}\n`;
         }
-        if (decision.selection) md += ex
-            ? `- selection（示例）: ${decision.selection.summary}\n`
-            : `- selection: ${decision.selection.summary}\n`;
+        if (decision.selection) md += `- selection: ${decision.selection.summary}\n`;
         if (decision.execution) md += `- execution: ${decision.execution.current} -> ${decision.execution.next}\n`;
-        if (decision.barrier_summary) md += ex
-            ? `\n> 【示例】${decision.barrier_summary}\n`
-            : `\n> ${decision.barrier_summary}\n`;
+        if (decision.barrier_summary) md += `\n> ${decision.barrier_summary}\n`;
     }
     return md;
 }
@@ -772,7 +773,7 @@ function renderPlugins(step: ResolvedStep): string {
     if (!step.plugins || step.plugins.length === 0) return '';
     let md = `\n## 插件加载\n\n`;
     for (const plugin of step.plugins) {
-        md += `- \`${plugin}\`：条件性加载\n`;
+        md += `- \`${plugin}\`\n`;
     }
     return md;
 }
@@ -821,10 +822,10 @@ export function renderModulesAppendix(
     if (mods.length === 0) return '';
     const bodies = mods
         .filter((c) => contents[c.module as string])
-        .map((c) => `### 模块：\`${c.module}\`（${c.id}）\n\n> 来源：模块 \`${c.module}\`［构建时渲染，版本随产物 manifest 锁定］\n\n${contents[c.module as string]}\n\n<!-- module:${c.module} -->`);
+        .map((c) => `### 模块：\`${c.module}\`（${c.id}）\n\n> 来源：模块 \`${c.module}\`\n\n${contents[c.module as string]}\n\n<!-- module:${c.module} -->`);
     if (bodies.length === 0) return '';
     let md = `\n## 模块附录\n\n`;
-    md += `> 本节由构建期模块渲染生成（D35）；引用表模块条目此处为执行用正本。\n\n`;
+    md += `> 本节为执行用正本。\n\n`;
     md += bodies.join('\n') + '\n';
     return md;
 }
@@ -1106,7 +1107,7 @@ function writeOutputManifest(
         step.writes.map(ref => ({
             path: ref.path,
             stepId: step.id,
-            processFile: `${String(step.seq).padStart(2, '0')}-${step.id}.md`,
+            processFile: `steps/${String(step.seq).padStart(2, '0')}-${step.id}/step.md`,
             section: '输出',
             sourceField: 'writes',
             sourceFile: step.sourceTrace?.[0]?.sourceFile ?? 'skill.ts',
