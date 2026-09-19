@@ -7,6 +7,7 @@
 
 export type ActorKind = 'agent' | 'human' | 'script' | 'subflow';
 
+/** @category 作者面 */
 export type NextAction =
   | 'parse'
   | 'infer'
@@ -38,26 +39,29 @@ export type FailBehavior =
 export type SourceRefRole = 'contract' | 'schema' | 'rule' | 'method' | 'reference';
 
 /**
- * **模块种类（D35 W1 · 首刀调度）**：于 `step()` 并列的构成原子分类。
- * 首刀只用 `'action'`（调度三动作）＋ `'data'`（策略口径）；其余三类占位，后补。
+ * **模块种类**：于 `step()` 并列的构成原子分类。
+ * `'action'`（动作内容）＋ `'data'`（策略/口径）为常用类；其余为占位分类，按需接入。
+ * @category 作者面
  */
 export type SourceModuleKind = 'schema' | 'method' | 'rule' | 'data' | 'action';
 
 /**
- * **模块声明（D35 W1 · 一等公民）**：Skill 构成原子（与 `step()` 并列）。
- * 类型只定形状（R2 F-1）：`render` 签名注记，实现在消费侧模块对象；
+ * **模块声明（一等公民）**：Skill 构成原子（与 `step()` 并列）。
+ * 类型只定形状：`render` 签名注记，实现在消费侧模块对象；
  * 装配（`defineModule()`）做运行时注册表（`Map<id, ModuleDef>`）。
+ * @category 作者面
  */
 export interface SourceModule {
     id: string;
     kind: SourceModuleKind;
     version?: string;
-    /** 依赖的模块 id（无则空；环校验载体，无 deps 降级重复 id 红，R2 F-4） */
+    /** 依赖的模块 id（无则空；环校验载体，无 deps 降级重复 id 红） */
     deps?: string[];
     /** 渲染 Markdown 片段（实现侧提供；类型侧只注记签名） */
     render: () => string;
 }
 
+/** @category 作者面 */
 export interface SourceRef {
     /**
    * 源产物路径（必填）。路径解析（如概念名→路径）归用户侧 helper（`refOf` 模式），
@@ -77,6 +81,7 @@ export interface SourceRef {
     as?: SourceRefRole;
 }
 
+/** @category 作者面 */
 export interface SourceAction {
     id: string;
     label: string;
@@ -92,6 +97,7 @@ export interface SourceAction {
     writes?: SourceRef[];
 }
 
+/** @category 作者面 */
 export type SourceFlow =
   | { kind: 'do'; task: SourceAction }
   | { kind: 'seq'; id: string; label: string; steps: SourceFlow[] }
@@ -138,8 +144,10 @@ export interface SourceException {
     then: string;
 }
 
+/** @category 作者面 */
 export type SourceFailRule = SourceException;
 
+/** @category 作者面 */
 export interface SourceVerifyRule {
     type: VerifyKind;
     ref?: string;
@@ -161,6 +169,7 @@ export interface SourceInstruction {
     taskTemplates?: Record<string, string>;
 }
 
+/** @category 作者面 */
 export interface SourceCheckpoint {
     checkItems: string[];
     clarifyPrompt: string;
@@ -307,9 +316,9 @@ export interface SourceDecisionSummary {
     barrier_summary?: string;
     display?: SourceDecisionDisplay;
     /**
-   * **示例标记（单真相源，D33）**：为 true 时本 decision 全块为历史运行示例值，
+   * **示例标记（语义单真相源）**：为 true 时本 decision 全块为历史运行示例值，
    * 非本次运行时填充；渲染层据此加示例区块标注，缺席（undefined/false）即事实，
-   * 产物逐字不变。过渡期消费侧保留的"（示例）"字样为降级兼容，非第二语义源。
+   * 产物逐字不变。
    */
     isExample?: boolean;
 }
@@ -325,6 +334,7 @@ export interface SourceDegrade {
     fallback?: string;
 }
 
+/** @category 作者面 */
 export interface SourceStep {
     id: string;
     title: string;
@@ -384,6 +394,7 @@ export interface SourceStep {
     next?: string;
 }
 
+/** @category 作者面 */
 export interface SourceContract {
     id: string;
     kind: 'schema' | 'method' | 'policy' | 'source';
@@ -401,8 +412,8 @@ export interface SourceContract {
     /** step 级模块的归属步骤（scope:'step' 时必填，须与步骤 id 对应） */
     step?: string;
     /**
-   * **模块引用（D35 W2 · 路径→id 过渡期双轨）**：指向 `SourceModule.id`。
-   * 缺席即今日路径形态；存在则 V4 先认 id（未登记即红），路径校验（V1/V2）保留。
+   * **模块引用（路径→id 过渡期双轨）**：指向 `SourceModule.id`。
+   * 缺席即路径形态；存在则先认 id（未登记即红），路径校验保留。
    */
     module?: string;
 }
@@ -413,6 +424,7 @@ export interface SourceRuntimeTrace {
     eventTypes: string[];
 }
 
+/** @category 作者面 */
 export interface SourcePolicies {
     contextIsolation: boolean;
     reuseByFileExistence: boolean;
@@ -453,6 +465,7 @@ export interface SourceCallExample {
     pattern: string;
 }
 
+/** @category 作者面 */
 export interface SourceMeta {
     name: string;
     title: string;
@@ -487,6 +500,7 @@ export interface SourceMeta {
     flowOverview?: string;
 }
 
+/** @category 作者面 */
 export interface SkillSourceModel {
     meta: SourceMeta;
     steps: SourceStep[];

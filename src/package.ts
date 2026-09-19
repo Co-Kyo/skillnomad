@@ -18,7 +18,10 @@ import { isBlocking, validate as validateRefs, type Diagnostic as RefDiagnostic,
 
 import type { SourceModule, SourceModuleKind } from './types/index.js';
 
-/** 包清单里的块声明。 */
+/**
+ * 包清单里的块声明。
+ * @category 内容包
+ */
 export interface PackageBlockSpec {
     id: string;
     role: 'target' | 'useMethod' | 'example';
@@ -26,7 +29,10 @@ export interface PackageBlockSpec {
     whenToUse?: string;
 }
 
-/** 包清单（`skill.json`）：标准符合性 ＋ 分级 ＋ 组合顺序 ＋ 块清单 ＋ 模块挂接。 */
+/**
+ * 包清单（`skill.json`）：标准符合性 ＋ 分级 ＋ 组合顺序 ＋ 块清单 ＋ 模块挂接。
+ * @category 内容包
+ */
 export interface PackageManifest {
     /** 标准标识（如 skillnomad-skill-package/v1） */
     standard: string;
@@ -39,7 +45,10 @@ export interface PackageManifest {
     module: { id: string; kind: SourceModuleKind; version: string };
 }
 
-/** 装载结果：清单 ＋ 组合好的正文 ＋ 供校验用的名字表与引用表。 */
+/**
+ * 装载结果：清单 ＋ 组合好的正文 ＋ 供校验用的名字表与引用表。
+ * @category 内容包
+ */
 export interface LoadedPackage {
     /** 包身份（来自 package.json —— 身份的唯一事实源） */
     name: string;
@@ -64,7 +73,10 @@ function readText(dir: string, relative: string): string {
     return readFileSync(isAbsolute(relative) ? relative : join(dir, relative), 'utf8');
 }
 
-/** 读清单与身份：`package.json`（身份）＋ `skill.json`（语义）。 */
+/**
+ * 读清单与身份：`package.json`（身份）＋ `skill.json`（语义）。
+ * @category 内容包
+ */
 export function readPackageManifest(dir: string): { name: string; version: string; manifest: PackageManifest } {
     const pkgPath = join(dir, 'package.json');
     const manifestPath = join(dir, 'skill.json');
@@ -79,7 +91,10 @@ export function readPackageManifest(dir: string): { name: string; version: strin
     return { name: pkg.name, version: pkg.version, manifest };
 }
 
-/** 装载内容包：清单 → 块注册表 → 名字表/引用表 → 组合正文（标记解析成被引块标题）。 */
+/**
+ * 装载内容包：清单 → 块注册表 → 名字表/引用表 → 组合正文（标记解析成被引块标题）。
+ * @category 内容包
+ */
 export function loadPackage(dir: string): LoadedPackage {
     const { name, version, manifest } = readPackageManifest(dir);
     const byId = new Map(manifest.blocks.map((b) => [b.id, b]));
@@ -127,6 +142,7 @@ export function loadPackage(dir: string): LoadedPackage {
 /**
  * 内容包自检：拆分结构（写作块）＋ 组合引用面（引用校验）。
  * 前者判"散文拆得对不对"，后者判"拆出来的文档拼不拼得起来"。
+ * @category 内容包
  */
 export function checkPackage(dir: string): { structure: BlockDiagnostic[]; composition: RefDiagnostic[] } {
     const loaded = loadPackage(dir);
@@ -137,12 +153,18 @@ export function checkPackage(dir: string): { structure: BlockDiagnostic[]; compo
     };
 }
 
-/** 阻断诊断（引用校验口径：error 必阻；strict 下 warn 也阻——此处用默认严格度）。 */
+/**
+ * 阻断诊断（引用校验口径：error 必阻；strict 下 warn 也阻——此处用默认严格度）。
+ * @category 内容包
+ */
 export function blockingPackageDiagnostics(dir: string): RefDiagnostic[] {
     return checkPackage(dir).composition.filter((d) => isBlocking(d));
 }
 
-/** 内容包 → 模块对象：`render` 返回组合好的正文——构建期渲染进引用步骤的「模块附录」。 */
+/**
+ * 内容包 → 模块对象：`render` 返回组合好的正文——构建期渲染进引用步骤的「模块附录」。
+ * @category 内容包
+ */
 export function packageModule(dir: string): SourceModule {
     const loaded = loadPackage(dir);
     return {
