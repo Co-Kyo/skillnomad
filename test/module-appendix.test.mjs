@@ -6,11 +6,11 @@ import { join } from 'node:path';
 import { buildPipeline, renderStep } from '../dist/index.js';
 import { task } from '../dist/types/index.js';
 
-// D35 全链路 · 模块附录 e2e：模块 render() → 引用步骤的「模块附录」（双路径）＋引用表标注。
+// 模块附录 e2e：模块 render() → 引用步骤的「模块附录」＋引用表标注。
 // 内容源是 render()，路径只是逻辑标识——不落盘、不读盘。
 // 注：完整路径（无正文步骤）无法过 align 报告（要求 body），故走 renderStep 直调覆盖。
 
-const META = { name: 'appendix-e2e', description: 'D35 module appendix e2e' };
+const META = { name: 'appendix-e2e', description: 'module appendix e2e' };
 const CONTRACT_PATH = 'assets/common/mod.md';
 const REGISTRY = [
     { id: 'mod-a-contract', kind: 'data', path: CONTRACT_PATH, description: '模块 A', scope: 'skill', module: 'mod-a' },
@@ -23,7 +23,7 @@ const barrier = { checkItems: ['ok'], clarifyPrompt: '继续？', onConfirm: 'co
 const stepA = {
     id: 'a',
     title: 'A',
-    description: '带正文步骤（早返路径）',
+    description: '带正文步骤（提前返回路径）',
     body: 'do a',
     graph: task({ id: 'a-task', label: 'A', type: 'agent', body: 'do a' }),
     reads: [{ path: CONTRACT_PATH, as: 'contract', description: '模块 A 契约' }],
@@ -31,7 +31,7 @@ const stepA = {
     barrier,
 };
 
-test('模块附录：早返路径（build 全链）渲染附录＋契约引用标注', () => {
+test('模块附录：提前返回路径（build 全链）渲染附录＋契约引用标注', () => {
     const out = mkdtempSync(join(tmpdir(), 'skillnomad-appendix-'));
     try {
         buildPipeline([stepA], out, META, REGISTRY, undefined, MODULES);
@@ -77,7 +77,7 @@ test('模块空内容：标注与附录同进退（不指向不存在的正本�
     }
 });
 
-test('模块缺席：产物不含模块附录（旧行为逐字不变）', () => {
+test('模块缺席：产物不含模块附录', () => {
     const out = mkdtempSync(join(tmpdir(), 'skillnomad-appendix-'));
     try {
         const registryNoModule = [{ id: 'c-plain', kind: 'data', path: CONTRACT_PATH, description: '普通条目', scope: 'skill' }];

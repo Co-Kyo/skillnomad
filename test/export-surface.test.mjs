@@ -3,10 +3,10 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
 
-// 导出面快照门：主包公开面 ＝ 作者面 ＋ 构建 API（含内容包装载器）。任一增删即红，须显式改本清单。
+// 导出面快照门：公开面 ＝ 作者面 ＋ 构建 API（含内容包装载器）。任一增删即红，须显式改本清单。
 // 任一新增/删除即红——要改清单必须显式改本文件（把有意的 API 变更记录在此）。
 const AUTHORING_VALUES = [
-    // 作者面收缩（拆包方向）：IR 构造子与 createSkill 已退出——写作路径只有一条
+    // 作者面收缩：内部构造子与 createSkill 已退出——写作路径只有一条
     // （step() 链式 ＋ createSkillFromModel）。它们仍在 src/types/（内部用）。
     'step', 'defineModule',
     'createSkillFromModel', 'defineConfig', 'createRefs',
@@ -38,7 +38,7 @@ const BUILD_VALUES = [
 ];
 const APPROVED = new Set([...AUTHORING_VALUES, ...AUTHORING_TYPES, ...BUILD_VALUES]);
 
-test('导出面快照：主包公开导出必须与获批清单一致（新增/删除即红）', () => {
+test('导出面快照：公开导出必须与登记清单一致（新增/删除即红）', () => {
     const dtsPath = fileURLToPath(new URL('../dist/index.d.ts', import.meta.url));
     const program = ts.createProgram([dtsPath], {
         moduleResolution: ts.ModuleResolutionKind.NodeNext,
@@ -52,7 +52,7 @@ test('导出面快照：主包公开导出必须与获批清单一致（新增/�
     const names = checker.getExportsOfModule(mod).map((s) => s.getName()).sort();
     const extra = names.filter((n) => !APPROVED.has(n));
     const missing = [...APPROVED].filter((n) => !names.includes(n)).sort();
-    assert.deepEqual(extra, [], `新增未获批导出（IR 重新泄漏？）：${extra.join(', ')}`);
-    assert.deepEqual(missing, [], `获批导出缺失：${missing.join(', ')}`);
+    assert.deepEqual(extra, [], `新增未登记导出：${extra.join(', ')}`);
+    assert.deepEqual(missing, [], `登记导出缺失：${missing.join(', ')}`);
     assert.equal(names.length, APPROVED.size, '导出总数变化');
 });

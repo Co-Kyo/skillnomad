@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createSkill, task } from '../dist/types/index.js';
 
-// D29 缺陷2 回归：双装配路径行为对齐。
+// 回归：双装配路径行为对齐。
 // 修复前 createSkill 直装配不转 checkpoint→barrier（与 createSkillFromModel 不一致），
 // 用户检查点在直装配下静默失效。修复后两条路径行为一致。
 

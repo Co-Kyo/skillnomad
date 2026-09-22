@@ -23,7 +23,7 @@ export interface StepBuilder {
     /**
    * 声明步骤间的直接前驱。**步骤之间是线性链，不是 DAG。**
    *
-   * 8.4 起收窄为**单值**：只接受一个前驱。需要并行/分支时在 `.parallel()` / `.map()`
+   * 收窄为**单值**：只接受一个前驱。需要并行/分支时在 `.parallel()` / `.map()`
    * 内部表达，不要把可并行动作拆成多个顶层步骤。
    * - 与 `.next()` 互为反函数，**只调用其中一个即可**，另一个由框架推导。
    */
@@ -53,7 +53,7 @@ export interface StepBuilder {
    * 该值仅被渲染为步骤文件的「下一步」章节，**不参与任何校验**；
    * 若已调用 `.dependsOn()`，此处可省略，由框架推导补出。
    *
-   * @deprecated 8.4 起为可选覆盖的派生值——建议声明 `dependsOn`（或留空由链序决定），
+   * @deprecated 为可选覆盖的派生值——建议声明 `dependsOn`（或留空由链序决定），
    * `next` 由框架推导；显式调用仅用于覆盖渲染值。
    */
     next(id: string): StepBuilder;
@@ -376,7 +376,7 @@ class StepBuilderImpl implements StepBuilder {
 
 /**
  * **模块装配入口（与 `step()` 并列的一等公民）**：对象参数，
- * 注册表形态（`Map<id, ModuleDef>`）由消费侧持有（框架只定形状，不管实例）。
+ * 注册表形态（`Map<id, ModuleDef>`）由调用方持有（框架只定形状，不管实例）。
  * @category 作者面
  */
 export function defineModule(module: SourceModule): SourceModule {

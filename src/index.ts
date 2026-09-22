@@ -4,7 +4,7 @@
 
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
-// 版本从 package.json 读取——派生值不许人工维护（曾经硬编码 '0.2.0' 造成 artifact-manifest 版本错报）
+// 版本从 package.json 读取——派生值不许人工维护（人工维护会造成 artifact-manifest 版本错报）
 const SKILLNOMAD_VERSION: string = require('../package.json').version as string;
 
 import type {
@@ -74,16 +74,16 @@ import * as path from 'node:path';
 import * as crypto from 'node:crypto';
 
 // markrefs 集成：引用登记 + 键表 + 构建期校验（宿主侧适配层，见 ./markrefs.js）
-// 导出面收敛：主包只转口「作者面」——构造动词 ＋ 编写 skill 所需的类型。
-// 机制面（校验器/派生器/内部 IR 类型/依赖解析等）留在各子包（实现细节，不建议直引）。
+// 导出面收敛：本包只转口「作者面」——构造动词 ＋ 编写 skill 所需的类型。
+// 机制面（校验器/派生器/内部类型/依赖解析等）留在各子包（实现细节，不建议直引）。
 // 快照门：test/export-surface.test.mjs 锁定本清单（新增/删除即红）。
 export {
     step,
     defineModule,
 } from './types/index.js';
-// 作者面收缩（拆包方向）：IR 构造子（task／seq／parallel／mapNode／branch／loop）与 IR 直装配
+// 作者面收缩：内部构造子（task／seq／parallel／mapNode／branch／loop）与直装配
 // （createSkill）退出作者面——它们仍在 src/types/ 里（框架内部与测试用），
-// 但不再从主包转口；写作路径只有一条：step() 链式 ＋ createSkillFromModel（见规范）。
+// 但不再从本包转口；写作路径只有一条：step() 链式 ＋ createSkillFromModel（见规范）。
 export type {
     StepDefinition,
     SkillSourceModel,
@@ -139,10 +139,10 @@ export {
     type ProseHit,
 } from './check/prose-gates.js';
 
-// methodblocks 适配器转口（P2 集成；工具协作层，同 markrefs 先例）。
+// methodblocks 适配器转口（工具协作层，同 markrefs 先例）。
 export { blockModule, type BlockModuleInput, type StructureConfig, type StructureDocSpec } from './blocks.js';
 
-// markrefs 公共类型的转口（消费侧只 import 'skillnomad'，不直接依赖 markrefs）
+// markrefs 公共类型的转口（调用方只 import 'skillnomad'，不直接依赖 markrefs）
 export type { KeyMap } from 'markrefs';
 
 // 内容包装载器（声明式包：读 skill.json ＋ blocks ＋ compose，自行组合成模块）
@@ -494,20 +494,20 @@ export interface SkillnomadConfig {
     /** 可选的 meta 覆盖项 */
     meta?: Partial<SkillMeta>;
     /**
-   * markrefs 集成（可选）：消费侧声明的键表 + 引用登记（见 ./markrefs.ts）。
-   * 缺省＝不做 markrefs 校验（旧行为不变）。
+   * markrefs 集成（可选）：声明的键表 + 引用登记（类型 MarkrefsConfig）。
+   * 缺省＝不做 markrefs 校验。
    */
     markrefs?: MarkrefsConfig;
     /**
-     * 模块注册表（可选，D35 全链路）：声明后构建期做 V4 校验（id 唯一、deps 无环、
+     * 模块注册表（可选）：声明后构建期校验（id 唯一、deps 无环、
      * 注册表 module 引用必在册），并把模块 `render()` 结果接入引用步骤的「模块附录」。
-     * 缺省＝不声明（旧行为逐字不变）。
+     * 缺省＝不声明。
      */
     modules?: SourceModule[];
     /**
-     * 块文档结构校验（可选，P2 集成）：声明后在构建期对每份块文档跑 methodblocks `check()`
-     * （引用缺席／一字不抄／母版未进正文／同块双发布），诊断计入失败汇总。
-     * 缺省＝不声明（旧行为逐字不变）。
+     * 块文档结构校验（可选）：声明后在构建期对每份块文档跑 methodblocks `check()`
+     * （引用缺席／正文未逐字抄入块内容／母版未进正文／同块双发布），诊断计入失败汇总。
+     * 缺省＝不声明。
      */
     structure?: StructureConfig;
 }
@@ -647,7 +647,7 @@ function renderBarrier(step: ResolvedStep): string {
     md += `| 拒绝 | ${step.barrier.onReject} |\n`;
     const decision = step.decisionSummary;
     if (decision) {
-    // 语义见 `SourceDecisionSummary.isExample`（单真相源，D33）：严格 === true 才进示例分支。
+    // 语义见 `SourceDecisionSummary.isExample`（单真相源）：严格 === true 才进示例分支。
         const ex = decision.isExample === true;
         md += `\n### Decision Summary\n\n`;
         if (ex) md += `> 示例值——以下为历史运行示例，非本次运行时数据。\n\n`;
@@ -663,11 +663,11 @@ function renderBarrier(step: ResolvedStep): string {
     return md;
 }
 
-// 8.5 裁定：契约引用章节由 reads.filter(as === 'contract') 派生渲染（不再人工维护 contractRefs）。
+// 契约引用章节由 reads.filter(as === 'contract') 派生渲染（不再人工维护 contractRefs）。
 // 契约文档只进契约引用章节，不重复进文件引用表——消除人工双清单重复登记。
 
 /**
- * map 输入派生（B' 裁定 2026-09-19）：flow 树里 `.map()` 的 over 输入是作者已声明的事实，
+ * map 输入派生：flow 树里 `.map()` 的 over 输入是作者已声明的事实，
  * 但作者不必（也不该）在 reads 再抄一遍——那是要消灭的双写。渲染「文件引用」表时
  * 把未出现在 reads 中的 over 输入补为派生行：表完备、数据模型不动、作者零双写。
  * over 路径可带 `#fragment`（如 `…json#propositions`）：去重按剥 fragment 后的基路径比对，
@@ -728,11 +728,11 @@ function renderFileRefs(
 }
 
 // ---------------------------------------------------------------
-// 声明字段章节渲染（P1 修复：正文早返分支与完整分支共用）
+// 声明字段章节渲染（正文提前返回分支与完整分支共用）
 //
-// renderStep 有两条路径：带正文早返（:654-657）、无正文完整渲染。
-// 早返前只输出正文/文件引用/调度树/Barrier/运行记录，reuse/plugins/degrade/依赖
-// 四节声明被静默丢失（P1：11/11 带正文步骤全员命中）。以下四函数抽取完整分支
+// renderStep 有两条路径：带正文提前返回、无正文完整渲染。
+// 两路都必须输出正文/文件引用/调度树/Barrier/运行记录与 reuse/plugins/degrade/依赖
+// 四节；以下四函数抽取完整分支，供两路共用
 // 的同段逻辑，两条路径共用，保证声明字段必有渲染。
 // ---------------------------------------------------------------
 
@@ -807,10 +807,8 @@ function renderRuntimeTrace(step: ResolvedStep): string {
 }
 
 /**
- * **模块附录节（D35 W3 · 构成渲染）**：按 registry 中 `module` 有值条目，
- * 查 `contents[moduleId]` 拼装（D34 附录版式为参照：标注＋来源；不复用 SourceInline 语义——
- * 路径内联 vs 构成渲染两码事）。缺席（无模块条目或查表无内容）整段省略；
- * 早返＋完整双路径共用（P1 同构）。
+ * **模块附录节**：按 registry 中 `module` 有值条目，
+ * 查 `contents[moduleId]` 拼装（附录条目标注来源）。缺席（无模块条目或查表无内容）整段省略。
  * @category 构建与渲染
  */
 export function renderModulesAppendix(
@@ -844,7 +842,7 @@ export function renderStep(
 ): string {
     const published = moduleCtx?.published;
     const withRefs = (text: string): string => resolveStepRefs(text, stepOrder);
-    // D35 模块接线：本步骤 reads 命中的、带 module 的注册条目 → 该步的模块附录（双路径共用位）。
+    // 模块接线：本步骤 reads 命中的、带 module 的注册条目 → 该步的模块附录。
     // 判定共用：registry 命中 ∧ 该步 reads 命中 ∧ render() 有内容（空内容＝缺席，标注与附录同进退，
     // 避免标注指向不存在的正本）。
     const stepModules = moduleCtx
@@ -860,9 +858,9 @@ export function renderStep(
 
     const stepBody = step.body ?? (step.bodyFile ? withRefs(resolveBodyFile(step.bodyFile)) : '');
     if (stepBody) {
-    // P1 修复：早返分支追加四节声明渲染（与完整分支共用函数）。
-    // 早返前四节（依赖/增量复用/降级协议/插件加载）被静默丢失，导致
-    // 11/11 带正文步骤的 reuse/plugins 声明在产物中零渲染。
+    // 提前返回分支追加四节声明渲染（与完整分支共用函数）。
+    // 两路都必须渲染四节（依赖/增量复用/降级协议/插件加载），
+    // 否则带正文步骤的 reuse/plugins 声明在产物中零渲染。
         return `${withRefs(stepBody)}\n\n---\n\n${renderFileRefs(step, modulePaths, published)}${renderDependsOn(step)}\n## 调度策略\n\n${renderControlTree(step.graph, 0)}\n${renderReuse(step)}${renderDegrade(step)}${renderBarrier(step)}${renderPlugins(step)}${renderRuntimeTrace(step)}${appendix}`;
     }
 
@@ -873,26 +871,26 @@ export function renderStep(
     md += `**关键产出**：${step.writes.map(w => `\`${w.path}\``).join(', ')}\n\n`;
     md += `---\n\n`;
 
-    // 文件引用（契约引用 + 读取/产出表，8.5 统一派生渲染）
+    // 文件引用（契约引用 + 读取/产出表，统一派生渲染）
     md += renderFileRefs(step, modulePaths, published);
 
-    // Dependencies（与早返分支共用 renderDependsOn）
+    // Dependencies（与提前返回分支共用 renderDependsOn）
     md += renderDependsOn(step);
 
     // 调度策略（ControlNode tree）
     md += `\n## 调度策略\n\n`;
     md += renderControlTree(step.graph, 0);
 
-    // Incremental reuse（与早返分支共用 renderReuse）
+    // Incremental reuse（与提前返回分支共用 renderReuse）
     md += renderReuse(step);
 
-    // Degrade（与早返分支共用 renderDegrade）
+    // Degrade（与提前返回分支共用 renderDegrade）
     md += renderDegrade(step);
 
     // Barrier
     md += renderBarrier(step);
 
-    // Plugins（与早返分支共用 renderPlugins）
+    // Plugins（与提前返回分支共用 renderPlugins）
     md += renderPlugins(step);
 
     md += renderRuntimeTrace(step);
@@ -1339,7 +1337,7 @@ function writeDecisionSummaryManifest(pipeline: ResolvedPipeline, outputDir: str
                 actions: decision?.actions,
                 barrier_summary: decision?.barrier_summary ?? '',
                 display: decision?.display ?? step.display,
-                // D33：示例标记透传（缺席时键省略；`schema_version` 硬编码本次不动，独立契约 schema 无代码关联）。
+                // 示例标记透传（缺席时键省略；`schema_version` 硬编码本次不动，独立契约 schema 无代码关联）。
                 ...(decision?.isExample === true ? { isExample: true } : {}),
             };
         }),
@@ -1402,7 +1400,7 @@ export function buildPipeline(
     }
 
     // 发布布局校验：由角色派生发布路径，查归属步存在／保留名／同名冲突。
-    // 缺省（registry 无文件背条目）＝ 零诊断，旧行为不变。
+    // 缺省（registry 无文件背条目）＝ 零诊断。
     const publishAssets: PublishableAsset[] = registry
         .filter((c) => !c.module)
         .map((c) => (c.scope === 'step' ? { path: c.path, scope: 'step' as const, step: c.step } : { path: c.path, scope: 'skill' as const }));

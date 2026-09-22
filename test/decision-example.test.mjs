@@ -2,10 +2,10 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { renderStep } from '../dist/index.js';
 
-// D33 示例分隔符：decision 示例块加 `isExample: true` 后渲染带示例区块题注；
+// 示例分隔符：decision 示例块加 `isExample: true` 后渲染带示例区块题注；
 // 缺席时与改前逐字一致（不变量：渲染零静默变化）。风格仿 renderstep-p1.test.mjs。
 // v0.2.2 散文修复：示例语义只由区块题注一处承载——行级"（示例）"前后缀撤除，
-// 杜绝与消费数据自带标注叠加（双注入弹）。
+// 杜绝与数据自带标注叠加。
 
 const decisionBase = {
     gateType: 'human_gate',

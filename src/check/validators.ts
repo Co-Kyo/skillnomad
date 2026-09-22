@@ -26,7 +26,7 @@ import {
 } from '../compiler/internal.js';
 
 // skillnomad/check —— 声明自洽检查（库函数）：返回对不对、错在哪。
-// 只收判据，不收计算；调用方为主包构建管线与 validate 命令。
+// 只收判据，不收计算；调用方为本包构建管线与 validate 命令。
 
 export interface ValidationError {
     stepId: string;
@@ -206,7 +206,7 @@ export function validateStepChain(steps: Array<{ id: string; dependsOn?: string;
 
     const ids = new Set(steps.map(s => s.id));
 
-    // 1) 每个步骤最多一个前驱（8.4 收窄为单值后，类型已保证；此处是运行时兜底）
+    // 1) 每个步骤最多一个前驱（单值由类型保证；此处是运行时兜底）
     //    仅拦截真正违反单值契约的多依赖数组（length>1）；空数组（=根）与单元素数组
     //    （等价单值）视为合法兼容形态 —— 类型层已不允许，运行时只防 JSON 等导入的非法数据。
     for (const step of steps) {
@@ -216,7 +216,7 @@ export function validateStepChain(steps: Array<{ id: string; dependsOn?: string;
                 field: 'dependsOn',
                 message:
           `Linear chain contract: step "${step.id}" declares multiple ` +
-          `dependencies via array (${step.dependsOn.join(', ')}); 8.4 起收窄为单值，` +
+          `dependencies via array (${step.dependsOn.join(', ')}); ` +
           `请用单个前驱。`,
             });
         }
@@ -427,15 +427,15 @@ export function validatePhaseCoverage(
 }
 
 /**
- * **模块引用一致性校验（8.15 Step 2 · 模块抽象落地）**
+ * **模块引用一致性校验**
  *
  * 输入：步骤定义 + 模块注册表（`SourceContract[]`，来自 `model.contracts`）。
  * 心智：内容模块用符号名注册引用，归属由声明层（scope）决定，路径只是渲染载体。
  *
- * **V1 · 角色 × 归属一致性**：`as:'contract'` 的引用必须指向 `scope:'skill'` 的注册条目。
+ * **角色 × 归属一致性**：`as:'contract'` 的引用必须指向 `scope:'skill'` 的注册条目。
  * 契约 = 跨步共享的约定；指向 step 级模块说明贴错了角色标签 —— 提示改标签或提升为 SkillModule。
  *
- * **V2 · 私有可见性**：step 级模块（StepModule）只能被归属步骤引用；
+ * **私有可见性**：step 级模块（StepModule）只能被归属步骤引用；
  * 被多个步骤引用 → 报错。跨步需求 = 它本就是 SkillModule（身份完全性不同），
  * 升级路径 = 改一行声明（step:xxx → skill:xxx），文件与路径不搬家。
  */
@@ -446,7 +446,7 @@ export function validateModuleUsage(
     const errors: ValidationError[] = [];
     const byPath = new Map(registry.map((c) => [c.path, c]));
 
-    // V1：as:'contract' → scope 必须为 'skill'
+    // 角色 × 归属一致性：as:'contract' → scope 必须为 'skill'
     for (const step of steps) {
         for (const ref of step.reads ?? []) {
             if (ref.as !== 'contract') continue;
@@ -467,7 +467,7 @@ export function validateModuleUsage(
         }
     }
 
-    // V2：step 级模块被跨步引用 → 报错（StepModule 严格私有）
+    // 私有可见性：step 级模块被跨步引用 → 报错（StepModule 严格私有）
     for (const reg of registry) {
         if (reg.scope !== 'step') continue;
         const users = new Set<string>();
@@ -490,10 +490,10 @@ export function validateModuleUsage(
 }
 
 /**
- * **B1 · body 三段分块（联调薄校验；D40-R1 扩动作通用）**：含动作词的 task body 须三段齐。
- * 只认结构标记，不认散文内容（散文归 mdlego，不管对错）：
+ * **body 三段分块（含动作词的 task body 须三段齐）**：含动作词的 task body 须三段齐。
+ * 只认结构标记，不认散文内容（散文归 methodblocks，不管对错）：
  * 含"搜法／检测／标注／修正"任一即须含"判据："与"参照"字样；缺一即红。旧"搜法"逻辑不变（子集）。
- * 定位：mdlego 供砖（文字形状），本校验只供钩子（分块齐不齐），两仓独立。
+ * 定位：写法形状由 methodblocks 管，本校验只管分块齐不齐，两仓独立。
  */
 const B1_ACTION_WORDS = ['搜法', '检测', '标注', '修正'] as const;
 export function validateBodySections(steps: StepDefinition[]): ValidationError[] {
@@ -522,11 +522,11 @@ export function validateBodySections(steps: StepDefinition[]): ValidationError[]
 }
 
 /**
- * **V4 · 模块注册表合法性（D35 W2 ＋ 全链路接线）**：`SourceModule[]` 自身合法 ＋ 注册表引用在册。
+ * **模块注册表合法性**：`SourceModule[]` 自身合法 ＋ 注册表引用在册。
  * 不碰 `validateModuleUsage(steps, registry)` 签名。
- * - V4a：module id 唯一（重复 id 即红；R2 F-4 无 deps 降级位）；
- * - V4b：deps 环即红（DFS；无 deps 即无边，不报错）；
- * - V4c：注册表条目 `module` 引用的 id 必须在册（D35 双轨：存在即认 id，未登记即红）。
+ * - module id 唯一（重复 id 即红）；
+ * - deps 环即红（DFS；无 deps 即无边，不报错）；
+ * - 注册表条目 `module` 引用的 id 必须在册（存在即认 id，未登记即红）。
  */
 export function validateModules(
     modules: import('../types/index.js').SourceModule[] = [],
@@ -536,13 +536,13 @@ export function validateModules(
     const seen = new Set<string>();
     for (const m of modules) {
         if (seen.has(m.id)) {
-            errors.push({ stepId: '(modules)', field: 'module', message: `模块 id 重复：${m.id}（D35 V4a）` });
+            errors.push({ stepId: '(modules)', field: 'module', message: `模块 id 重复：${m.id}` });
         }
         seen.add(m.id);
     }
     for (const c of registry) {
         if (c.module && !seen.has(c.module)) {
-            errors.push({ stepId: '(modules)', field: 'module', message: `模块引用未登记：${c.id} → ${c.module}（D35 V4c）` });
+            errors.push({ stepId: '(modules)', field: 'module', message: `模块引用未登记：${c.id} → ${c.module}` });
         }
     }
     const adj = new Map(modules.map((m) => [m.id, (m.deps ?? []).filter((d) => m.id !== d)]));
@@ -563,7 +563,7 @@ export function validateModules(
     };
     for (const u of adj.keys()) {
         if (color.get(u) === WHITE && visit(u)) {
-            errors.push({ stepId: '(modules)', field: 'module', message: `模块依赖环：${[...stack, u].join(' → ')}（D35 V4b）` });
+            errors.push({ stepId: '(modules)', field: 'module', message: `模块依赖环：${[...stack, u].join(' → ')}` });
             break;
         }
     }

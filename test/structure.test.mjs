@@ -8,7 +8,7 @@ import { blockModule, buildPipeline } from '../dist/index.js';
 import { task } from '../dist/types/index.js';
 
 // P2 结构校验（config.structure）：校验期跑 methodblocks check()，诊断计入失败汇总；
-// 缺省不声明＝旧行为逐字不变。
+// 缺省不声明＝不输出该节。
 
 const META = { name: 'structure-e2e', description: 'P2 structure hook' };
 const CONTRACT_PATH = 'assets/common/mod.md';
