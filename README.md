@@ -8,7 +8,7 @@ LLM 可执行 Markdown Skill 管线的打包工具：声明步骤与产出，构
 npm install -D skillnomad
 ```
 
-**只需这一个包。** 类型、校验、构建全部在包内（`src/types/`、`src/check/`、`src/compiler/`）；`skillnomad validate <pipeline-file>` 做管线完整性校验。另见 `docs/guide/toolchain.md`（官方工具组合）。
+**只需这一个包。** 类型、校验、构建全部在包内（`dist/types/`、`dist/check/`、`dist/compiler/`）；`skillnomad validate <pipeline-file>` 做管线完整性校验。另见 [官方工具组合](https://co-kyo.github.io/skillnomad/guide/toolchain.html)。
 
 ## 使用
 
@@ -16,7 +16,9 @@ npm install -D skillnomad
 npx skillnomad build skillnomad.config.ts
 ```
 
-`skillnomad.config.ts` 默认指向当前目录下的配置文件：
+（裸跑需 Node ≥ 22.18；更早版本用 `npx tsx node_modules/skillnomad/dist/bin/cli.js build skillnomad.config.ts`）
+
+`skillnomad build` 不带参数时，默认读当前目录下的 `skillnomad.config.ts`：
 
 ```ts
 import { defineConfig } from 'skillnomad';
@@ -43,13 +45,13 @@ export default defineConfig({
 });
 ```
 
-校验机制由独立项目 [markrefs](https://github.com/Co-Kyo/markrefs) 提供；主包只做接线，消费侧只依赖 `skillnomad`。
+校验机制由独立项目 [markrefs](https://github.com/Co-Kyo/markrefs) 提供；本包只做接线，你只需依赖 `skillnomad`。
 
 ## 文档
 
 - 快速上手：`docs/guide/quickstart.md`
-- 契约与口径：`docs/guide/contract.md`
-- 完整文档站：见仓库 `docs/`
+- 契约与口径：https://co-kyo.github.io/skillnomad/guide/contract.html
+- 完整文档站：https://co-kyo.github.io/skillnomad/
 
 ## License
 

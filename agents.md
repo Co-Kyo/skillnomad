@@ -6,8 +6,6 @@
 
 ## 1. 角色先行（每次任务进门执行）
 
-> 来源：本项目角色先行约定（2026-09-04）—— 后续工作流与讨论视角先夯实角色，否则会在三个角色里迷失。
-
 | 角色 | 是谁 | 他关心 | 他不需要 |
 |---|---|---|---|
 | A · 产物使用者 | 照着 md 干活的人 | 文件里有什么/缺什么 | 源码行号、构建细节 |
@@ -27,17 +25,17 @@
 - 单包单仓：`package.json` 即发版位（`release-manifest.json` 单键）；push `v*` tag → Actions OIDC 直发 npm。内部目录（`src/types/`、`src/check/`、`src/compiler/`、`src/cli/`）不独立发版。
 - `markrefs`（Markdown 交叉引用解析与校验）是**独立项目**：代码与发版都在独立仓 `Co-Kyo/markrefs`（tag `v*`），不随框架版本；本仓以 dependency 引用其**已发布**版本（同步成本在框架侧），**不在本仓留副本**。
 - **对外只暴露 `skillnomad` 一个入口**：消费侧只允许 `import … from 'skillnomad'`；`skillnomad validate` 做管线完整性校验（CLI 子命令）。
-- 包内互引与工具依赖一律写**固定版本号**（精确相等，构思阶段策略：整组同版、杜绝跨号漂移；2026-09-14 作者拍板，替换原「semver range」规则）——**禁用 `workspace:` 协议**（npm 全系不支持，EUNSUPPORTEDPROTOCOL），`file:` 也会被原样打进发布产物；版本匹配时 npm workspaces 自动链到本地包，效果等价。**发版联动须同步全部 pin（markrefs／methodblocks）**。**全局禁 `^` 与 `~`：任何依赖字段（含 devDependencies／peerDependencies）一律写固定版本号**（2026-09-15 作者重申）。**发布物 bin 值不得以 `./` 开头**（npm 新版发布归一化会判非法并删除）。
-- **核心不再新增业务能力接口**（拆包方向，2026-09-15 作者拍板）：后续任何"加一种能力"的提议，先回答"为什么不能是内容包"（内容包规范见工作仓 `docs/product/skill-package-spec-v1.md`）。执行力来自两处既有机制：语义变更须作者确认（§7 用户门），新增导出触发导出清单检查即红（`test/export-surface.test.mjs`）。
+- 包内互引与工具依赖一律写**固定版本号**（精确相等，构思阶段策略：整组同版、杜绝跨号漂移）——**禁用 `workspace:` 协议**（npm 全系不支持，EUNSUPPORTEDPROTOCOL），`file:` 也会被原样打进发布产物；版本匹配时 npm workspaces 自动链到本地包，效果等价。**发版联动须同步全部 pin（markrefs／methodblocks）**。**全局禁 `^` 与 `~`：任何依赖字段（含 devDependencies／peerDependencies）一律写固定版本号**。**发布物 bin 值不得以 `./` 开头**（npm 新版发布归一化会判非法并删除）。
+- **核心不再新增业务能力接口**（拆包方向）：后续任何"加一种能力"的提议，先回答"为什么不能是内容包"。执行力来自两处既有机制：语义变更须作者确认（§7 用户门），新增导出触发导出清单检查即红（`test/export-surface.test.mjs`）。
 - `renderStep` / validate / contract 行为即契约；改渲染、校验、类型就是改契约。
-- `docs/` 为 VitePress 站；`demos/` 最小用例；`release.yml` Version gate 要求 tag / manifest / 每包版本三者一致。
+- `docs/` 为 VitePress 站；`demos/` 最小用例；`release.yml` Version gate 要求 tag / manifest / 包版本三者一致。
 - `main` 受分支保护：一切变更走分支 + PR，不直推（直推报 GH013 拒收）。
 
 ## 3. 内容→角色映射
 
 | 内容 | 约束角色 | 讲什么 / 不讲什么 |
 |---|---|---|
-| 渲染/校验/类型/contract 变更、根因、修法 | B | 行号、分支、diff、前后对照；不展开 sp-skill 业务 |
+| 渲染/校验/类型/contract 变更、根因、修法 | B | 行号、分支、diff、前后对照；不展开官方示例 scenario-pipeline 业务 |
 | “产物 md 有什么变化”类问题 | A | 只讲文件章节有无与执行者影响；不贴源码 diff 回答 |
 | 下游 Skill 管线语义问题 | C（指针） | 指去下游仓库，不在本仓展开 |
 
@@ -60,10 +58,10 @@
 ## 6. 通用规则
 
 - 最小改动；改前选最小充分验证；不扩大范围；发现相关问题先记录，不擅自顺手改。
-- Windows 路径用 `pathToFileURL`（e45555b 教训）；换行用 `.gitattributes`。
+- Windows 路径用 `pathToFileURL`；换行用 `.gitattributes`。
 - CHANGELOG 版本节即 Release 正文源（工作流自动提取）：只写公开行为描述，不写内部编号（P1/P2）、下游项目名、本机路径。
 - T1/T2 把实际命令、输出摘要、改动文件和结论写入回复。
-- 推送分工（2026-09-04 确立）：分支推送 agent 可直接执行（含建分支、提交、push、开 PR）；**云端合入（merge）由用户把关，agent 不点合入**。
+- 推送分工：分支推送 agent 可直接执行（含建分支、提交、push、开 PR）；**云端合入（merge）由用户把关，agent 不点合入**。
 
 - 代码风格：TS/JS 与 JSON 配置统一 **4 空格**缩进；提交前跑 `npm run lint`（自动修 `npm run format`）——配置 `eslint.config.mjs`（只约束缩进；模板字符串跳过，避免动到文案产物；`package-lock.json` 不纳入）。
 

@@ -1,7 +1,7 @@
 {
     "name": "skillnomad",
     "version": "0.2.2",
-    "description": "skillnomad — build LLM-executable Markdown skills from structured pipeline definitions",
+    "description": "Build LLM-executable Markdown skills from structured pipeline definitions",
     "keywords": [
         "skillnomad",
         "llm",
@@ -9,8 +9,7 @@
         "agent-skills",
         "skill",
         "pipeline",
-        "markdown",
-        "claude"
+        "markdown"
     ],
     "type": "module",
     "main": "./dist/index.js",
@@ -48,6 +47,7 @@
         "typescript": "5.9.3",
         "typescript-eslint": "8.70.0"
     },
+    "homepage": "https://co-kyo.github.io/skillnomad/",
     "license": "MIT",
     "repository": {
         "type": "git",
