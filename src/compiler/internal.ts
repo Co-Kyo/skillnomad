@@ -22,7 +22,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 
 // skillnomad/compiler —— Compiler 内部件：派生、遍历、模板解析。
-// 主包与 validate 命令可用；不进作者面快照，不写文档，不承诺稳定。
+// 本包与 validate 命令可用；不进作者面快照，不写文档，不承诺稳定。
 
 /** 链终止标记（末步的下一跳）。 */
 export const CHAIN_TERMINAL = 'done';

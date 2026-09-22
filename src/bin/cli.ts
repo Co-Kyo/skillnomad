@@ -48,7 +48,7 @@ async function main() {
     const mod = await import(skillUrl);
 
     if (!mod.skill || !mod.skill.steps) {
-        console.error(`Skill file must export \`skill\` via createSkill()`);
+        console.error(`Skill file must export \`skill\` (created via createSkillFromModel())`);
         process.exit(1);
     }
 

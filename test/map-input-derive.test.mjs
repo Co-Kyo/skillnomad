@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { renderStep } from '../dist/index.js';
 
-// B' 回归（2026-09-19 裁定）：flow 树里 .map() 的 over 输入必须出现在「文件引用」表——
+// 回归：flow 树里 .map() 的 over 输入必须出现在「文件引用」表——
 // 以派生行形态（作者不在 reads 双写）。去重按剥 #fragment 的基路径比对 reads∪writes；
 // 派生行保留完整 over 形态（worker 取用的就是那个切片）。
 

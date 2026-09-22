@@ -47,7 +47,7 @@ export type SourceModuleKind = 'schema' | 'method' | 'rule' | 'data' | 'action';
 
 /**
  * **模块声明（一等公民）**：Skill 构成原子（与 `step()` 并列）。
- * 类型只定形状：`render` 签名注记，实现在消费侧模块对象；
+ * 类型只定形状：`render` 签名注记，实现在调用方模块对象；
  * 装配（`defineModule()`）做运行时注册表（`Map<id, ModuleDef>`）。
  * @category 作者面
  */

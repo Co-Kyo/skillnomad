@@ -1,4 +1,4 @@
-// markrefs E2E 夹具：消费侧（纯 ESM，便于 node 直接跑 CLI，不需要 tsx）
+// markrefs E2E 夹具：调用方（纯 ESM，便于 node 直接跑 CLI，不需要 tsx）
 // 模式切换（env）：ok / missing-target / missing-key / dup-path / drift
 import { createRefs } from 'skillnomad';
 

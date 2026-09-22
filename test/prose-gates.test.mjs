@@ -59,7 +59,7 @@ test('框架渲染产物自证：注入文本过散文门', () => {
     const contents = { 'shared-methods': '# 共享方法论\n\n通用做法。' };
     const md = renderStep(step, order, { registry, contents, published: new Map() });
     const files = [{ rel: 'step.md', content: md }];
-    // 黑名单＝消费侧典型口径（构建过程话术）；框架注入文本不得命中
+    // 黑名单＝调用方典型口径（构建过程话术）；框架注入文本不得命中
     const blacklist = ['构建期渲染', '构建时渲染', 'manifest 锁定', '版本随产物', '发布形态', '框架按角色派生'];
     assert.deepEqual(scanMetaDiscourse(files, blacklist), [], `框架注入命中元话语黑名单：${JSON.stringify(scanMetaDiscourse(files, blacklist))}`);
     // 标记叠加：行级"（示例）"撤除后，框架不再叠加；数据自带一层不算框架责任（调用方数据问题）

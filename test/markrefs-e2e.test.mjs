@@ -61,7 +61,7 @@ test('drift：名字→键表路径 与 本地路径不一致 → 构建失败�
     assert.match(run.stderr, /名字与本地路径不一致/);
 });
 
-test('off：不配 markrefs → 旧行为不变（无 markrefs 行，构建通过）', () => {
+test('off：不配 markrefs → 不启用（无 markrefs 行，构建通过）', () => {
     const run = build('off');
     assert.equal(run.status, 0, run.stderr);
     assert.doesNotMatch(run.stdout, /markrefs：/);

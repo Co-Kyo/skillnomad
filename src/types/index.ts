@@ -125,7 +125,7 @@ export interface FileRef {
     description: string;
     schema?: string;
     required?: boolean;
-    /** 8.5 裁定：条目角色标签（contract/schema/rule/reference）。仅 as==='contract' 在产物中作为契约引用渲染。缺省 'reference'。 */
+    /** 条目角色标签（contract/schema/rule/reference）。仅 as==='contract' 在产物中作为契约引用渲染。缺省 'reference'。 */
     as?: import('./model.js').SourceRefRole;
 }
 
@@ -142,7 +142,7 @@ export interface BarrierDef {
 }
 
 // ---------------------------------------------------------------
-// 生命周期钩子
+// 生命周期回调
 // ---------------------------------------------------------------
 
 export interface ReuseRule {
@@ -183,7 +183,7 @@ export interface StepDefinition {
     id: string;
     title: string;
     description: string;
-    /** 8.4 起收窄为单值：最多一个前驱（线性链契约的类型级保证）。缺省表示链起点。 */
+    /** 收窄为单值：最多一个前驱（线性链契约的类型级保证）。缺省表示链起点。 */
     dependsOn?: string;
     /** 当该步骤是 pipeline 初始化步骤时，渲染为 SKILL.md 的初始化规则。 */
     initRules?: SkillInitRule[];
@@ -261,12 +261,12 @@ export interface SkillDefinition {
     description: string;
     steps: StepDefinition[];
     api?: SkillApiMetadata;
-    /** 模块注册表（8.15 Step 2）：构建期模块引用一致性校验的输入 */
+    /** 模块注册表：构建期模块引用一致性校验的输入 */
     contracts?: SourceContract[];
 }
 
 export function createSkill(config: SkillDefinition): SkillDefinition {
-    // 双装配路径行为对齐（D29 缺陷2 修复）：直装配下同样把源侧 checkpoint
+    // 双装配路径行为对齐：直装配下同样把源侧 checkpoint
     // 转换为运行时 barrier，与 createSkillFromModel 行为一致。
     // 已有 barrier 时以 barrier 为准（不覆盖）。
     const steps = config.steps.map(step =>

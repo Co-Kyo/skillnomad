@@ -6,10 +6,10 @@ import { join } from 'node:path';
 import { buildPipeline } from '../dist/index.js';
 import { task } from '../dist/types/index.js';
 
-// D35 全链路 · V4 接线：modules 注册表 → 构建期校验（id 唯一／deps 无环／引用在册）。
-// 缺省参数＝旧行为逐字不变（向后兼容）。
+// 模块注册表接线：modules → 构建期校验（id 唯一／deps 无环／引用在册）。
+// 缺省参数＝不启用（向后兼容）。
 
-const META = { name: 'module-wiring', description: 'D35 V4 wiring' };
+const META = { name: 'module-wiring', description: 'module wiring' };
 const barrier = { checkItems: ['ok'], clarifyPrompt: '继续？', onConfirm: 'continue', onReject: 'rollback' };
 const STEP = {
     id: 'a',
@@ -33,7 +33,7 @@ function build(modules, registry = []) {
     }
 }
 
-test('V4 接线：modules 缺席＝旧行为（向后兼容）', () => {
+test('模块接线：modules 缺席＝不启用（向后兼容）', () => {
     assert.doesNotThrow(() => build(undefined));
 });
 
@@ -49,7 +49,7 @@ test('V4 接线：deps 环构建期红', () => {
     assert.throws(() => build([mod('x', ['y']), mod('y', ['x'])]), /Validation failed with 1 error/);
 });
 
-test('V4c：注册表引用未登记模块 id 构建期红', () => {
+test('注册表引用未登记模块 id 构建期红', () => {
     const registry = [{ id: 'c1', kind: 'data', path: 'p.md', description: '', scope: 'skill', module: 'nope' }];
     assert.throws(() => build([mod('other')], registry), /Validation failed with 1 error/);
 });

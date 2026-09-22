@@ -23,7 +23,7 @@
 ```
 
 - 块内结构引用走 methodblocks Registry；跨文件引用一律走 markrefs；`pack()` 产物即 markrefs 语料（无需新适配）。
-- 焊点：块集经 `blockModule({ id, registry, body })` 成为模块内容源（产物「模块附录」）；
+- **接线**：块集经 `blockModule({ id, registry, body })` 成为模块内容源（产物「模块附录」）；
   构建期块校验走可选 `config.structure`（缺省不声明＝逐字不变）。
 
 ## 依赖方向（单向，不可颠倒）
@@ -59,6 +59,6 @@ npm install && npm run build   # 产物见 dist/skill/SKILL.md
 
 模板只依赖 `skillnomad` 一个包（固定版本号）；methodblocks 与 markrefs 由框架侧依赖带入，不必直引。
 
-## 不走的路
+## 三工具的分界
 
 - 三个工具保留独立名字、版本与发布节奏——你可以单独使用其中任何一个；skillnomad 不吞并它们的类型系统。

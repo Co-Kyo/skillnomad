@@ -1,7 +1,7 @@
 // ============================================================
 // markrefs 集成（宿主侧适配层）
 // ------------------------------------------------------------
-// 框架把两样数据交给 markrefs：消费侧声明的键表（keys）与登记出来的引用（refs）；
+// 框架把两样数据交给 markrefs：调用方声明的键表（keys）与登记出来的引用（refs）；
 // 构建期跑解析与校验，诊断并入构建失败汇总。
 // 本文件不认识业务概念：名字与 scope 是不透明字符串，位置只以 file[:line[:col]] 表达。
 // ============================================================
@@ -61,7 +61,7 @@ export interface Refs {
 }
 
 export interface RefsOptions {
-    /** 包装层数：默认 1（消费侧 helper 包一层，site 取 helper 的调用点）。0＝登记点即调用点。 */
+    /** 包装层数：默认 1（调用方 helper 包一层，site 取 helper 的调用点）。0＝登记点即调用点。 */
     siteDepth?: number;
 }
 
@@ -196,7 +196,7 @@ export function inspectRefs(
         }
     }
     if (config.keys.entries.length > 0 && records.length === 0) {
-        problems.push('键表已声明但未收集到引用（检查消费侧是否改走框架的引用登记）');
+        problems.push('键表已声明但未收集到引用（检查调用方是否改走框架的引用登记）');
     }
 
     const io: Io = {
