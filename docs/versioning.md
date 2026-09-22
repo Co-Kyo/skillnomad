@@ -21,4 +21,4 @@ npm install -D skillnomad
 
 ## semver 口径
 
-0.x 阶段：minor 即可包含破坏性变更；**契约冻结发生在 1.0**。本版承诺「默认安装即可用」；升级风险逐条以 CHANGELOG 为准。
+0.x 阶段：minor 即可包含破坏性变更；**契约冻结发生在 1.0**。升级风险逐条以 CHANGELOG 为准。
