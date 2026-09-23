@@ -46,3 +46,6 @@ agents.local.md
 
 # markrefs E2E fixture build output
 packages/skillnomad/test/fixtures/*/out/
+# demo 本地构建产物（源码入库，产物不入库）
+demos/panel2doc/out/
+demos/panel2doc/release/

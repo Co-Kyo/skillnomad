@@ -1,0 +1,15 @@
+{
+    "name": "skillnomad-demo-panel2doc",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "start": "tsx ../../src/bin/cli.ts build skillnomad.config.ts"
+    },
+    "dependencies": {
+        "skillnomad": "0.2.3"
+    },
+    "devDependencies": {
+        "tsx": "^4.16.0"
+    }
+}
