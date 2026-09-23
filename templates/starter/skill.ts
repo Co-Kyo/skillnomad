@@ -1,7 +1,7 @@
 import type { SkillSourceModel } from 'skillnomad';
 import { createSkillFromModel } from 'skillnomad';
-import { collect } from './src/steps/collect.js';
-import { review } from './src/steps/review.js';
+import { collect } from './src/steps/collect.ts';
+import { review } from './src/steps/review.ts';
 
 const model: SkillSourceModel = {
     meta: {

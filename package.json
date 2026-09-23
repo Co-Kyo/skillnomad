@@ -31,7 +31,7 @@
         "typecheck": "tsc -p tsconfig.json",
         "test": "node --test test/steprefs.test.mjs test/module-usage.test.mjs test/renderstep-p1.test.mjs test/checkpoint-conversion.test.mjs test/decision-example.test.mjs test/define-module.test.mjs test/markrefs-bridge.test.mjs test/markrefs-e2e.test.mjs test/module-wiring.test.mjs test/module-appendix.test.mjs test/export-surface.test.mjs test/blocks.test.mjs test/structure.test.mjs test/chain.test.mjs test/package.test.mjs test/body-sections.test.mjs test/publish-refs.test.mjs test/map-input-derive.test.mjs test/prose-gates.test.mjs test/replay.test.mjs",
         "clean": "rm -rf dist tsconfig.tsbuildinfo",
-        "demo": "npm run start --prefix demos",
+        "demo": "npm run build --prefix demos/panel2doc",
         "lint": "eslint .",
         "format": "eslint . --fix"
     },
@@ -58,5 +58,8 @@
     },
     "publishConfig": {
         "access": "public"
+    },
+    "engines": {
+        "node": ">=22.18"
     }
 }

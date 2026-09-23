@@ -38,7 +38,7 @@ export const contracts = [substitutionTest];
 
 ```ts
 import { step } from 'skillnomad';
-import { substitutionTest } from '../contracts.js';
+import { substitutionTest } from '../contracts.ts';
 
 export const collect = step('collect', '收集与标注')
   .target('收集并标注。')
@@ -66,9 +66,9 @@ export const collect = step('collect', '收集与标注')
 ```ts
 import type { SkillSourceModel } from 'skillnomad';
 import { createSkillFromModel } from 'skillnomad';
-import { collect } from './src/steps/collect.js';
-import { review } from './src/steps/review.js';
-import { contracts } from './src/contracts.js';
+import { collect } from './src/steps/collect.ts';
+import { review } from './src/steps/review.ts';
+import { contracts } from './src/contracts.ts';
 
 const model: SkillSourceModel = {
   meta: {
@@ -106,11 +106,10 @@ export default defineConfig({
 ```
 
 ```bash
-npm install -D tsx                    # TS 加载器（starter 模板同款）
-npx tsx node_modules/skillnomad/dist/bin/cli.js build skillnomad.config.ts
+npx skillnomad build skillnomad.config.ts     # 需 Node ≥ 22.18
 ```
 
-> 为什么带 tsx：`skill.ts` 里 `import … from './src/steps/collect.js'` 是 TypeScript 的标准写法（`.js` 说明符指向编译产物），运行期由加载器解析回 `.ts` 源文件；tsx 就是干这个的。Node ≥ 22.18 的原生类型剥离（不带 tsx 直接 `npx skillnomad build …`）只认 `.ts` 说明符，工程里别混用两种。
+> 说明符为什么写 `.ts`：这些源文件从不编译成 JS——`tsconfig.json` 里 `noEmit: true`；`import … from './src/steps/collect.ts'` 照实指向源文件，不指向不存在的产物。类型检查用 `allowImportingTsExtensions` 接受这种写法。Node 低于 22.18 时装个加载器顶上：`npx tsx node_modules/skillnomad/dist/bin/cli.js build skillnomad.config.ts`。
 
 ## 构建产物：发布布局
 

@@ -1,11 +1,12 @@
 {
-    "name": "my-skill",
+    "name": "skillnomad-demo-panel2doc",
     "version": "0.1.0",
     "private": true,
     "type": "module",
     "scripts": {
         "build": "skillnomad build skillnomad.config.ts",
-        "typecheck": "tsc -p tsconfig.json"
+        "assemble": "node assemble.ts",
+        "typecheck": "tsc -p tsconfig.json --noEmit"
     },
     "dependencies": {
         "skillnomad": "0.2.3"

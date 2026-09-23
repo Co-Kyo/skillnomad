@@ -36,7 +36,7 @@ export const entities = {
 步骤通过 `refOf` 引用概念，**源码里没有任何路径字面量**：
 
 ```ts
-import { refOf, schemaRef } from '../domain/entities.js';
+import { refOf, schemaRef } from '../domain/entities.ts';
 
 .writes(refOf('ladder'))
 .inputs(refOf('requirementWeb').path)
