@@ -63,7 +63,7 @@ async function main() {
         ...(config.meta || {}),
     };
 
-    buildPipeline(steps, config.outputDir, meta, contracts, config.markrefs, config.modules, config.structure);
+    buildPipeline(steps, config.outputDir, meta, contracts, config.markrefs, config.modules, config.structure, config.shipAssets === true);
 }
 
 main().catch((err) => {
