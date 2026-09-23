@@ -1,6 +1,9 @@
 # panel2doc —— 同一个 skill 的两种写法
 
-两步流程：**三方角色讨论 → 四段决策文档**。内容完全相同，写法有两份：
+**场景**：多视角讨论并输出报告——三个角色的 subagent 并行讨论同一个问题，收敛成分歧表，再按四段标准写成决策文档。
+**demo 目的**：用这两步验证 skillnomad 的最小支持场景（并行扇出·收敛＋跨步骤传数据＋随包文档＋每步检查点）。
+
+内容完全相同，写法有两份：
 
 - `skill/`：手写版（1 个 SKILL.md ＋ 1 个 references 文件，纯 markdown，不知道框架存在）
 - `src/`：框架源码版（3 个 ts 文件，构建后产出 markdown）
@@ -8,9 +11,10 @@
 ## 跑一遍（在本目录）
 
 ```bash
-npm install                        # 依赖装在本目录 node_modules 下
-npx tsx ../../src/bin/cli.ts build skillnomad.config.ts   # 框架构建 → ./out/（gitignore）
-npx tsx assemble.ts                # 组装发布包      → ./release/（gitignore）
+npm install     # 依赖装在本目录 node_modules 下（skillnomad 用 npm 发布版，与外部作者同款）
+npm run build   # 框架构建 → ./out/（gitignore）
+npm run assemble # 组装发布包 → ./release/（gitignore）
+npm run typecheck # 类型门
 ```
 
 ## 产物对照

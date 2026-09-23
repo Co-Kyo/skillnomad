@@ -4,7 +4,7 @@ node_modules/
 # Build output (packages)
 packages/*/dist/
 
-# Generated pipeline output (demos root dist)
+# TypeScript compiler output
 dist/
 
 # TypeScript build info
@@ -47,5 +47,5 @@ agents.local.md
 # markrefs E2E fixture build output
 packages/skillnomad/test/fixtures/*/out/
 # demo 本地构建产物（源码入库，产物不入库）
-demos/panel2doc/out/
-demos/panel2doc/release/
+demos/*/out/
+demos/*/release/
