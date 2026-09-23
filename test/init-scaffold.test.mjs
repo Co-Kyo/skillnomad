@@ -61,9 +61,12 @@ test('init：生成的项目真的可构建（自指链接，不联网）', () =
         const proj = join(root, 'buildable-skill');
         assert.equal(runInit(proj).status, 0);
 
-        // 把包名指向本仓（等价于消费者装到的那份包），从而离线验证模板可构建
+        // 把包名指向本仓（等价于消费者装到的那份包），从而离线验证模板可构建。
+        // 另链一个 typescript 进去，并刻意不提供任何 @types——下面 typecheck 那条
+        // 断言的正是「模板不需要 @types 也能过类型门」。
         mkdirSync(join(proj, 'node_modules'), { recursive: true });
         symlinkSync(pkgRoot, join(proj, 'node_modules', 'skillnomad'), 'dir');
+        symlinkSync(join(pkgRoot, 'node_modules', 'typescript'), join(proj, 'node_modules', 'typescript'), 'dir');
 
         const build = spawnSync(process.execPath, [cli, 'build', 'skillnomad.config.ts'], { cwd: proj, encoding: 'utf8' });
         assert.equal(build.status, 0, build.stderr + build.stdout);
@@ -71,6 +74,11 @@ test('init：生成的项目真的可构建（自指链接，不联网）', () =
         assert.match(build.stdout, /01: review/);
         assert.ok(existsSync(join(proj, 'dist', 'skill', 'SKILL.md')), '应产出 SKILL.md');
         assert.ok(existsSync(join(proj, 'dist', 'skill', 'steps', '01-review', 'step.md')), '应产出每步执行文件');
+
+        // 模板声明的两个脚本都要真成立：typecheck 依赖 tsconfig 与 devDeps 自洽
+        // （本轮把 @types/node 与 types:[node] 从模板移除，此处即其唯一机器背书）
+        const tsc = spawnSync(join(pkgRoot, 'node_modules', '.bin', 'tsc'), ['-p', 'tsconfig.json'], { cwd: proj, encoding: 'utf8' });
+        assert.equal(tsc.status, 0, '模板 typecheck 应通过：' + tsc.stdout + tsc.stderr);
     });
 });
 
