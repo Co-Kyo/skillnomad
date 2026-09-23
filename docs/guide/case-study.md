@@ -28,7 +28,7 @@ src/
 
 ```bash
 # 1. 取局部：只拿这一步的散文（内容包一行装载；或直接读该步产物 step.md）
-npx tsx -e "import {loadPackage} from 'skillnomad';
+node --input-type=module -e "import {loadPackage} from 'skillnomad';
   console.log(loadPackage('./src/packages/evaluate').body)" > /tmp/step-prose.md
 
 # 2. 扫描：把 /tmp/step-prose.md 交给你的评估手段——人读、或模型评（清晰度、可执行性、歧义）

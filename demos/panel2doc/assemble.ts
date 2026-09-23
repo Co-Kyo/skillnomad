@@ -8,7 +8,7 @@ import { cpSync, mkdirSync, rmSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { PUBLISH_DIRS, publishPath } from 'skillnomad';
 
-import { contracts } from './src/contracts.js';
+import { contracts } from './src/contracts.ts';
 
 const OUT = './release';   // 最终包（框架构建产物 ./out 的上层）
 

@@ -11,7 +11,7 @@ demo 消费的 skillnomad 与 npm 发布版同版本——和外部作者拿到�
 
 ```bash
 cd demos/panel2doc
-npm install
+npm install            # 需 Node ≥ 22.18：源文件直接由 node 跑，不装 TS 加载器
 npm run build       # 框架构建 → ./out/
 npm run assemble    # 组装发布包 → ./release/（本 demo 特有的一步）
 npm run typecheck   # 类型门

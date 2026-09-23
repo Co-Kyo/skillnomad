@@ -47,7 +47,7 @@
 - 每步须有动作正文、检查点（`.checkpoint()`）与至少一条 `writes`——对齐报告逐步核查，缺一项即构建失败。
 - 步骤内并行／分支用 `.parallel()`／`.map()`／`.branch()`／`.loop()`；顶层步骤是线性链，可并行的动作不要拆成多个顶层步骤。
 - 装配走 `createSkillFromModel(模型对象)`（唯一装配入口）——步骤与 meta／contracts／policies 一起进模型，产物由框架渲染。
-- 构建命令（与 starter 模板同款）：`npx tsx node_modules/skillnomad/dist/bin/cli.js build <config>`——`skill.ts` 里的 `.js` 说明符（TypeScript 标准写法）由 tsx 解析回 `.ts` 源。Node ≥ 22.18 也可裸跑 `npx skillnomad build <config>`（原生类型剥离），但说明符须写 `.ts`，两种口径别混用。
+- 构建命令：`npx skillnomad build <config>`（需 Node ≥ 22.18）。步骤与配置里的 `import … from './x.ts'` 说明符**照实指向源文件**——这些文件从不编译成 JS（`tsconfig.json` 用 `noEmit`，配 `allowImportingTsExtensions` 让类型检查接受 `.ts` 说明符），没有任何产物需要去映射。更早的 Node 用加载器顶上：`npx tsx node_modules/skillnomad/dist/bin/cli.js build <config>`。
 
 ## 步骤 5 · 角色与派生接管
 

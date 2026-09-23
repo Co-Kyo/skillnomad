@@ -4,8 +4,8 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "tsx node_modules/skillnomad/dist/bin/cli.js build skillnomad.config.ts",
-        "assemble": "tsx assemble.ts",
+        "build": "skillnomad build skillnomad.config.ts",
+        "assemble": "node assemble.ts",
         "typecheck": "tsc -p tsconfig.json --noEmit"
     },
     "dependencies": {
@@ -13,7 +13,9 @@
     },
     "devDependencies": {
         "@types/node": "26.5.1",
-        "tsx": "4.23.13",
         "typescript": "5.9.3"
+    },
+    "engines": {
+        "node": ">=22.18"
     }
 }

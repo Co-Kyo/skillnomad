@@ -1,6 +1,6 @@
 import type { SourceAction, SourceFlow, SourceStep } from 'skillnomad';
 import { step } from 'skillnomad';
-import { reportStandard } from './contracts.js';
+import { reportStandard } from './contracts.ts';
 
 // 小 helper：把一个动作包成「执行一个任务」的流（与消费仓同款写法，不是框架能力）。
 const task = (verb: 'infer' | 'merge' | 'generate', id: string, label: string, content: string): SourceFlow => ({

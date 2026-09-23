@@ -12,6 +12,7 @@
 
 ```bash
 npm install     # 依赖装在本目录 node_modules 下（skillnomad 用 npm 发布版，与外部作者同款）
+                  # 需 Node ≥ 22.18：构建与组装直接跑 .ts 源，不装任何 TS 加载器
 npm run build   # 框架构建 → ./out/（gitignore）
 npm run assemble # 组装发布包 → ./release/（gitignore）
 npm run typecheck # 类型门

@@ -1,7 +1,7 @@
 import type { SkillSourceModel } from 'skillnomad';
 import { createSkillFromModel } from 'skillnomad';
-import { contracts } from './contracts.js';
-import { steps } from './steps.js';
+import { contracts } from './contracts.ts';
+import { steps } from './steps.ts';
 
 // 装配：meta ＋ 步骤 ＋ 契约登记，走同一条构建路径。
 // 手写版 SKILL.md 开头的 frontmatter（name/description）在这里变成类型字段。
