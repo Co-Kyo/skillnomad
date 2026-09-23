@@ -39,7 +39,7 @@ test('init：建出模板全部文件，占位名换净、依赖钉到当前版�
         const proj = join(root, 'my-first-skill');
         const run = runInit(proj);
         assert.equal(run.status, 0, run.stderr);
-        assert.match(run.stdout, /建好 7 个文件/);
+        assert.match(run.stdout, /created 7 files/);
 
         for (const rel of TEMPLATE_FILES) {
             assert.ok(existsSync(join(proj, rel)), `缺文件 ${rel}`);
@@ -90,7 +90,7 @@ test('init：目标目录非空即拒绝，且不改动已有文件', () => {
 
         const run = runInit(join(root, 'occupied'));
         assert.equal(run.status, 1, '非空目录应拒绝');
-        assert.match(run.stderr, /目标目录非空/);
+        assert.match(run.stderr, /target directory is not empty/);
         assert.equal(readFileSync(keep, 'utf-8'), 'original\n', '已有文件不得被动');
         assert.ok(!existsSync(join(root, 'occupied', 'skill.ts')), '不得写入任何模板文件');
     });
@@ -113,7 +113,7 @@ test('init：目录名转不出任何合法项目名即拒绝（不得落盘）'
         const dir = join(root, '中文');
         const run = runInit(dir);
         assert.equal(run.status, 1, '全非 ASCII 的目录名转不出包名');
-        assert.match(run.stderr, /不能用作项目名/);
+        assert.match(run.stderr, /cannot be used as the project name/);
         assert.ok(!existsSync(join(dir, 'package.json')), '拒绝即不得落盘');
     });
 });

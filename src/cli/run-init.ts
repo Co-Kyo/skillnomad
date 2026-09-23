@@ -34,10 +34,10 @@ function fail(message: string): never {
     process.exit(1);
 }
 
-if (!existsSync(templateRoot)) fail(`安装包内模板缺失：${templateRoot}——请重新安装 skillnomad`);
+if (!existsSync(templateRoot)) fail(`bundled template not found at ${templateRoot} - reinstall skillnomad`);
 
 const existing = existsSync(target) ? readdirSync(target) : [];
-if (existing.length > 0) fail(`目标目录非空，拒绝写入：${target}（已有 ${existing.length} 项）`);
+if (existing.length > 0) fail(`target directory is not empty, refusing to write: ${target} (${existing.length} existing entries)`);
 
 const projectName = basename(target);
 const packageName = projectName
@@ -47,7 +47,7 @@ const packageName = projectName
     .replace(/-+$/g, '');
 // npm 包名规则：以字母或数字起头，仅含小写字母/数字/.-_，长度 1–214。
 if (!/^[a-z0-9][a-z0-9.~-]*$/.test(packageName) || packageName.length > 214) {
-    fail(`目录名 ${projectName} 不能用作项目名，请改用字母或数字开头的目录名`);
+    fail(`directory name "${projectName}" cannot be used as the project name - use a directory name starting with a letter or digit`);
 }
 
 mkdirSync(target, { recursive: true });
@@ -71,9 +71,9 @@ for (const file of listFiles(templateRoot)) {
 }
 
 written.sort();
-console.log(`skillnomad init：建好 ${written.length} 个文件 → ${target}`);
+console.log(`skillnomad init: created ${written.length} files`);
 for (const rel of written) console.log(`  ✓ ${rel}`);
-console.log(`\n下一步：`);
+console.log('\nNext steps:');
 console.log(`  cd ${process.argv[3] ?? '.'}`);
 console.log(`  npm install`);
 console.log(`  npm run build`);
