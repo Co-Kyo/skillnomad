@@ -1086,7 +1086,7 @@ export function renderPipeline(
     for (const entry of fs.readdirSync(stepsDir)) {
         if (expectedDirs.has(entry)) continue;
         fs.rmSync(path.join(stepsDir, entry), { recursive: true, force: true });
-        console.log(`  - removed stale ${PUBLISH_DIRS.steps}/${entry}`);
+        console.log(`  - 已移除过期步骤目录 ${PUBLISH_DIRS.steps}/${entry}`);
     }
     // 旧布局（processes/）残留清理：改布局后不再有读者
     const legacyDir = path.join(outputDir, 'processes');
@@ -1124,7 +1124,7 @@ function shipRegistryAssets(
         fs.copyFileSync(source, dest);
         expected.add(norm(target));
         shipped.push(dest);
-        console.log(`  ✓ ship ${target}`);
+        console.log(`  ✓ 随包 ${target}`);
     }
 
     // 过期清理范围＝发布目录（含每步子目录）；目录外的东西不归本框架管。
@@ -1150,7 +1150,7 @@ function shipRegistryAssets(
         const rel = norm(path.relative(outputDir, file));
         if (expected.has(rel)) continue;
         fs.rmSync(file, { force: true });
-        console.log(`  - removed stale ${rel}`);
+        console.log(`  - 已移除不再随包的旧拷贝 ${rel}`);
     }
 
     return shipped;
@@ -1478,7 +1478,7 @@ export function buildPipeline(
         ? publishAssets.filter(asset => !fs.existsSync(path.resolve(process.cwd(), asset.path)))
         : [];
     for (const asset of shipMissing) {
-        console.error(`  ✗ ship 源文件缺失：${asset.path}（scope='${asset.scope}'${asset.step ? `，step='${asset.step}'` : ''}——在册但盘上不存在）`);
+        console.error(`  ✗ 随包文件不存在：${asset.path}（contracts 条目 scope='${asset.scope}'${asset.step ? `，step='${asset.step}'` : ''}）`);
     }
 
     if (errors.length + refsErrorCount + structureErrorCount + publishErrorCount + shipMissing.length > 0) {

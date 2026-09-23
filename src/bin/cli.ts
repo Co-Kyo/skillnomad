@@ -5,8 +5,15 @@ import { pathToFileURL } from 'node:url';
 import { existsSync } from 'node:fs';
 import { buildPipeline } from '../index.js';
 import type { SkillnomadConfig } from '../index.js';
+import { checkNodeVersion } from '../cli/node-version.js';
 
 async function main() {
+    const tooOld = checkNodeVersion();
+    if (tooOld) {
+        console.error(tooOld);
+        process.exit(1);
+    }
+
     const args = process.argv.slice(2);
     const command = args[0];
 
@@ -16,10 +23,17 @@ async function main() {
         return;
     }
 
+    if (command === 'init') {
+        // init 子命令：实现见 ../cli/run-init.ts（从内置模板起一个可构建项目）
+        await import('../cli/run-init.js');
+        return;
+    }
+
     if (command !== 'build') {
-        console.error('Usage: skillnomad <build|validate> [config-file|pipeline-file]');
+        console.error('Usage: skillnomad <build|validate|init> [argument]');
         console.error('  build: skillnomad build [config-file] (defaults to skillnomad.config.ts in cwd)');
         console.error('  validate: skillnomad validate <path-to-pipeline-file>');
+        console.error('  init: skillnomad init [dir] (create a starter skill project)');
         process.exit(1);
     }
 
