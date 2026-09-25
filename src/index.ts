@@ -1517,6 +1517,24 @@ export function buildPipeline(
     const files = renderPipeline(pipeline, outputDir, effectiveMeta, { registry, contents, published });
     if (shipAssets) {
         files.push(...shipRegistryAssets(publishAssets, published, outputDir, files));
+
+        // 悬空引用检查：包内 markdown 引用的包内路径必须实存（随 shipAssets 运行，不开＝不跑）。
+        // 术语：「悬空引用」＝引用指向缺失文件（同 validateDependencyRefs 口径）；与步骤链的「断链」两回事。
+        // 扫描范围＝渲染＋搬运写出的全部 markdown（含作者随包文档）。
+        // 对齐报告（align-report.md）在本检查之后才写出、不在扫描集：其正文含
+        // [steps/content] 式字段路径标记，不是真实文件，扫它必误报。
+        const normRel = (file: string): string => path.relative(outputDir, file).split(path.sep).join('/');
+        const docs = files
+            .filter((file) => /\.(md|markdown)$/i.test(file))
+            .map((file) => ({ rel: normRel(file), content: fs.readFileSync(file, 'utf-8') }));
+        const dangling = scanDanglingRefs(docs, (ref) => fs.existsSync(path.join(outputDir, ref)));
+        if (dangling.length > 0) {
+            for (const hit of dangling) {
+                console.error(`  ✗ ${hit.rel}:${hit.line} unresolved package ref: ${hit.ref}`);
+            }
+            throw new Error(`Dangling refs check failed with ${dangling.length} error(s)`);
+        }
+        console.log(`  ✓ dangling refs check passed (${docs.length} docs scanned)`);
     }
     files.push(writeOutputManifest(pipeline, outputDir));
     files.push(writeArtifactManifest(pipeline, outputDir, files));
