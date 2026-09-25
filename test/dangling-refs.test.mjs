@@ -1,4 +1,4 @@
-// 断链检查（shipAssets 开启时随搬运运行）：包内 markdown 引用的包内路径必须实存。
+// 悬空引用检查（shipAssets 开启时随搬运运行）：包内 markdown 引用的包内路径必须实存。
 //
 // 失败形态是静默的：正文印着 references/x.md 而包里没那个文件，构建不报错，
 // 运行那天 agent 安静缺料。检查把「缺料」从运行期提前到构建期。
@@ -14,7 +14,7 @@ import { tmpdir } from 'node:os';
 import { buildPipeline } from '../dist/index.js';
 import { task } from '../dist/types/index.js';
 
-const META = { name: 'dangle-gate', description: '断链检查' };
+const META = { name: 'dangle-gate', description: '悬空引用检查' };
 const BARRIER = { checkItems: ['ok'], clarifyPrompt: '继续？', onConfirm: 'continue', onReject: 'rollback' };
 
 const RULES = 'assets/common/rules.md';
@@ -78,7 +78,7 @@ test('红：正文引用未随包的包内路径（文件没搬进来＝当场�
     );
 }));
 
-test('撤登记＋删 reads 但正文引用忘改：前置校验放行的断链由此检查拦下', () => withProject((outDir) => {
+test('撤登记＋删 reads 但正文引用忘改：前置校验放行的悬空引用由此检查拦下', () => withProject((outDir) => {
     // 第一次构建：正常（在册＋reads＋正文引用一致）。
     build(outDir, steps(), true);
     // 作者撤下 rules：登记删了、reads 声明也删了——前置校验无从可查，
@@ -99,7 +99,7 @@ test('撤登记＋删 reads 但正文引用忘改：前置校验放行的断链�
     );
 }));
 
-test('作者随包文档里的断链同样被扫（扫描范围＝全部 markdown，不止入口与步骤）', () => withProject((outDir) => {
+test('作者随包文档里的悬空引用同样被扫（扫描范围＝全部 markdown，不止入口与步骤）', () => withProject((outDir) => {
     // 在册文档自身引用一个不存在的包内路径。
     const ghost = 'assets/common/ghost-note.md';
     writeFileSync(join(process.cwd(), ghost), '# 提示' + String.fromCharCode(10) + String.fromCharCode(10) + '参见 references/nowhere.md。' + String.fromCharCode(10), 'utf-8');
@@ -131,7 +131,7 @@ test('机器报告不被扫：扫描集＝渲染＋搬运的 markdown，报告�
     assert.ok(readFileSync(join(outDir, 'align-report.md'), 'utf-8').includes('steps/'));
 }));
 
-test('不开 shipAssets＝检查不跑（同样的断链正文照样构建成功）', () => withProject((outDir) => {
+test('不开 shipAssets＝检查不跑（正文引用缺失文件的构建照样成功）', () => withProject((outDir) => {
     const broken = steps('另见 references/ghost.md。');
     const { files } = build(outDir, broken, false);
     assert.ok(files.length > 0, '构建照常完成');

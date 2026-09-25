@@ -1518,7 +1518,8 @@ export function buildPipeline(
     if (shipAssets) {
         files.push(...shipRegistryAssets(publishAssets, published, outputDir, files));
 
-        // 断链检查：包内 markdown 引用的包内路径必须实存（随 shipAssets 运行，不开＝不跑）。
+        // 悬空引用检查：包内 markdown 引用的包内路径必须实存（随 shipAssets 运行，不开＝不跑）。
+        // 术语：「悬空引用」＝引用指向缺失文件（同 validateDependencyRefs 口径）；与步骤链的「断链」两回事。
         // 扫描范围＝渲染＋搬运写出的全部 markdown（含作者随包文档）。
         // 框架自产的机器报告在本检查之后才写出、不在扫描集：报告正文含
         // [steps/content] 式字段路径标记，不是真实文件，扫它必误报。
