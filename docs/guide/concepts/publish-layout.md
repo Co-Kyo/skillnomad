@@ -45,7 +45,7 @@ dist/skill/
   description: '…', scope: 'skill' }
 ```
 
-派生规则（`publishPath`）：`scope:'step'` 进归属步目录；`scope:'skill'` 按扩展名分流——文档进 `references/`，其余进 `assets/`。**消费侧不写发布路径**：路径是派生物，写错无处可改，漏改就会静默断链。
+派生规则（`publishPath`）：`scope:'step'` 进归属步目录；`scope:'skill'` 按扩展名分流——文档进 `references/`，其余进 `assets/`。**消费侧不写发布路径**：路径是派生物，写错无处可改，漏改就会留下静默的悬空引用。
 
 ## 三道校验（构建期即红）
 
