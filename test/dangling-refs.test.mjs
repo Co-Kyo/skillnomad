@@ -3,7 +3,7 @@
 // 失败形态是静默的：正文印着 references/x.md 而包里没那个文件，构建不报错，
 // 运行那天 agent 安静缺料。检查把「缺料」从运行期提前到构建期。
 // 扫描范围＝渲染＋搬运写出的全部 markdown（含作者随包文档）；
-// 框架自产的机器报告在本检查之后才写出，不在扫描集。
+// 对齐报告（align-report.md）在本检查之后才写出，不在扫描集。
 // 不开 shipAssets＝检查不跑（零行为变化）。
 import assert from 'node:assert/strict';
 import test from 'node:test';
@@ -110,7 +110,7 @@ test('作者随包文档里的悬空引用同样被扫（扫描范围＝全部 m
     );
 }));
 
-test('机器报告不被扫：扫描集＝渲染＋搬运的 markdown，报告在检查之后写出', () => withProject((outDir) => {
+test('对齐报告不被扫：扫描集＝渲染＋搬运的 markdown，报告在检查之后写出', () => withProject((outDir) => {
     // 捕获检查自报的扫描数：应＝渲染＋搬运的 markdown 数（SKILL.md＋step.md＋随包 md），
     // 不含检查之后才写出的 align-report.md。
     const logs = [];
