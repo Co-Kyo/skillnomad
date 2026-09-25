@@ -125,7 +125,7 @@ dist/skill/
     └── substitution-test.md       # skill 级共享文档（组装脚本拷入派生路径）
 ```
 
-`step.md` 里「文件引用」表印的是**发布路径**（`references/substitution-test.md`），不是你的源路径——消费侧读到的引用永远指向包内实存文件；派生冲突、断链在构建期即红。布局细节见[发布布局](concepts/publish-layout)。
+`step.md` 里「文件引用」表印的是**发布路径**（`references/substitution-test.md`），不是你的源路径——消费侧读到的引用永远指向包内实存文件；派生冲突、悬空引用在构建期即红。布局细节见[发布布局](concepts/publish-layout)。
 
 ## 为什么是这样：共用规则应该是模块
 
