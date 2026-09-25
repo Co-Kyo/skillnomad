@@ -1,6 +1,6 @@
 # skillnomad
 
-LLM 可执行 Markdown Skill 管线的打包工具：声明步骤与产出，构建成一份 agent 能照着做的产物。
+把声明在 TypeScript 里的长流程 skill 构建成 agent 能照着做的产物：步骤、产出与随包文件由你声明，顺序、编号、路径、发布布局由框架推导；依赖管理覆盖到产物文本——开启 `shipAssets` 随包搬运后，正文引用的文件，构建验证它真的在包里。
 
 ## 安装
 
@@ -16,7 +16,7 @@ npm install -D skillnomad
 npx skillnomad build skillnomad.config.ts
 ```
 
-（裸跑需 Node ≥ 22.18；更早版本用 `npx tsx node_modules/skillnomad/dist/bin/cli.js build skillnomad.config.ts`）
+（需 Node ≥ 22.18；CLI 启动时检查版本，不满足会说明当前版本与要求）
 
 `skillnomad build` 不带参数时，默认读当前目录下的 `skillnomad.config.ts`：
 
