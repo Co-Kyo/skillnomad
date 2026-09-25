@@ -1517,6 +1517,23 @@ export function buildPipeline(
     const files = renderPipeline(pipeline, outputDir, effectiveMeta, { registry, contents, published });
     if (shipAssets) {
         files.push(...shipRegistryAssets(publishAssets, published, outputDir, files));
+
+        // 断链检查：包内 markdown 引用的包内路径必须实存（随 shipAssets 运行，不开＝不跑）。
+        // 扫描范围＝渲染＋搬运写出的全部 markdown（含作者随包文档）。
+        // 框架自产的机器报告在本检查之后才写出、不在扫描集：报告正文含
+        // [steps/content] 式字段路径标记，不是真实文件，扫它必误报。
+        const normRel = (file: string): string => path.relative(outputDir, file).split(path.sep).join('/');
+        const docs = files
+            .filter((file) => /\.(md|markdown)$/i.test(file))
+            .map((file) => ({ rel: normRel(file), content: fs.readFileSync(file, 'utf-8') }));
+        const dangling = scanDanglingRefs(docs, (ref) => fs.existsSync(path.join(outputDir, ref)));
+        if (dangling.length > 0) {
+            for (const hit of dangling) {
+                console.error(`  ✗ ${hit.rel}:${hit.line} unresolved package ref: ${hit.ref}`);
+            }
+            throw new Error(`Dangling refs check failed with ${dangling.length} error(s)`);
+        }
+        console.log(`  ✓ dangling refs check passed (${docs.length} docs scanned)`);
     }
     files.push(writeOutputManifest(pipeline, outputDir));
     files.push(writeArtifactManifest(pipeline, outputDir, files));
