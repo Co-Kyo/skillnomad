@@ -4,14 +4,13 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "skillnomad build skillnomad.config.ts",
+        "build": "skillnomad build",
         "typecheck": "tsc -p tsconfig.json"
     },
     "dependencies": {
         "skillnomad": "0.2.3"
     },
     "devDependencies": {
-        "@types/node": "26.5.1",
         "typescript": "5.9.3"
     },
     "engines": {

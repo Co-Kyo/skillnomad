@@ -2,6 +2,8 @@ name: Test skillnomad
 
 # 导出面快照门与全量回归的 CI 兜底：
 # 快照门（导出面 51 名清单）需要 CI 覆盖，否则 src 改动不重构建时门会绿读陈旧 dist。
+# Node 跑矩阵（下限＋现行）：作者面 .ts 源由 Node 自身执行类型剥离，engines.node 声明的
+# 下限必须真跑过一遍，否则那句声明只在开发机上成立。下限数字与 src/cli/node-version.ts 同源。
 
 on:
   push:
@@ -11,12 +13,17 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['22.18', '24']
+    name: Test (Node ${{ matrix.node }})
     steps:
       - uses: actions/checkout@v7
 
       - uses: actions/setup-node@v7
         with:
-          node-version: 24
+          node-version: ${{ matrix.node }}
 
       - name: Install
         run: npm ci

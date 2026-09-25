@@ -510,6 +510,12 @@ export interface SkillnomadConfig {
      * 缺省＝不声明。
      */
     structure?: StructureConfig;
+    /**
+     * 随包资产搬运（可选，缺省＝关）：开启后构建把 registry 登记在册的源文件按派生
+     * 发布路径拷进输出目录（源路径按 cwd 解析），拷入的文件计入产物清单与 manifest。
+     * 关闭＝输出目录只含渲染文本，搬运由消费者自己的组装脚本负责。
+     */
+    shipAssets?: boolean;
 }
 
 /**
@@ -1096,6 +1102,60 @@ function fileHash(filePath: string): string {
     return crypto.createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
 }
 
+// 随包资产搬运（config.shipAssets）：把 registry 在册文件按派生发布路径拷进输出目录。
+// 与渲染侧同一口径：路径一律来自 publishPath 派生（此处不重算），并清理上一轮的过期条目——
+// 从 registry 删掉的资产不该继续留在包里（静默漏发的另一半是静默多发）。
+function shipRegistryAssets(
+    assets: readonly PublishableAsset[],
+    published: Map<string, string>,
+    outputDir: string,
+    written: string[],
+): string[] {
+    const norm = (rel: string): string => rel.split(path.sep).join('/');
+    const expected = new Set(written.map(file => norm(path.relative(outputDir, file))));
+    const shipped: string[] = [];
+
+    for (const asset of assets) {
+        const target = published.get(asset.path);
+        if (target === undefined) continue;
+        const source = path.resolve(process.cwd(), asset.path);
+        const dest = path.join(outputDir, target);
+        fs.mkdirSync(path.dirname(dest), { recursive: true });
+        fs.copyFileSync(source, dest);
+        expected.add(norm(target));
+        shipped.push(dest);
+        console.log(`  ✓ ${target}`);
+    }
+
+    // 过期清理范围＝发布目录（含每步子目录）；目录外的东西不归本框架管。
+    const staleDirs: string[] = [
+        ...([PUBLISH_DIRS.references, PUBLISH_DIRS.assets, PUBLISH_DIRS.scripts] as string[]).map(d => path.join(outputDir, d)),
+        ...fs.existsSync(path.join(outputDir, PUBLISH_DIRS.steps))
+            ? fs.readdirSync(path.join(outputDir, PUBLISH_DIRS.steps), { withFileTypes: true })
+                .filter(entry => entry.isDirectory())
+                .map(entry => path.join(outputDir, PUBLISH_DIRS.steps, entry.name))
+            : [],
+    ];
+    const walkFiles = (dir: string): string[] => {
+        if (!fs.existsSync(dir)) return [];
+        const out: string[] = [];
+        for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+            const full = path.join(dir, entry.name);
+            if (entry.isDirectory()) out.push(...walkFiles(full));
+            else if (entry.isFile()) out.push(full);
+        }
+        return out;
+    };
+    for (const file of staleDirs.flatMap(walkFiles)) {
+        const rel = norm(path.relative(outputDir, file));
+        if (expected.has(rel)) continue;
+        fs.rmSync(file, { force: true });
+        console.log(`  - removed ${rel} (no longer declared in contracts)`);
+    }
+
+    return shipped;
+}
+
 function writeOutputManifest(
     pipeline: ResolvedPipeline,
     outputDir: string,
@@ -1356,6 +1416,7 @@ export function buildPipeline(
     markrefs?: MarkrefsConfig,
     modules: SourceModule[] = [],
     structure?: StructureConfig,
+    shipAssets: boolean = false,
 ): { pipeline: ResolvedPipeline; files: string[] } {
     const errors = [
         ...steps.flatMap(validateStep),
@@ -1411,14 +1472,23 @@ export function buildPipeline(
     }
     const publishErrorCount = publishDiagnostics.length;
 
-    if (errors.length + refsErrorCount + structureErrorCount + publishErrorCount > 0) {
+    // 搬运前置检查：在册资产的源文件必须实存——「在册、盘上没有」正是静默漏发的形态。
+    // 关闭搬运时不检查：那时源文件是否存在与构建无关（搬运归消费者的组装脚本）。
+    const shipMissing = shipAssets
+        ? publishAssets.filter(asset => !fs.existsSync(path.resolve(process.cwd(), asset.path)))
+        : [];
+    for (const asset of shipMissing) {
+        console.error(`  ✗ declared asset not found on disk: ${asset.path}${asset.step ? ` (contracts entry for step '${asset.step}')` : ' (skill-level contracts entry)'}`);
+    }
+
+    if (errors.length + refsErrorCount + structureErrorCount + publishErrorCount + shipMissing.length > 0) {
         if (errors.length > 0) {
             console.error('Validation errors:');
             for (const err of errors) {
                 console.error(`  ❌ [${err.stepId}] ${err.field}: ${err.message}`);
             }
         }
-        throw new Error(`Validation failed with ${errors.length + refsErrorCount + structureErrorCount + publishErrorCount} error(s)`);
+        throw new Error(`Validation failed with ${errors.length + refsErrorCount + structureErrorCount + publishErrorCount + shipMissing.length} error(s)`);
     }
 
     console.log('Validation passed ✓');
@@ -1445,6 +1515,9 @@ export function buildPipeline(
         if (target !== null) published.set(asset.path, target);
     }
     const files = renderPipeline(pipeline, outputDir, effectiveMeta, { registry, contents, published });
+    if (shipAssets) {
+        files.push(...shipRegistryAssets(publishAssets, published, outputDir, files));
+    }
     files.push(writeOutputManifest(pipeline, outputDir));
     files.push(writeArtifactManifest(pipeline, outputDir, files));
     files.push(writeDecisionSummaryManifest(pipeline, outputDir));
