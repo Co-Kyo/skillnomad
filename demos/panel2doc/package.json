@@ -9,7 +9,7 @@
         "typecheck": "tsc -p tsconfig.json --noEmit"
     },
     "dependencies": {
-        "skillnomad": "0.2.3"
+        "skillnomad": "file:../.."
     },
     "devDependencies": {
         "@types/node": "26.5.1",

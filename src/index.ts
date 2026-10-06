@@ -33,7 +33,6 @@ import type {
     SourceCheckpoint,
     SourceReuseRule,
     SourceDegrade,
-    SourceTraceEntry,
     FileRef,
     ReuseRule,
     BarrierDef,
@@ -42,7 +41,7 @@ import type {
     SourceContract,
 } from './types/index.js';
 import {
-    task,
+    taskNode,
     seq,
     parallel,
     mapNode,
@@ -57,6 +56,7 @@ import {
     validatePhaseCoverage,
     validateModuleUsage,
     validateModules,
+    inspectTargetStructure,
 } from './check/validators.js';
 import {
     CHAIN_TERMINAL,
@@ -79,11 +79,11 @@ import * as crypto from 'node:crypto';
 // 快照门：test/export-surface.test.mjs 锁定本清单（新增/删除即红）。
 export {
     step,
+    task,
     defineModule,
 } from './types/index.js';
-// 作者面收缩：内部构造子（task／seq／parallel／mapNode／branch／loop）与直装配
-// （createSkill）退出作者面——它们仍在 src/types/ 里（框架内部与测试用），
-// 但不再从本包转口；写作路径只有一条：step() 链式 ＋ createSkillFromModel（见规范）。
+// 作者面收缩：控制树内部构造子（seq／parallel／mapNode／branch／loop／taskNode）与直装配
+// （createSkill）不从本包转口——写作路径＝step() 链式（＋task() 单任务流工厂）＋createSkillFromModel。
 export type {
     StepDefinition,
     SkillSourceModel,
@@ -98,9 +98,12 @@ export type {
     SourceVerifyRule,
     SourceCheckpoint,
     SourceModule,
+    CheckItem,
+    SourceInvariant,
 } from './types/index.js';
 
 // markrefs 集成：引用登记 + 键表 + 构建期校验（宿主侧适配层，见 ./markrefs.ts）
+import { groupEvidences } from 'methodblocks';
 import { createRefs, inspectRefs, type MarkrefsConfig } from './markrefs.js';
 import { blockModule, runStructureChecks, type BlockModuleInput, type StructureConfig, type StructureDocSpec } from './blocks.js';
 import {
@@ -198,7 +201,7 @@ function sourceAction(action: SourceAction): TaskDef {
 function convertSourceFlow(flow: SourceFlow): ControlNode {
     switch (flow.kind) {
         case 'do':
-            return task(sourceAction(flow.task));
+            return taskNode(sourceAction(flow.task));
         case 'seq':
             return seq(flow.id, flow.label, flow.steps.map(convertSourceFlow));
         case 'parallel':
@@ -275,13 +278,55 @@ function renderInstruction(step: SourceStep, derivedNext?: string): string {
     const instruction = step.instruction;
     const nextLabel = instruction.next ?? derivedNext ?? '最终结束';
     let md = `# ${step.title}\n\n`;
-    md += `## 目标\n\n${instruction.target}\n\n`;
+    md += `## 意图\n\n${instruction.wish}\n\n`;
+
+    const targets = instruction.targets ?? [];
+    if (targets.length > 0) {
+        // 归组交给语义层（methodblocks.groupEvidences）：判据按 targetId 分组是
+        // "目标下挂判据"的形状规则，装配层只负责把本仓声明映射成语义层输入、
+        // 再把分组结果渲染成文字（渲染文案仍是装配层职责）。
+        const shapeGroups = groupEvidences({
+            targets: targets.map(t => ({ id: t.id, text: t.claim })),
+            evidences: [
+                ...(instruction.validation ?? []).map(v => ({
+                    id: `machine:${v.type}:${v.description}`,
+                    kind: 'machine' as const,
+                    text: v.description,
+                    targetId: v.target ?? '',
+                })),
+                ...(step.checkpoint?.checkItems ?? [])
+                    .filter(c => c.target)
+                    .map(c => ({
+                        id: `human:${c.label}`,
+                        kind: 'human' as const,
+                        text: c.label,
+                        targetId: c.target!,
+                    })),
+            ],
+        });
+        md += `## 目标\n\n`;
+        targets.forEach((t, i) => {
+            md += `${i + 1}. ${t.claim}\n`;
+            const machineRules = instruction.validation.filter(x => x.target === t.id);
+            for (const v of machineRules) {
+                const ref = v.ref ? ` ${v.ref}` : '';
+                md += `   - 机器判据：[${v.type}]${ref}: ${v.description}\n`;
+            }
+            for (const c of step.checkpoint?.checkItems ?? []) {
+                if (c.target !== t.id) continue;
+                const how = c.informational ? '仅展示' : `期望：${c.expect ?? '—'}`;
+                md += `   - 人工判据：${c.label}（${how}）\n`;
+            }
+            void shapeGroups.get(t.id); // 分组结果与机器/人工过滤一致性由体检与测试锁定
+            md += '\n';
+        });
+    }
 
     if (instruction.purpose) {
         md += `> ${instruction.purpose}\n\n`;
     }
 
-    if (instruction.inputs.length > 0) {
+    if ((instruction.inputs ?? []).length > 0) {
         md += `## 输入\n\n`;
         for (const input of instruction.inputs) {
             md += `- ${input}\n`;
@@ -289,7 +334,7 @@ function renderInstruction(step: SourceStep, derivedNext?: string): string {
         md += '\n';
     }
 
-    if (instruction.actions.length > 0) {
+    if ((instruction.actions ?? []).length > 0) {
         md += `## 执行动作\n\n`;
         instruction.actions.forEach((action, index) => {
             md += `${index + 1}. ${action}\n`;
@@ -297,7 +342,7 @@ function renderInstruction(step: SourceStep, derivedNext?: string): string {
         md += '\n';
     }
 
-    if (instruction.outputs.length > 0) {
+    if ((instruction.outputs ?? []).length > 0) {
         md += `## 输出\n\n`;
         for (const output of instruction.outputs) {
             md += `- ${output}\n`;
@@ -305,16 +350,17 @@ function renderInstruction(step: SourceStep, derivedNext?: string): string {
         md += '\n';
     }
 
-    if (instruction.validation.length > 0) {
+    const loose = (instruction.validation ?? []).filter(v => !v.target);
+    if (loose.length > 0) {
         md += `## 校验清单\n\n`;
-        for (const item of instruction.validation) {
+        for (const item of loose) {
             const ref = item.ref ? ` ${item.ref}` : '';
             md += `- [ ] [${item.type}]${ref}: ${item.description}\n`;
         }
         md += '\n';
     }
 
-    if (instruction.exceptions.length > 0) {
+    if ((instruction.exceptions ?? []).length > 0) {
         md += `## 失败处理\n\n`;
         md += `| 触发 | 行为 | 处理 |\n`;
         md += `|------|------|------|\n`;
@@ -350,75 +396,21 @@ function renderInstruction(step: SourceStep, derivedNext?: string): string {
     return md;
 }
 
-function sourceTraceForStep(step: SourceStep): SourceTraceEntry[] {
-    const instruction = step.instruction;
-    const sourceFile = 'skill.ts';
-    const trace = (
-        section: string,
-        sourceField: string,
-        sourceLayer: SourceTraceEntry['sourceLayer'],
-        sourceKind: SourceTraceEntry['sourceKind'],
-    ): SourceTraceEntry => ({ section, sourceField, sourceFile, sourceLayer, sourceKind });
-    const entries: SourceTraceEntry[] = [
-        trace('目标', 'instruction.target', 'steps', 'content'),
-    ];
-
-    if (instruction.purpose) {
-        entries.push(trace('目的', 'instruction.purpose', 'steps', 'content'));
-    }
-    if (instruction.inputs.length > 0) {
-        entries.push(trace('输入', 'instruction.inputs', 'steps', 'content'));
-    }
-    if (instruction.actions.length > 0) {
-        entries.push(trace('执行动作', 'instruction.actions', 'steps', 'content'));
-    }
-    if (instruction.outputs.length > 0) {
-        entries.push(trace('输出', 'instruction.outputs', 'steps', 'content'));
-    }
-    if (instruction.validation.length > 0) {
-        entries.push(trace('校验清单', 'instruction.validation', 'steps', 'rule'));
-    }
-    if (instruction.exceptions.length > 0) {
-        entries.push(trace('失败处理', 'instruction.exceptions', 'steps', 'rule'));
-    }
-    if (instruction.checkpointNote) {
-        entries.push(trace('检查点', 'instruction.checkpointNote', 'steps', 'content'));
-    }
-    entries.push(trace('下一步', 'instruction.next', 'steps', 'path'));
-    if (instruction.detail) {
-        entries.push(trace('详细说明', 'instruction.detail', 'steps', 'content'));
-    }
-    if (instruction.sections) {
-        for (const name of Object.keys(instruction.sections)) {
-            entries.push(trace(name, `instruction.sections['${name}']`, 'steps', 'content'));
-        }
-    }
-    if (instruction.taskTemplates) {
-        for (const name of Object.keys(instruction.taskTemplates)) {
-            entries.push(trace(name, `instruction.taskTemplates['${name}']`, 'steps', 'content'));
-        }
-    }
-    entries.push(trace('文件引用', 'reads/writes', 'contracts', 'path'));
-    entries.push(trace('调度策略', 'flow', 'steps', 'render'));
-    if (step.checkpoint) {
-        entries.push(trace('Barrier', 'checkpoint', 'steps', 'rule'));
-    }
-    return entries;
-}
-
 /** @category 作者面 */
 export function resolveStepRefs(
     text: string,
     stepOrder: Record<string, number>,
+    site?: string,
 ): string {
     // 0.2.0:新增 {{num:id}}(两位补零序号,与 processes 文件名一致);
     // {{step:id}} 行为保持不变。
+    // site＝调用点（步骤 id／产物位置），报错必带它，否则作者无从定位到声明处；不进产物文本。
     return text.replace(
         /\{\{(step|num):([A-Za-z0-9_-]+)\}\}/g,
         (_match: string, kind: string, id: string) => {
             const seq = stepOrder[id];
             if (seq === undefined) {
-                throw new Error(`Unresolved step reference: {{${kind}:${id}}}`);
+                throw new Error(`Unresolved step reference: {{${kind}:${id}}}${site ? ` (at ${site})` : ''}`);
             }
             const nn = String(seq).padStart(2, '0');
             return kind === 'step' ? `Step ${nn}` : nn;
@@ -428,6 +420,23 @@ export function resolveStepRefs(
 
 /** @category 作者面 */
 export function createSkillFromModel(model: SkillSourceModel): SkillDefinition {
+    // fail-closed：意图（wish）非空校验——空 wish 渲染出空 `## 意图` 章＝这一步没有倾向可说
+    for (const step of model.steps) {
+        if (!step.instruction?.wish?.trim()) {
+            throw new Error(`Step '${step.id}': 意图（wish）不能为空——先写清"这一步带着什么倾向去做"再声明其余内容`);
+        }
+    }
+
+    // wish/target 目标结构检查：结构破了的（口号／悬空／id 重复）在装配期直接红——目标是承诺，
+    // 没有判据的目标就是一句空话，不该让它进产物。只是没归组的（判据没挂目标）不拦。
+    const structure = inspectTargetStructure(model.steps);
+    const blocking = structure.filter(n => n.blocking);
+    if (blocking.length > 0) {
+        throw new Error(
+            `Step '${blocking[0].stepId}': ${blocking[0].message}` +
+            (blocking.length > 1 ? `（另有 ${blocking.length - 1} 处同类问题，修完再构建）` : ''),
+        );
+    }
     // 线性链契约：顺序的副产物一律由框架推导，不要求开发者手写。
     // 在渲染步骤正文之前算好，renderInstruction 会把推导值作为回落。
     const chainNext = deriveChainNext(model.steps);
@@ -445,15 +454,15 @@ export function createSkillFromModel(model: SkillSourceModel): SkillDefinition {
         name: model.meta.name,
         title: model.meta.title,
         description: model.meta.description,
-        contracts: model.contracts,
+        contracts: model.contracts ?? [],
         api: {
-            frontmatterDescription: model.meta.frontmatterDescription,
-            callExamples: model.meta.callExamples,
+            frontmatterDescription: model.meta.frontmatterDescription ?? model.meta.description,
+            callExamples: model.meta.callExamples ?? [],
             usageNote: model.meta.usageNote,
             isolationNote: model.meta.isolationNote,
             includeBuildFooter: model.meta.includeBuildFooter,
-            params: model.meta.params,
-            phases: model.meta.phases,
+            params: model.meta.params ?? [],
+            phases: model.meta.phases ?? [],
             initRules: model.meta.initRules,
             initStepId,
             flowOverview,
@@ -461,12 +470,11 @@ export function createSkillFromModel(model: SkillSourceModel): SkillDefinition {
         steps: model.steps.map(step => ({
             id: step.id,
             title: step.title,
-            description: step.summary ?? step.purpose ?? step.instruction.target,
+            description: step.summary ?? step.purpose ?? step.instruction.wish,
             dependsOn: step.dependsOn,
             initRules: step.initRules,
-            runtimeTrace: model.policies.runtimeTrace,
+            runtimeTrace: model.policies?.runtimeTrace,
             body: renderInstruction(step, chainNext[step.id]),
-            sourceTrace: sourceTraceForStep(step),
             next: step.next ?? chainNext[step.id],
             graph: convertSourceFlow(step.flow),
             reads: step.reads.map(sourceRef),
@@ -477,6 +485,7 @@ export function createSkillFromModel(model: SkillSourceModel): SkillDefinition {
             reuse: convertReuse(step.reuse),
             degrade: convertDegrade(step.degrade),
             plugins: step.plugins,
+            invariants: step.invariants,
         })),
     };
 }
@@ -519,11 +528,85 @@ export interface SkillnomadConfig {
 }
 
 /**
+ * 构建输入（`buildPipeline` 的唯一参数）：字段与 `SkillnomadConfig` 对齐——
+ * 配置文件经 CLI 摊平成输入对象，程序化调用方直接构造本对象即可。
+ * @category 作者面
+ */
+export interface SkillBuildInput {
+    steps: StepDefinition[];
+    outputDir: string;
+    meta?: SkillMeta;
+    /** 模块/随包资产注册表（原第五位参 registry）。缺省＝空表。 */
+    registry?: SourceContract[];
+    /** markrefs 集成（可选）：同 SkillnomadConfig.markrefs。 */
+    markrefs?: MarkrefsConfig;
+    /** 模块注册表（可选）：同 SkillnomadConfig.modules。缺省＝空表。 */
+    modules?: SourceModule[];
+    /** 块文档结构校验（可选）：同 SkillnomadConfig.structure。 */
+    structure?: StructureConfig;
+    /** 随包资产搬运（可选，缺省＝关）：同 SkillnomadConfig.shipAssets。 */
+    shipAssets?: boolean;
+}
+
+/**
+ * 构建诊断（结构化）：`buildPipeline` 收集全部检查结果返回，打印与计数归调用方（CLI）。
+ * 各来源族保持自身形状——validation 带步骤与字段；markrefs／structure／publish 等
+ * 保持其检查器原文（框架不为别人的诊断发明坐标）。
+ * @category 构建与渲染
+ */
+export interface BuildDiagnostic {
+    /** error＝计入失败；note＝通过性/计数信息 */
+    severity: 'error' | 'note';
+    source: 'validation' | 'markrefs' | 'structure' | 'publish' | 'shipAssets' | 'danglingRefs' | 'alignReport';
+    /** 位置（file:line、step、文档 id——沿用来源自身坐标，可缺省） */
+    site?: string;
+    message: string;
+}
+
+/** 构建失败抛出的错误：message 为汇总句（既有断言形态不变），diagnostics 携带全程结构化诊断。 */
+export class BuildFailureError extends Error {
+    readonly diagnostics: BuildDiagnostic[];
+    constructor(message: string, diagnostics: BuildDiagnostic[]) {
+        super(message);
+        this.name = 'BuildFailureError';
+        this.diagnostics = diagnostics;
+    }
+}
+
+/**
  * 创建 skillnomad 配置（纯类型辅助，返回传入的对象）
  * @category 作者面
  */
 export function defineConfig(config: SkillnomadConfig): SkillnomadConfig {
     return config;
+}
+
+/**
+ * **单文件入口**：最小声明面＝`name`＋`description`＋`steps`，
+ * 其余（title／contracts／policies／meta 三数组）全缺省——
+ * 56 行手写版应有约 60 行代码版的对应物，而不是 167 行。
+ * 复杂声明（phases／随包文件／运行记录埋点）仍走 `SkillSourceModel` 全量面。
+ * @category 作者面
+ */
+export interface MinimalSkillInput {
+    name: string;
+    /** 缺省＝name。 */
+    title?: string;
+    description: string;
+    steps: SourceStep[];
+    contracts?: SourceContract[];
+}
+
+export function defineSkill(input: MinimalSkillInput): SkillSourceModel {
+    return {
+        meta: {
+            name: input.name,
+            title: input.title ?? input.name,
+            description: input.description,
+        },
+        steps: input.steps,
+        contracts: input.contracts ?? [],
+    };
 }
 
 // ---------------------------------------------------------------
@@ -644,7 +727,10 @@ function renderBarrier(step: ResolvedStep): string {
     let md = `\n## Barrier ${step.id}\n\n`;
     md += `**检查项：**\n`;
     for (const item of step.barrier.checkItems) {
-        md += `- ${item}\n`;
+        const belongs = item.target ? `（目标 ${item.target}）` : '';
+        md += item.informational
+            ? `- ${item.label}${belongs}（仅展示，不作过／不过依据）\n`
+            : `- ${item.label}${belongs}${item.expect ? `（期望：${item.expect}）` : ''}\n`;
     }
     md += '\n**`clarify` 提示：**\n> ' + step.barrier.clarifyPrompt + '\n\n';
     md += `| 决策 | 行为 |\n`;
@@ -847,7 +933,7 @@ export function renderStep(
     moduleCtx?: { registry: SourceContract[]; contents: Record<string, string>; published?: Map<string, string> },
 ): string {
     const published = moduleCtx?.published;
-    const withRefs = (text: string): string => resolveStepRefs(text, stepOrder);
+    const withRefs = (text: string): string => resolveStepRefs(text, stepOrder, `step '${step.id}'`);
     // 模块接线：本步骤 reads 命中的、带 module 的注册条目 → 该步的模块附录。
     // 判定共用：registry 命中 ∧ 该步 reads 命中 ∧ render() 有内容（空内容＝缺席，标注与附录同进退，
     // 避免标注指向不存在的正本）。
@@ -867,7 +953,10 @@ export function renderStep(
     // 提前返回分支追加四节声明渲染（与完整分支共用函数）。
     // 两路都必须渲染四节（依赖/增量复用/降级协议/插件加载），
     // 否则带正文步骤的 reuse/plugins 声明在产物中零渲染。
-        return `${withRefs(stepBody)}\n\n---\n\n${renderFileRefs(step, modulePaths, published)}${renderDependsOn(step)}\n## 调度策略\n\n${renderControlTree(step.graph, 0)}\n${renderReuse(step)}${renderDegrade(step)}${renderBarrier(step)}${renderPlugins(step)}${renderRuntimeTrace(step)}${appendix}`;
+        const invBlock = step.invariants && step.invariants.length > 0
+            ? `\n## 跨步约束\n\n${step.invariants.map(inv => `- ${inv.text}（作用域：${inv.scope === 'whole-chain' ? '整条链' : '后续步骤'}）\n`).join('')}\n`
+            : '';
+        return `${withRefs(stepBody)}\n\n---\n\n${renderFileRefs(step, modulePaths, published)}${renderDependsOn(step)}\n## 调度策略\n\n${renderControlTree(step.graph, 0)}\n${renderReuse(step)}${renderDegrade(step)}${renderBarrier(step)}${renderPlugins(step)}${invBlock}${renderRuntimeTrace(step)}${appendix}`;
     }
 
     const seqStr = String(step.seq).padStart(2, '0');
@@ -898,6 +987,15 @@ export function renderStep(
 
     // Plugins（与提前返回分支共用 renderPlugins）
     md += renderPlugins(step);
+
+    // 跨步约束（159 类句子的家）：本步声明、约束下游或全链，渲染为独立章
+    if (step.invariants && step.invariants.length > 0) {
+        md += `\n## 跨步约束\n\n`;
+        for (const inv of step.invariants) {
+            md += `- ${inv.text}（作用域：${inv.scope === 'whole-chain' ? '整条链' : '后续步骤'}）\n`;
+        }
+        md += '\n';
+    }
 
     md += renderRuntimeTrace(step);
 
@@ -970,7 +1068,7 @@ export function renderSkillMd(
     const flowArrows = steps.map(s => `${s.id}`).join(' → ');
     if (api?.flowOverview) {
         md += `### 完整流程\n\n`;
-        md += `\`\`\`\n${resolveStepRefs(api.flowOverview, pipeline.stepOrder)}\n\`\`\`\n\n`;
+        md += `\`\`\`\n${resolveStepRefs(api.flowOverview, pipeline.stepOrder, 'SKILL.md:api.flowOverview')}\n\`\`\`\n\n`;
     } else {
         md += `\`\`\`\n${flowArrows}\n\`\`\`\n\n`;
     }
@@ -1047,6 +1145,7 @@ export function renderPipeline(
     outputDir: string,
     meta: SkillMeta,
     moduleCtx?: { registry: SourceContract[]; contents: Record<string, string>; published?: Map<string, string> },
+    diagnostics?: BuildDiagnostic[],
 ): string[] {
     const filePaths: string[] = [];
     const stepsDir = path.join(outputDir, PUBLISH_DIRS.steps);
@@ -1064,11 +1163,11 @@ export function renderPipeline(
 
     const sourcePathHits = scanSourcePaths(rendered);
     if (sourcePathHits.length > 0) {
-        console.error('Publish layout errors（产物含源码形态路径，须写发布形态）：');
+        // 抛错前先把命中记入汇聚口（调用方拿到结构化诊断；打印归调用方）
         for (const hit of sourcePathHits) {
-            console.error(`  ✗ ${hit.rel}:${hit.line} ${hit.snippet}`);
+            diagnostics?.push({ severity: 'error', source: 'publish', site: `${hit.rel}:${hit.line}`, message: `产物含源码形态路径：${hit.snippet}` });
         }
-        throw new Error(`Publish layout failed with ${sourcePathHits.length} source path(s)`);
+        throw new BuildFailureError(`Publish layout failed with ${sourcePathHits.length} source path(s)`, diagnostics ?? []);
     }
 
     // 落盘：每步一个目录（steps/<NN>-<步id>/），并清掉上一轮的过期条目
@@ -1081,18 +1180,18 @@ export function renderPipeline(
         filePaths.push(filePath);
         const segments = file.rel.split('/');
         if (segments.length > 2) expectedDirs.add(segments[1]);
-        console.log(`  ✓ ${file.rel}`);
+        diagnostics?.push({ severity: 'note', source: 'publish', message: `渲染 ${file.rel}` });
     }
     for (const entry of fs.readdirSync(stepsDir)) {
         if (expectedDirs.has(entry)) continue;
         fs.rmSync(path.join(stepsDir, entry), { recursive: true, force: true });
-        console.log(`  - removed stale ${PUBLISH_DIRS.steps}/${entry}`);
+        diagnostics?.push({ severity: 'note', source: 'publish', message: `清掉过期步骤目录 ${PUBLISH_DIRS.steps}/${entry}` });
     }
     // 旧布局（processes/）残留清理：改布局后不再有读者
     const legacyDir = path.join(outputDir, 'processes');
     if (fs.existsSync(legacyDir)) {
         fs.rmSync(legacyDir, { recursive: true, force: true });
-        console.log('  - removed legacy processes/');
+        diagnostics?.push({ severity: 'note', source: 'publish', message: '清掉旧布局 processes/' });
     }
 
     return filePaths;
@@ -1110,6 +1209,7 @@ function shipRegistryAssets(
     published: Map<string, string>,
     outputDir: string,
     written: string[],
+    diagnostics?: BuildDiagnostic[],
 ): string[] {
     const norm = (rel: string): string => rel.split(path.sep).join('/');
     const expected = new Set(written.map(file => norm(path.relative(outputDir, file))));
@@ -1124,7 +1224,7 @@ function shipRegistryAssets(
         fs.copyFileSync(source, dest);
         expected.add(norm(target));
         shipped.push(dest);
-        console.log(`  ✓ ${target}`);
+        diagnostics?.push({ severity: 'note', source: 'shipAssets', message: `搬运 ${target}` });
     }
 
     // 过期清理范围＝发布目录（含每步子目录）；目录外的东西不归本框架管。
@@ -1150,7 +1250,7 @@ function shipRegistryAssets(
         const rel = norm(path.relative(outputDir, file));
         if (expected.has(rel)) continue;
         fs.rmSync(file, { force: true });
-        console.log(`  - removed ${rel} (no longer declared in contracts)`);
+        diagnostics?.push({ severity: 'note', source: 'shipAssets', message: `撤下不再在册的旧拷贝 ${rel}` });
     }
 
     return shipped;
@@ -1167,7 +1267,7 @@ function writeOutputManifest(
             processFile: `steps/${String(step.seq).padStart(2, '0')}-${step.id}/step.md`,
             section: '输出',
             sourceField: 'writes',
-            sourceFile: step.sourceTrace?.[0]?.sourceFile ?? 'skill.ts',
+            sourceFile: 'skill.ts',
             description: ref.description,
         })),
     );
@@ -1225,11 +1325,6 @@ export function writeAlignReport(
     generated_at: string;
     dependencyGraph: Record<string, string | undefined>;
     nextMap: Record<string, string | undefined>;
-    sourceTrace: Array<{
-        stepId: string;
-        sourceFile: string;
-        entries: SourceTraceEntry[];
-    }>;
     checks: Array<{
         stepId: string;
         hasBody: boolean;
@@ -1277,11 +1372,6 @@ export function writeAlignReport(
     const nextMap = Object.fromEntries(
         pipeline.steps.map(step => [step.id, step.next]),
     );
-    const sourceTrace = pipeline.steps.map(step => ({
-        stepId: step.id,
-        sourceFile: step.sourceTrace?.[0]?.sourceFile ?? 'skill.ts',
-        entries: step.sourceTrace ?? [],
-    }));
     const checks = pipeline.steps.map(step => {
         const hasBody = Boolean(step.body || step.bodyFile);
         const hasBarrier = Boolean(step.barrier);
@@ -1318,7 +1408,6 @@ export function writeAlignReport(
         generated_at: new Date().toISOString(),
         dependencyGraph,
         nextMap,
-        sourceTrace,
         checks,
         errors,
         files: fileReports,
@@ -1344,15 +1433,6 @@ export function writeAlignReport(
     md += `|------|------|---------|-------|--------|----|\n`;
     for (const check of checks) {
         md += `| ${check.stepId} | ${check.hasBody ? 'yes' : 'no'} | ${check.hasBarrier ? 'yes' : 'no'} | ${check.readCount} | ${check.writeCount} | ${check.ok ? 'yes' : 'no'} |\n`;
-    }
-    md += `\n## Source Trace\n\n`;
-    for (const step of sourceTrace) {
-        md += `- ${step.stepId} (${step.sourceFile})\n`;
-        for (const entry of step.entries) {
-            const layer = entry.sourceLayer ?? 'unknown';
-            const kind = entry.sourceKind ?? 'unknown';
-            md += `  - ${entry.section} [${layer}/${kind}] -> ${entry.sourceField}\n`;
-        }
     }
     md += `\n## Files\n\n`;
     for (const file of fileReports) {
@@ -1409,15 +1489,18 @@ function writeDecisionSummaryManifest(pipeline: ResolvedPipeline, outputDir: str
 
 /** @category 构建与渲染 */
 export function buildPipeline(
-    steps: StepDefinition[],
-    outputDir: string,
-    meta?: SkillMeta,
-    registry: SourceContract[] = [],
-    markrefs?: MarkrefsConfig,
-    modules: SourceModule[] = [],
-    structure?: StructureConfig,
-    shipAssets: boolean = false,
-): { pipeline: ResolvedPipeline; files: string[] } {
+    input: SkillBuildInput,
+): { pipeline: ResolvedPipeline; files: string[]; diagnostics: BuildDiagnostic[] } {
+    const { steps, outputDir, meta } = input;
+    const registry = input.registry ?? [];
+    const markrefs = input.markrefs;
+    const modules = input.modules ?? [];
+    const structure = input.structure;
+    const shipAssets = input.shipAssets === true;
+    // 诊断汇聚口：构建全程只记录、不打印（0.3.0 起打印职责归调用方/CLI）。
+    // 兼容锁：throw 汇总句 `Validation failed with N error(s)` 计数口径保持不变
+    // ＝ errors.length ＋ markrefs(blocking＋problems) ＋ structure ＋ publish ＋ shipMissing。
+    const diagnostics: BuildDiagnostic[] = [];
     const errors = [
         ...steps.flatMap(validateStep),
         ...validateDependencyRefs(steps),
@@ -1428,23 +1511,7 @@ export function buildPipeline(
         ...validateModules(modules, registry),
     ];
 
-    // markrefs 校验（可选）：诊断保持 markrefs 自身格式（site ruleId message），不映射进
-    // {stepId, field, message}——框架侧不为它发明 stepId；宿主级问题（漂移/未接线）一律阻断。
-    let refsErrorCount = 0;
-    if (markrefs) {
-        const report = inspectRefs(markrefs, { keysSource: 'skillnomad.config' });
-        console.log(
-      `markrefs：${report.counts.total} 条引用（${report.counts.checked} 条判存在性，${report.counts.skipped} 条模板跳过）`,
-        );
-        for (const diagnostic of report.diagnostics) {
-            const blocking = report.blocking.includes(diagnostic);
-            const line = `  ${blocking ? '✗' : '·'} ${diagnostic.site} ${diagnostic.ruleId} ${diagnostic.message}`;
-            if (blocking) console.error(line);
-            else console.log(line);
-        }
-        for (const problem of report.problems) console.error(`  ✗ ${problem}`);
-        refsErrorCount = report.blocking.length + report.problems.length;
-    }
+
 
     // 块文档结构校验（可选，P2）：诊断保持 methodblocks 自身形状（code／message），
     // 位置以文档 id 标注——与 markrefs 同层同口径，不映射进 {stepId, field, message}。
@@ -1452,11 +1519,11 @@ export function buildPipeline(
     if (structure) {
         const structureProblems = runStructureChecks(structure);
         for (const { docId, diagnostic } of structureProblems) {
-            console.error(`  ✗ ${docId} ${diagnostic.code} ${diagnostic.message}`);
+            diagnostics.push({ severity: 'error', source: 'structure', site: docId, message: `${diagnostic.code} ${diagnostic.message}` });
         }
         structureErrorCount = structureProblems.length;
         if (structureErrorCount === 0) {
-            console.log(`structure：${structure.docs.length} 份块文档校验通过`);
+            diagnostics.push({ severity: 'note', source: 'structure', message: `structure：${structure.docs.length} 份块文档校验通过` });
         }
     }
 
@@ -1468,7 +1535,7 @@ export function buildPipeline(
     const seqOfStep = (id: string): number | undefined => resolveStepOrder(steps).steps.find((s) => s.id === id)?.seq;
     const publishDiagnostics: PublishDiagnostic[] = checkPublishLayout(publishAssets, resolveStepOrder(steps).steps.map((s) => ({ id: s.id, seq: s.seq })));
     for (const diagnostic of publishDiagnostics) {
-        console.error(`  \u2717 publish ${diagnostic.message}`);
+        diagnostics.push({ severity: 'error', source: 'publish', message: diagnostic.message });
     }
     const publishErrorCount = publishDiagnostics.length;
 
@@ -1478,45 +1545,81 @@ export function buildPipeline(
         ? publishAssets.filter(asset => !fs.existsSync(path.resolve(process.cwd(), asset.path)))
         : [];
     for (const asset of shipMissing) {
-        console.error(`  ✗ declared asset not found on disk: ${asset.path}${asset.step ? ` (contracts entry for step '${asset.step}')` : ' (skill-level contracts entry)'}`);
+        diagnostics.push({
+            severity: 'error',
+            source: 'shipAssets',
+            site: asset.path,
+            message: `declared asset not found on disk: ${asset.path}${asset.step ? ` (contracts entry for step '${asset.step}')` : ' (skill-level contracts entry)'}`,
+        });
     }
 
-    if (errors.length + refsErrorCount + structureErrorCount + publishErrorCount + shipMissing.length > 0) {
-        if (errors.length > 0) {
-            console.error('Validation errors:');
-            for (const err of errors) {
-                console.error(`  ❌ [${err.stepId}] ${err.field}: ${err.message}`);
-            }
-        }
-        throw new Error(`Validation failed with ${errors.length + refsErrorCount + structureErrorCount + publishErrorCount + shipMissing.length} error(s)`);
+    for (const err of errors) {
+        diagnostics.push({ severity: 'error', source: 'validation', site: `[${err.stepId}] ${err.field}`, message: err.message });
     }
-
-    console.log('Validation passed ✓');
-
     const pipeline = resolveStepOrder(steps);
     for (const step of pipeline.steps) {
         if (step.body) {
-            step.body = resolveStepRefs(step.body, pipeline.stepOrder);
+            step.body = resolveStepRefs(step.body, pipeline.stepOrder, `step '${step.id}':body`);
         }
     }
     const effectiveMeta = meta ?? { name: pipeline.name || 'untitled', description: '' };
-
-    console.log(`\nStep order resolved:`);
-    for (const step of pipeline.steps) {
-        console.log(`  ${String(step.seq).padStart(2, '0')}: ${step.id} — ${step.title}`);
-    }
-
-    console.log(`\nRendering to ${outputDir}:`);
-    const contents = Object.fromEntries(modules.map(m => [m.id, m.render()]));
     // 源路径 → 发布路径（角色派生）：渲染期翻译，读表里印发布形态
     const published = new Map<string, string>();
     for (const asset of publishAssets) {
         const target = publishPath(asset, seqOfStep);
         if (target !== null) published.set(asset.path, target);
     }
-    const files = renderPipeline(pipeline, outputDir, effectiveMeta, { registry, contents, published });
+    // markrefs 校验（可选）：诊断保持 markrefs 自身格式（site ruleId message），不映射进
+    // {stepId, field, message}——框架侧不为它发明 stepId；宿主级问题（漂移/未接线）一律阻断。
+    // markrefs 自动登记（引擎化）：装配层把每步 reads/writes 的源路径与发布路径
+    // 自动喂给语义层收集器——引用校验从"作者自觉登记"变为"管线必经"。
+    // 作者手工登记（仓内实体键表等）依然有效：两者汇入同一收集器，markrefs 去重。
+    // 依赖：pipeline 已解析（resolvedReads/Writes）；故此块与体检都位于 resolveStepOrder 之后。
+    if (markrefs) {
+        for (const step of pipeline.steps) {
+            // 只登记源路径：发布路径是构建【产物】里的形态，构建期在 cwd 判存在性必假阳。
+            // 产物文本里的发布引用由 shipAssets 的悬空引用检查（scanDanglingRefs）负责——两层各管一段。
+            // 跳过内容包模块引用（逻辑路径，不落盘——由模块通道渲染，markrefs 不判其存在性）。
+            const modulePaths = new Set(registry.filter(c => c.module).map(c => c.path));
+            for (const p of [...step.resolvedReads, ...step.resolvedWrites]) {
+                if (modulePaths.has(p)) continue;
+                markrefs.refs.refPath(p);
+            }
+        }
+    }
+    let refsErrorCount = 0;
+    if (markrefs) {
+        const report = inspectRefs(markrefs, { keysSource: 'skillnomad.config' });
+        diagnostics.push({
+            severity: 'note',
+            source: 'markrefs',
+            message: `markrefs：${report.counts.total} 条引用（${report.counts.checked} 条判存在性，${report.counts.skipped} 条模板跳过）`,
+        });
+        for (const diagnostic of report.diagnostics) {
+            const blocking = report.blocking.includes(diagnostic);
+            diagnostics.push({
+                severity: blocking ? 'error' : 'note',
+                source: 'markrefs',
+                site: diagnostic.site,
+                message: `${diagnostic.ruleId} ${diagnostic.message}`,
+            });
+        }
+        for (const problem of report.problems) {
+            diagnostics.push({ severity: 'error', source: 'markrefs', message: problem });
+        }
+        refsErrorCount = report.blocking.length + report.problems.length;
+    }
+
+    if (errors.length + refsErrorCount + structureErrorCount + publishErrorCount + shipMissing.length > 0) {
+        throw new BuildFailureError(`Validation failed with ${errors.length + refsErrorCount + structureErrorCount + publishErrorCount + shipMissing.length} error(s)`, diagnostics);
+    }
+
+
+    const contents = Object.fromEntries(modules.map(m => [m.id, m.render()]));
+
+    const files = renderPipeline(pipeline, outputDir, effectiveMeta, { registry, contents, published }, diagnostics);
     if (shipAssets) {
-        files.push(...shipRegistryAssets(publishAssets, published, outputDir, files));
+        files.push(...shipRegistryAssets(publishAssets, published, outputDir, files, diagnostics));
 
         // 悬空引用检查：包内 markdown 引用的包内路径必须实存（随 shipAssets 运行，不开＝不跑）。
         // 术语：「悬空引用」＝引用指向缺失文件（同 validateDependencyRefs 口径）；与步骤链的「断链」两回事。
@@ -1530,25 +1633,23 @@ export function buildPipeline(
         const dangling = scanDanglingRefs(docs, (ref) => fs.existsSync(path.join(outputDir, ref)));
         if (dangling.length > 0) {
             for (const hit of dangling) {
-                console.error(`  ✗ ${hit.rel}:${hit.line} unresolved package ref: ${hit.ref}`);
+                diagnostics.push({ severity: 'error', source: 'danglingRefs', site: `${hit.rel}:${hit.line}`, message: `unresolved package ref: ${hit.ref}` });
             }
-            throw new Error(`Dangling refs check failed with ${dangling.length} error(s)`);
+            throw new BuildFailureError(`Dangling refs check failed with ${dangling.length} error(s)`, diagnostics);
         }
-        console.log(`  ✓ dangling refs check passed (${docs.length} docs scanned)`);
+        diagnostics.push({ severity: 'note', source: 'danglingRefs', message: `dangling refs 检查通过（扫描 ${docs.length} 份文档）` });
     }
     files.push(writeOutputManifest(pipeline, outputDir));
     files.push(writeArtifactManifest(pipeline, outputDir, files));
     files.push(writeDecisionSummaryManifest(pipeline, outputDir));
     const alignReport = writeAlignReport(pipeline, outputDir, files);
 
+    for (const error of alignReport.errors) {
+        diagnostics.push({ severity: 'error', source: 'alignReport', site: `[${error.stepId}]`, message: error.message });
+    }
     if (alignReport.errors.length > 0) {
-        console.error('Align report errors:');
-        for (const error of alignReport.errors) {
-            console.error(`  ❌ [${error.stepId}] ${error.message}`);
-        }
-        throw new Error(`Align report failed with ${alignReport.errors.length} error(s)`);
+        throw new BuildFailureError(`Align report failed with ${alignReport.errors.length} error(s)`, diagnostics);
     }
 
-    console.log(`\nDone. ${files.length} files written.`);
-    return { pipeline, files };
+    return { pipeline, files, diagnostics };
 }

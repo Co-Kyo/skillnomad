@@ -17,7 +17,14 @@ import type {
 } from './model.js';
 
 export interface StepBuilder {
-    target(value: string): StepBuilder;
+    /** 意图（wish）：本步带着什么倾向去做（1 条，渲染为「意图」章）。 */
+    wish(value: string): StepBuilder;
+    /** 目标（target）：由 wish 派生出的可判定目标，可多次调用；`id` 用于挂判据。 */
+    target(id: string, claim: string): StepBuilder;
+    /** 跨步约束：挂在声明步，约束下游或全链（159 类句子的类型级容身位）。 */
+    invariant(text: string, scope?: 'downstream' | 'whole-chain'): StepBuilder;
+    /** 显式指定本步控制流（`task()` 等工厂的产物）；与 `.action()` 链互斥，后写覆盖。 */
+    flow(flow: SourceFlow): StepBuilder;
     summary(value: string): StepBuilder;
 
     /**
@@ -101,6 +108,28 @@ export interface StepBuilder {
 }
 
 /**
+ * **单任务流（惯用法收编）**：把"spawn 一个 agent 做一件事"包成 `SourceFlow`
+ * ——两仓各自重造的 helper（demo `task()`／消费仓 `doAction`）的正名形态。
+ * 传给 `.flow()` 或直接作为 `SourceStep.flow`。
+ * @category 作者面
+ */
+export function task(
+    verb: NextAction,
+    id: string,
+    label: string,
+    content: string,
+    options?: { timeout?: number },
+): SourceFlow {
+    return {
+        kind: 'do',
+        task: {
+            id, label, verb, actor: 'agent', content,
+            ...(options?.timeout !== undefined ? { timeout: options.timeout } : {}),
+        },
+    };
+}
+
+/**
  * **步骤构造入口**：链式声明一个步骤（写作路径的唯一原子）；`build()` 收尾产出 `SourceStep`。
  * @category 作者面
  */
@@ -120,7 +149,7 @@ class StepBuilderImpl implements StepBuilder {
         this.id = id;
         this.title = title;
         this.instruction = {
-            target: '',
+            wish: '',
             inputs: [],
             actions: [],
             outputs: [],
@@ -147,9 +176,26 @@ class StepBuilderImpl implements StepBuilder {
         };
     }
 
-    target(value: string): StepBuilder {
-        this.instruction.target = value;
+    wish(value: string): StepBuilder {
+        this.instruction.wish = value;
         this.step.purpose = value;
+        return this;
+    }
+
+    target(id: string, claim: string): StepBuilder {
+        (this.instruction.targets ??= []).push({ id, claim });
+        return this;
+    }
+
+    /** 跨步约束：挂在声明步，约束下游或全链（159 类句子的类型级容身位）。 */
+    invariant(text: string, scope: 'downstream' | 'whole-chain' = 'downstream'): StepBuilder {
+        (this.step.invariants ??= []).push({ text, scope });
+        return this;
+    }
+
+    /** 显式指定本步控制流（`task()` 等工厂的产物）；与 `.action()` 链互斥，后写覆盖。 */
+    flow(flow: SourceFlow): StepBuilder {
+        this.explicitFlow = flow;
         return this;
     }
 

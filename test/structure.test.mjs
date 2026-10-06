@@ -5,14 +5,14 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { Registry } from 'methodblocks';
 import { blockModule, buildPipeline } from '../dist/index.js';
-import { task } from '../dist/types/index.js';
+import { taskNode } from '../dist/types/index.js';
 
 // P2 结构校验（config.structure）：校验期跑 methodblocks check()，诊断计入失败汇总；
 // 缺省不声明＝不输出该节。
 
 const META = { name: 'structure-e2e', description: 'P2 structure hook' };
 const CONTRACT_PATH = 'assets/common/mod.md';
-const barrier = { checkItems: ['ok'], clarifyPrompt: '继续？', onConfirm: 'continue', onReject: 'rollback' };
+const barrier = { checkItems: [{ label: 'ok', informational: true }], clarifyPrompt: '继续？', onConfirm: 'continue', onReject: 'rollback' };
 
 function regClean() {
     return new Registry()
@@ -27,7 +27,7 @@ const STEP = {
     title: 'A',
     description: '单步最小管线',
     body: 'do a',
-    graph: task({ id: 'a-task', label: 'A', type: 'agent', body: 'do a' }),
+    graph: taskNode({ id: 'a-task', label: 'A', type: 'agent', body: 'do a' }),
     reads: [{ path: CONTRACT_PATH, as: 'contract', description: '模块 A 契约' }],
     writes: [{ path: '{workDir}/a.md', description: 'a 产物' }],
     barrier,
@@ -42,7 +42,7 @@ const REGISTRY = [
 function build({ modules, structure, registry = REGISTRY_PLAIN } = {}) {
     const out = mkdtempSync(join(tmpdir(), 'skillnomad-structure-'));
     try {
-        return { out, result: buildPipeline([STEP], out, META, registry, undefined, modules, structure) };
+        return { out, result: buildPipeline({ steps: [STEP], outputDir: out, meta: META, registry, modules, structure }) };
     } catch (e) {
         rmSync(out, { recursive: true, force: true });
         throw e;

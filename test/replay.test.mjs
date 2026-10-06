@@ -12,11 +12,11 @@ import { tmpdir } from 'node:os';
 import test from 'node:test';
 import { Registry } from 'methodblocks';
 import { blockModule, buildPipeline } from '../dist/index.js';
-import { task } from '../dist/types/index.js';
+import { taskNode } from '../dist/types/index.js';
 
 const META = { name: 'replay-e2e', description: '双构建重放' };
 const CONTRACT_PATH = 'assets/common/mod.md';
-const BARRIER = { checkItems: ['ok'], clarifyPrompt: '继续？', onConfirm: 'continue', onReject: 'rollback' };
+const BARRIER = { checkItems: [{ label: 'ok', informational: true }], clarifyPrompt: '继续？', onConfirm: 'continue', onReject: 'rollback' };
 
 /** 带构建时刻的文件：跨构建只允许时钟与派生哈希不同。 */
 const CLOCK_BEARING = [
@@ -45,7 +45,7 @@ const steps = () => [
         title: 'A',
         description: '第一步',
         body: 'do a',
-        graph: task({ id: 'a-task', label: 'A', type: 'agent', body: 'do a' }),
+        graph: taskNode({ id: 'a-task', label: 'A', type: 'agent', body: 'do a' }),
         reads: [{ path: CONTRACT_PATH, as: 'contract', description: '模块 A 契约' }],
         writes: [{ path: '{workDir}/a.md', description: 'a 产物' }],
         barrier: BARRIER,
@@ -56,7 +56,7 @@ const steps = () => [
         description: '第二步',
         body: 'do b',
         dependsOn: 'a',
-        graph: task({ id: 'b-task', label: 'B', type: 'agent', body: 'do b' }),
+        graph: taskNode({ id: 'b-task', label: 'B', type: 'agent', body: 'do b' }),
         reads: [{ path: '{workDir}/a.md', as: 'a', description: 'a 产物' }],
         writes: [{ path: '{workDir}/b.md', description: 'b 产物' }],
         barrier: BARRIER,
@@ -92,7 +92,7 @@ const sha256 = (buffer) => createHash('sha256').update(buffer).digest('hex');
 function buildOnce() {
     const out = mkdtempSync(join(tmpdir(), 'skillnomad-replay-'));
     try {
-        return { out, result: buildPipeline(steps(), out, META, entries(), undefined, modules()) };
+        return { out, result: buildPipeline({ steps: steps(), outputDir: out, meta: META, registry: entries(), modules: modules() }) };
     } catch (error) {
         rmSync(out, { recursive: true, force: true });
         throw error;

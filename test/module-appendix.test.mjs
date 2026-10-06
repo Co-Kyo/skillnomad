@@ -4,7 +4,7 @@ import { mkdtempSync, readFileSync, rmSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { buildPipeline, renderStep } from '../dist/index.js';
-import { task } from '../dist/types/index.js';
+import { taskNode } from '../dist/types/index.js';
 
 // 模块附录 e2e：模块 render() → 引用步骤的「模块附录」＋引用表标注。
 // 内容源是 render()，路径只是逻辑标识——不落盘、不读盘。
@@ -18,14 +18,14 @@ const REGISTRY = [
 const MODULES = [
     { id: 'mod-a', kind: 'data', version: '0.1.0', render: () => 'MODULE-RENDERED-CONTENT-A' },
 ];
-const barrier = { checkItems: ['ok'], clarifyPrompt: '继续？', onConfirm: 'continue', onReject: 'rollback' };
+const barrier = { checkItems: [{ label: 'ok', informational: true }], clarifyPrompt: '继续？', onConfirm: 'continue', onReject: 'rollback' };
 
 const stepA = {
     id: 'a',
     title: 'A',
     description: '带正文步骤（提前返回路径）',
     body: 'do a',
-    graph: task({ id: 'a-task', label: 'A', type: 'agent', body: 'do a' }),
+    graph: taskNode({ id: 'a-task', label: 'A', type: 'agent', body: 'do a' }),
     reads: [{ path: CONTRACT_PATH, as: 'contract', description: '模块 A 契约' }],
     writes: [{ path: '{workDir}/a.md', description: 'a 产物' }],
     barrier,
@@ -34,7 +34,7 @@ const stepA = {
 test('模块附录：提前返回路径（build 全链）渲染附录＋契约引用标注', () => {
     const out = mkdtempSync(join(tmpdir(), 'skillnomad-appendix-'));
     try {
-        buildPipeline([stepA], out, META, REGISTRY, undefined, MODULES);
+        buildPipeline({ steps: [stepA], outputDir: out, meta: META, registry: REGISTRY, modules: MODULES });
         const md = readFileSync(join(out, 'steps', '00-a', 'step.md'), 'utf8');
         assert.match(md, /^## 模块附录$/m);
         assert.ok(md.includes('MODULE-RENDERED-CONTENT-A'));
@@ -53,7 +53,7 @@ test('模块附录：完整路径（renderStep 直调）同样渲染＋文件引
         title: 'B',
         description: '无正文步骤（完整路径）',
         dependsOn: 'a',
-        graph: task({ id: 'b-task', label: 'B', type: 'agent', body: 'do b' }),
+        graph: taskNode({ id: 'b-task', label: 'B', type: 'agent', body: 'do b' }),
         reads: [{ path: CONTRACT_PATH, description: '模块 A 读取' }],
         writes: [{ path: '{workDir}/b.md', description: 'b 产物' }],
         barrier,
@@ -68,7 +68,7 @@ test('模块空内容：标注与附录同进退（不指向不存在的正本�
     const out = mkdtempSync(join(tmpdir(), 'skillnomad-appendix-'));
     try {
         const emptyModules = [{ id: 'mod-a', kind: 'data', render: () => '' }];
-        buildPipeline([stepA], out, META, REGISTRY, undefined, emptyModules);
+        buildPipeline({ steps: [stepA], outputDir: out, meta: META, registry: REGISTRY, modules: emptyModules });
         const md = readFileSync(join(out, 'steps', '00-a', 'step.md'), 'utf8');
         assert.ok(!md.includes('模块附录'));
         assert.ok(!md.includes('（见附录：模块'));
@@ -82,7 +82,7 @@ test('模块缺席：产物不含模块附录', () => {
     try {
         const registryNoModule = [{ id: 'c-plain', kind: 'data', path: CONTRACT_PATH, description: '普通条目', scope: 'skill' }];
         const stepPlain = { ...stepA, reads: [{ path: CONTRACT_PATH, description: '普通读取' }] };
-        buildPipeline([stepPlain], out, META, registryNoModule);
+        buildPipeline({ steps: [stepPlain], outputDir: out, meta: META, registry: registryNoModule });
         const md = readFileSync(join(out, 'steps', '00-a', 'step.md'), 'utf8');
         assert.ok(!md.includes('模块附录'));
         assert.ok(!md.includes('（见附录：模块'));

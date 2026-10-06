@@ -12,10 +12,10 @@ import { chdir, cwd } from 'node:process';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { buildPipeline } from '../dist/index.js';
-import { task } from '../dist/types/index.js';
+import { taskNode } from '../dist/types/index.js';
 
 const META = { name: 'dangle-gate', description: '悬空引用检查' };
-const BARRIER = { checkItems: ['ok'], clarifyPrompt: '继续？', onConfirm: 'continue', onReject: 'rollback' };
+const BARRIER = { checkItems: [{ label: 'ok', informational: true }], clarifyPrompt: '继续？', onConfirm: 'continue', onReject: 'rollback' };
 
 const RULES = 'assets/common/rules.md';
 const OWN = 'assets/step-a/schemas.md';
@@ -31,7 +31,7 @@ const steps = (extraBody) => [
         title: 'A',
         description: '第一步',
         body: '先读 references/rules.md 再动手。' + (extraBody ?? ''),
-        graph: task({ id: 'a-task', label: 'A', type: 'agent', body: 'do a' }),
+        graph: taskNode({ id: 'a-task', label: 'A', type: 'agent', body: 'do a' }),
         reads: [{ path: RULES, as: 'contract', description: '共享规则' }],
         writes: [{ path: '{workDir}/a.md', description: 'a 产物' }],
         barrier: BARRIER,
@@ -61,7 +61,7 @@ function withProject(fn) {
 }
 
 const build = (outDir, stepsArg, ship) =>
-    buildPipeline(stepsArg, outDir, META, registry(), undefined, [], undefined, ship === true);
+    buildPipeline({ steps: stepsArg, outputDir: outDir, meta: META, registry: registry(), shipAssets: ship === true });
 
 test('通过：正文引用的在册资产经搬运实存于包内', () => withProject((outDir) => {
     const { files } = build(outDir, steps(), true);
@@ -88,13 +88,13 @@ test('撤登记＋删 reads 但正文引用忘改：前置校验放行的悬空�
         title: 'A',
         description: '第一步',
         body: '先读 references/rules.md 再动手。',
-        graph: task({ id: 'a-task', label: 'A', type: 'agent', body: 'do a' }),
+        graph: taskNode({ id: 'a-task', label: 'A', type: 'agent', body: 'do a' }),
         reads: [],
         writes: [{ path: '{workDir}/a.md', description: 'a 产物' }],
         barrier: BARRIER,
     }];
     assert.throws(
-        () => buildPipeline(orphaned, outDir, META, [], undefined, [], undefined, true),
+        () => buildPipeline({ steps: orphaned, outputDir: outDir, meta: META, registry: [], shipAssets: true }),
         /Dangling refs check failed/,
     );
 }));
@@ -105,24 +105,19 @@ test('作者随包文档里的悬空引用同样被扫（扫描范围＝全部 m
     writeFileSync(join(process.cwd(), ghost), '# 提示' + String.fromCharCode(10) + String.fromCharCode(10) + '参见 references/nowhere.md。' + String.fromCharCode(10), 'utf-8');
     const reg = [...registry(), { id: 'ghost', kind: 'policy', path: ghost, description: '随包提示', scope: 'skill' }];
     assert.throws(
-        () => buildPipeline(steps(), outDir, META, reg, undefined, [], undefined, true),
+        () => buildPipeline({ steps: steps(), outputDir: outDir, meta: META, registry: reg, shipAssets: true }),
         /Dangling refs check failed with 1 error/,
     );
 }));
 
 test('对齐报告不被扫：扫描集＝渲染＋搬运的 markdown，报告在检查之后写出', () => withProject((outDir) => {
-    // 捕获检查自报的扫描数：应＝渲染＋搬运的 markdown 数（SKILL.md＋step.md＋随包 md），
-    // 不含检查之后才写出的 align-report.md。
-    const logs = [];
-    const orig = console.log;
-    console.log = (...args) => { logs.push(args.join(' ')); orig(...args); };
-    let result;
-    try {
-        result = build(outDir, steps(), true);
-    } finally {
-        console.log = orig;
-    }
-    const scannedCount = Number(logs.find((l) => /docs scanned/.test(l)).match(/\((\d+) docs scanned\)/)[1]);
+    // 检查自报的扫描数（0.3.0 起从结构化诊断读，不再捕获 stdout）：
+    // 应＝渲染＋搬运的 markdown 数（SKILL.md＋step.md＋随包 md），不含检查之后才写出的 align-report.md。
+    const result = build(outDir, steps(), true);
+    const scannedCount = Number(
+        (result.diagnostics.find((d) => /docs scanned|文档\）?$|扫描/.test(d.message) && d.source === 'danglingRefs')?.message.match(/(\d+)/) ??
+        (() => { throw new Error('danglingRefs note 诊断缺失'); })())[1],
+    );
     const mdInFiles = result.files.filter((f) => /\.(md|markdown)$/i.test(f));
     assert.equal(scannedCount, mdInFiles.length, '扫描数＝渲染＋搬运的 markdown 数');
     assert.ok(!mdInFiles.some((f) => /align-report/.test(f)), 'align-report 不在扫描集');

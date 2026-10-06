@@ -44,7 +44,7 @@ test('框架渲染产物自证：注入文本过散文门', () => {
         writes: [{ path: '{workDir}/.meta/out.json', description: '产出' }],
         graph: { kind: 'seq', id: 'g', label: 'g', nodes: [] },
         plugins: ['year-granularity'],
-        barrier: { checkItems: ['覆盖数'], clarifyPrompt: '请确认。', onConfirm: 'continue', onReject: 'rollback' },
+        barrier: { checkItems: [{ label: '覆盖数', informational: true }], clarifyPrompt: '请确认。', onConfirm: 'continue', onReject: 'rollback' },
         decisionSummary: {
             gateType: 'human_gate',
             title: '需求网确认',

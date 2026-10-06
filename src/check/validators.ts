@@ -9,6 +9,7 @@ import type {
     TaskDef,
     BarrierDef,
     StepDefinition,
+    SourceStep,
     FileRef,
     ResolvedStep,
     ResolvedPipeline,
@@ -18,6 +19,7 @@ import type {
     StepStatus,
     SourceContract,
 } from '../types/index.js';
+import { inspectTargetShape } from 'methodblocks';
 import {
     CHAIN_TERMINAL,
     resolveChain,
@@ -136,6 +138,10 @@ export function validateStep(step: StepDefinition): ValidationError[] {
         }
         if (!step.barrier.checkItems || step.barrier.checkItems.length === 0) {
             errors.push({ stepId: step.id, field: 'barrier.checkItems', message: 'Barrier must have at least one check item' });
+        }
+        const bare = (step.barrier.checkItems ?? []).filter(item => typeof item === 'string' || (!item.informational && !item.expect));
+        if (bare.length > 0) {
+            errors.push({ stepId: step.id, field: 'barrier.checkItems', message: `检查项缺期望或展示标注（须可判或声明仅展示）：${(bare as Array<{ label?: string }>).map(item => item?.label ?? String(item)).join('；')}` });
         }
     }
 
@@ -574,3 +580,77 @@ export function validateModules(
 // Dependency resolver (topological sort)
 // ---------------------------------------------------------------
 
+
+/**
+ * 目标结构检查（wish/target 模型）：只出**提示**，不改判定——
+ * 现有声明没有人写 `targets`，因此对存量零影响。
+ *
+ * 机检得到的三类（结构性）：口号／孤儿／悬空归属；语义重复（同义改写）**机检不到**，
+ * 不在本函数射程内（见 `.dts/wish-target-lab/out/反例测试.txt` 的实测边界）。
+ */
+export interface TargetStructureNote {
+    stepId: string;
+    /** 内部代号，只用于测试与代码；**不得出现在构建输出里**（作者只看到 message）。 */
+    code: 'T-SLOGAN' | 'T-ORPHAN' | 'T-DANGLING' | 'T-DUPID';
+    /** 给作者看的人话。 */
+    message: string;
+    /** 结构破了（构建期硬失败）；还是只是没归组（提示）。 */
+    blocking: boolean;
+}
+
+export function inspectTargetStructure(steps: SourceStep[]): TargetStructureNote[] {
+    const notes: TargetStructureNote[] = [];
+    for (const step of steps) {
+        const targets = step.instruction?.targets ?? [];
+        if (targets.length === 0) continue;
+
+        // 语义层体检（methodblocks.inspectTargetShape）：目标/判据的形状判定在此定义，
+        // 装配层只做声明结构 → 语义层输入的映射与诊断回填。
+        const human = step.checkpoint?.checkItems ?? [];
+        const evidences = [
+            ...targets.map(t => ({
+                id: `target:${t.id}`, kind: 'human' as const,
+                text: t.claim, targetId: t.id,
+                // 目标本身不充当自己的判据——占位条目不计入"有无判据"，
+                // 通过先剔除自身再体检：这里以独立通道表达，见下方 evidences 构造。
+            })),
+        ];
+        void evidences; // 目标占位不参与判据计数（见下）
+        const shapeEvidences = [
+            ...(step.instruction?.validation ?? [])
+                .filter(v => v.target)
+                .map(v => ({ id: `machine:${v.description}`, kind: 'machine' as const, text: v.description, targetId: v.target! })),
+            ...human
+                .filter(c => c.target)
+                .map(c => ({ id: `human:${c.label}`, kind: 'human' as const, text: c.label, targetId: c.target! })),
+            // 未归属判据：targetId 置空串 → 语义层按悬空报，这里降级为本仓的 orphan 提示
+            ...(step.instruction?.validation ?? [])
+                .filter(v => !v.target)
+                .map(v => ({ id: `orphan:${v.description}`, kind: 'machine' as const, text: v.description, targetId: '' })),
+        ];
+        const shape = inspectTargetShape({
+            targets: targets.map(t => ({ id: t.id, text: t.claim })),
+            evidences: shapeEvidences,
+        });
+        for (const n of shape) {
+            const stepNote = { stepId: step.id, blocking: n.blocking, message: n.message };
+            if (n.code === 'target-duplicate') {
+                notes.push({ ...stepNote, code: 'T-DUPID' });
+            } else if (n.code === 'target-slogan') {
+                notes.push({ ...stepNote, code: 'T-SLOGAN',
+                    message: n.message.replace('要么给它挂判据，要么别写这条目标',
+                        '要么给它挂机器判据（.verify）或人工判据（checkItems），要么别写这条目标') });
+            } else if (n.code === 'evidence-dangling' && n.evidenceId?.startsWith('orphan:')) {
+                notes.push({ ...stepNote, code: 'T-ORPHAN', blocking: false,
+                    message: `这条机器判据没挂到任何目标上（仍会渲染进「校验清单」）：「${n.evidenceId.slice('orphan:'.length)}」` });
+            } else if (n.code === 'evidence-dangling' && n.evidenceId?.startsWith('machine:')) {
+                notes.push({ ...stepNote, code: 'T-DANGLING',
+                    message: `机器判据挂到了一个不存在的目标「${n.targetId}」：「${n.evidenceId.slice('machine:'.length)}」` });
+            } else if (n.code === 'evidence-dangling' && n.evidenceId?.startsWith('human:')) {
+                notes.push({ ...stepNote, code: 'T-DANGLING',
+                    message: `人工判据挂到了一个不存在的目标「${n.targetId}」：「${n.evidenceId.slice('human:'.length)}」` });
+            }
+        }
+    }
+    return notes;
+}

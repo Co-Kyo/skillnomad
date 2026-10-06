@@ -41,13 +41,15 @@ import { step } from 'skillnomad';
 import { substitutionTest } from '../contracts.ts';
 
 export const collect = step('collect', '收集与标注')
-  .target('收集并标注。')
+  .wish('收集并标注，产出一份可以直接交给复核的标注结果。')
+  .target('T1', '标注结果已落盘')
+  .target('T2', '标注逐条完整')
   .summary('收集并标注')
   .action('parse', 'collect-do', '收集', '收集并标注。')
   .reads({ ...substitutionTest, as: 'contract' })   // 符号名引用，不重复写路径
   .writes({ path: '{workDir}/.meta/labeled.json', description: '标注结果', required: true })
   .checkpoint({
-    checkItems: ['标注结果是否完整'],
+    checkItems: [{ label: '标注结果是否完整', expect: '逐条核对标注文件，缺失即列名', target: 'T2' }],
     clarifyPrompt: '收集完成，确认后进入复核。',
     onConfirm: 'continue',
     onReject: 'rollback',
@@ -75,18 +77,10 @@ const model: SkillSourceModel = {
     name: 'my-skill',
     title: '我的技能',
     description: '一句话说明这个技能做什么',
-    frontmatterDescription: '一句话说明这个技能做什么',
-    callExamples: [],
-    params: [],
-    phases: [],
   },
   steps: [collect, review],
   contracts,
   policies: {
-    contextIsolation: false,
-    reuseByFileExistence: false,
-    checkpointRequired: false,
-    traceFields: [],
     runtimeTrace: { enabled: false, logDir: '', eventTypes: [] },
   },
 };
@@ -133,7 +127,7 @@ dist/skill/
 
 skillnomad 为这个场景而生：你只声明事实，框架推导其余。
 
-写 markdown skill 时，共用规则无法模块化：一段规则想被三个步骤共用，只能靠路径引用——既不是 markdown 里有的能力，又不符合代码哲学。
+写 markdown skill 时，共用规则无法模块化：一段规则想被三个步骤共用，只能靠路径引用。
 
 skillnomad 的做法：**共用规则是模块，步骤引用的是符号名，路径是构建期的派生物**。
 

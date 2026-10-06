@@ -1,12 +1,8 @@
-import type { SourceAction, SourceFlow, SourceStep } from 'skillnomad';
-import { step } from 'skillnomad';
+import type { SourceAction, SourceStep } from 'skillnomad';
+import { step, task } from 'skillnomad';
 import { reportStandard } from './contracts.ts';
 
-// 小 helper：把一个动作包成「执行一个任务」的流（与消费仓同款写法，不是框架能力）。
-const task = (verb: 'infer' | 'merge' | 'generate', id: string, label: string, content: string): SourceFlow => ({
-    kind: 'do',
-    task: { id, label, verb, actor: 'agent', content } satisfies SourceAction,
-});
+// 0.3.0 起框架收编了「把动作包成任务流」的惯用法（task()）——本文件的自造 helper 已删除。
 
 // 三角色的共同交付要求（三处复用，只写一次；手写版是在三段 prompt 里各抄一遍的）。
 const ROLE_ASK = [
@@ -16,14 +12,18 @@ const ROLE_ASK = [
     '3. 一个让对方让步的条件：「如果谁能满足 X，我就改立场」',
 ].join('\n');
 
-const roleTask = (id: string, stance: string): SourceFlow =>
+const roleTask = (id: string, stance: string): ReturnType<typeof task> =>
     task('infer', id, id, stance + '\n\n' + ROLE_ASK + '\n\n写入 {workDir}/.meta/panel/' + id + '.md');
 
 // ---------------------------------------------------------------
 // 第一步：三方角色讨论（对应手写版 SKILL.md 第 11-35 行）
 // ---------------------------------------------------------------
 export const stepPanel: SourceStep = step('panel', '三方角色讨论')
-    .target('三个角色各自独立就议题表态，主持人汇总成一张分歧表；本步不下结论。')
+    .wish('三个角色各自独立就议题表态，主持人汇总成一张分歧表；本步不下结论。')
+    .target('T1', '三方立场各自站得住')
+    .target('T2', '分歧点落在具体技术决策上')
+    .target('T3', '分歧表已落盘')
+    .verify({ type: 'file-exists', ref: '{workDir}/.meta/panel/disagreement-table.md', description: '分歧表已落盘', target: 'T3' })
     .summary('3 个 subagent 角色扮演（后端/产品/安全）独立讨论，主持人收口成分歧表')
     .reads({
         path: '{workDir}/.meta/panel/topic.md',
@@ -66,7 +66,10 @@ export const stepPanel: SourceStep = step('panel', '三方角色讨论')
     )
     .writes({ path: '{workDir}/.meta/panel/disagreement-table.md', description: '三份立场 + 四列分歧表', required: true })
     .checkpoint({
-        checkItems: ['三份立场是否齐全且各带三条理由', '每条立场是否都给了让步条件', '分歧表是否挖到实质层、共识条目是否列出'],
+        checkItems: [
+            { label: '三份立场齐备', expect: '每份立场都带三条具体理由与一个让步条件', target: 'T1' },
+            { label: '分歧表挖到实质层', expect: '共识条目逐条列出，分歧点写到具体技术决策而非口号', target: 'T2' },
+        ],
         clarifyPrompt: '面板讨论收口完成。确认分歧表质量后进入决策文档撰写。',
         onConfirm: 'continue',
         onReject: 'rollback',
@@ -77,7 +80,11 @@ export const stepPanel: SourceStep = step('panel', '三方角色讨论')
 // 第二步：按标准格式出文档（对应手写版 SKILL.md 第 37-50 行）
 // ---------------------------------------------------------------
 export const stepWriteDoc: SourceStep = step('write-doc', '撰写决策文档')
-    .target('把第一步的分歧表按四段标准写成一份能直接发给负责人拍板的决策文档。')
+    .wish('把第一步的分歧表按四段标准写成一份能直接发给负责人拍板的决策文档。')
+    .target('T1', '结构符合契约标准')
+    .target('T2', '结论可追溯')
+    .target('T3', '反对面保留')
+    .verify({ type: 'file-exists', ref: '{workDir}/decision-report.md', description: '决策文档已落盘', target: 'T1' })
     .summary('按四段标准输出决策文档；内容只从第一步产物取')
     .dependsOn('panel')
     .reads(
@@ -103,7 +110,11 @@ export const stepWriteDoc: SourceStep = step('write-doc', '撰写决策文档')
     )
     .writes({ path: '{workDir}/decision-report.md', description: '四段决策文档', required: true })
     .checkpoint({
-        checkItems: ['四段齐不齐', '依据每条是否都能追到某个角色的原话', '最有力的那条反对意见是否原样活着'],
+        checkItems: [
+            { label: '四段齐全', expect: '背景／分歧表／共识／反对意见四节齐且非空', target: 'T1' },
+            { label: '依据可追溯', expect: '每条依据都能追到某个角色的原话', target: 'T2' },
+            { label: '反对意见保留', expect: '最有力的那条反对意见原样活着，未被总结性改写', target: 'T3' },
+        ],
         clarifyPrompt: '决策文档已成稿。三项自查全过则交付，任一不过则回退补写。',
         onConfirm: 'continue',
         onReject: 'rollback',
