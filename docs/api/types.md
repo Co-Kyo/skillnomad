@@ -4,11 +4,14 @@
 
 ## 写 skill 的你（作者面）
 
-一条写作路径：`step()` 链式声明步骤 → `createSkillFromModel` 装配 → `defineConfig` 配置构建。步骤引用的共享内容经 `contracts` 注册表登记（[模块抽象](../guide/concepts/modules)），内容模块可用 `defineModule` 或内容包装载器产出（[发布布局](../guide/concepts/publish-layout)）。
+一条写作路径：`step()` 链式声明步骤（一个 `.wish()` 配多条 `.target()`，每条 target 由判据支撑）→ `createSkillFromModel` 装配 → `defineConfig` 配置构建。单文件最小入口用 `defineSkill`；"派一个 agent 做一件事"的惯用法直接用 `task()`。步骤引用的共享内容经 `contracts` 注册表登记（[模块抽象](../guide/concepts/modules)），内容模块可用 `defineModule` 或内容包装载器产出（[发布布局](../guide/concepts/publish-layout)）。
 
 | 符号 | 参考页 | 指南 |
 | :--- | :--- | :--- |
 | `step()` | [functions/step](reference/functions/step.md) | [快速上手](../guide/quickstart) |
+| `target()`（判据归属） | [interfaces/CheckItem](reference/interfaces/CheckItem.md) · [interfaces/SourceInvariant](reference/interfaces/SourceInvariant.md) | [核心契约](../guide/contract) |
+| `task()` | [functions/task](reference/functions/task.md) | [核心契约](../guide/contract) |
+| `defineSkill` | [functions/defineSkill](reference/functions/defineSkill.md) | [快速上手](../guide/quickstart) |
 | `createSkillFromModel` | [functions/createSkillFromModel](reference/functions/createSkillFromModel.md) | [快速上手](../guide/quickstart) |
 | `defineConfig` / `SkillnomadConfig` | [functions/defineConfig](reference/functions/defineConfig.md) · [interfaces/SkillnomadConfig](reference/interfaces/SkillnomadConfig.md) | [核心契约](../guide/contract) |
 | `SkillSourceModel` / `SourceStep` / `SourceFlow` / `SourceAction` / `SourceRef` / `SourceContract` / `SourcePolicies` / `SourceCheckpoint` / `SourceVerifyRule` / `SourceFailRule` / `NextAction` | [interfaces/…](reference/interfaces/SkillSourceModel.md) · [type-aliases/…](reference/type-aliases/NextAction.md) | [核心契约](../guide/contract) |

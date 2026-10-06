@@ -18,6 +18,12 @@ const AUTHORING_TYPES = [
     'SourceCheckpoint', 'SourceModule', 'KeyMap',
     'SkillMeta', 'SkillnomadConfig', 'MarkrefsConfig',
     'BlockModuleInput', 'StructureConfig', 'StructureDocSpec',
+    // 构建输入与结构化诊断（0.3.0：buildPipeline 单对象入参，打印职责归 CLI）
+    'SkillBuildInput', 'BuildDiagnostic',
+    // 单文件入口
+    'MinimalSkillInput',
+    // 检查项/跨步约束类型（A 案收口转出）
+    'CheckItem', 'SourceInvariant',
     'PackageManifest', 'PackageBlockSpec', 'LoadedPackage',
     // 发布布局（角色 → 发布路径派生；消费仓组装脚本与此同一份实现）
     'PublishableAsset', 'PublishDiagnostic',
@@ -34,7 +40,10 @@ const BUILD_VALUES = [
     'readPackageManifest', 'loadPackage', 'checkPackage', 'blockingPackageDiagnostics', 'packageModule',
     'resolveStepRefs', 'inspectRefs', 'renderModulesAppendix',
     'renderStep', 'renderSkillMd', 'renderPipelineState', 'renderPipeline',
-    'writeAlignReport', 'buildPipeline',
+    'writeAlignReport', 'buildPipeline', 'BuildFailureError',
+    'defineSkill',
+    // 惯用法收编转口
+    'task',
 ];
 const APPROVED = new Set([...AUTHORING_VALUES, ...AUTHORING_TYPES, ...BUILD_VALUES]);
 

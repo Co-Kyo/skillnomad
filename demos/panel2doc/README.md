@@ -11,7 +11,8 @@
 ## 跑一遍（在本目录）
 
 ```bash
-npm install     # 依赖装在本目录 node_modules 下（skillnomad 用 npm 发布版，与外部作者同款）
+npm install     # 依赖装在本目录 node_modules 下；skillnomad 是 file:../.. 依赖，
+                  # 即本仓框架源码本身（不是 npm 发布版）——需先在仓根 npm run build 出 dist/
                   # 需 Node ≥ 22.18：构建与组装直接跑 .ts 源，不装任何 TS 加载器
 npm run build   # 框架构建 → ./out/（gitignore）
 npm run assemble # 组装发布包 → ./release/（gitignore）
@@ -33,12 +34,11 @@ npm run typecheck # 类型门
 | 2 | 「打开 references/report-standard.md」（39 行） | `src/contracts.ts` 登记 ＋ `.reads({ ...reportStandard, as: 'contract' })` |
 | 3 | 「起 3 个 subagent，各自独立跑」（15 行） | `.parallel('panel-round', [...3 个 roleTask...], { converge })` |
 | 4 | 三个角色的定义（17-21 行） | `roleTask('role-backend' / 'role-pm' / 'role-security', 立场描述)` |
-| 5 | 「缺一样就让它补」（23 行） | 第一步 `.checkpoint({ checkItems: [...3 项...] })` |
+| 5 | 「缺一样就让它补」（23 行） | 第一步 `.checkpoint({ checkItems: [...2 项...（每项 label＋期望）] })` |
 | 6 | 「写完后自查三件事」（48 行） | 第二步 `.checkpoint({ checkItems: [...3 项...] })` |
 | 7 | 「内容全部从第一步的产物里取」（41 行） | 第一步 `.writes(disagreement-table.md)` ＋ 第二步 `.reads(同一路径)` 成对声明 |
 
 ## 框架没替你做的事
 
 框架构建只产出**文本**（`SKILL.md` ＋ `steps/` ＋ 清单），不会搬运你登记的正文文件。
-`assemble.ts` 用框架公开的 `publishPath()` 算出发布路径再拷贝——消费仓走的是同一条路
-（`projects/sp-skill-dev/scripts/assemble-release.ts`）。
+`assemble.ts` 用框架公开的 `publishPath()` 算出发布路径再拷贝；你自己的仓组装时调同一公开函数即可。

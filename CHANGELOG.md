@@ -2,6 +2,20 @@
 
 > **注意**：新线自 **0.1.0-beta.1** 独立起步（orphan 干净根提交，skillpack → skillnomad 改名）；改名前的 skillpack 时期记录已归并在该版本节内。
 
+## v0.3.0（wish/target 模型 · 声明面收敛 · 目标结构检查）
+
+- **feat!(step)**：`.target()` 取代 `.wish()` 成为步骤的执行层声明——`.wish()`（1 条）只表达这一步带着什么倾向去做（提出层），由它派生出多条 `.target(id, claim)`（执行层），指着产物能判过／不过。判据（`.verify` 规则与 Barrier 检查项）经末位 `target` 字段归属到目标。产物步骤文件随之分区：`## 意图`（wish）＋`## 目标`（逐条目标下挂机器判据／人工判据）；未归属判据照旧进 `## 校验清单`（归组是叠加，不是替换）。
+- **feat(build)**：目标结构检查接入装配期——目标一条判据都没有（口号）、判据挂到不存在的 target（悬空）、target id 重复，三类构建期即红；判据没归组（孤儿）仅提示不拦构建。机检边界：两条 target 换词说同一件事（同义重复）抓不住，须人判。
+- **feat(author)**：`task()` 收编为一等 API——"派一个 agent 做一件事"的最小声明面（动词＋id＋标签＋正文＋可选超时），替代各个项目里自写的同款包装函数（把动作包成 `{ kind: 'do', task: {…} }` 字面量的那段样板）；`defineSkill` 提供单文件最小入口（name/description/steps 全缺省装配），复杂工程继续走 `SkillSourceModel` 全量面。
+- **feat(config)**：`policies`／`contracts`／`meta` 仪式位全可选化——缺省装配与显式全关行为级等价。
+- **feat(step)**：`.invariant(claim, scope)` 跨步约束——初始化只对齐一次、后续步骤按需取用的那类约束有了独立声明位，产物渲染「跨步约束」章。
+- **feat!(build)**：`buildPipeline` 收敛为单对象入参、诊断改为返回值，打印职责归 CLI。
+- **feat!(config)**：删除四个无行为死 policy 字段；`meta` 双描述合并为 `description` ＋ 可选 `frontmatterDescription`（路由句）。
+- **feat!(remove)**：删除 `sourceTrace` 子系统（含相关配置与渲染分支）。
+- **test**：新增 wish/target 模型门（口号／孤儿／悬空／重复四类机检＋缺省面零提示）与 demo 配套门（仓内 demo 用当前源码构建＋声明↔产物逐条对账，接入 `npm test` 随 CI 生效）。
+- **docs**：核心契约页新增「一个 wish，多条 target」节（含机检边界声明）；API 导览补 `task()`／`defineSkill`／判据归属类型；版本表升 0.3.0。
+- **升级影响**：有破坏性变更。`.wish()` 改为 `.target(id, claim)`（原 wish 句子若承担"可判定目标"职责需改写）；`buildPipeline` 入参形态变化；`sourceTrace` 与四个死 policy 字段移除；`meta` 描述字段合并。步骤声明从 1 句 wish 迁到 wish＋targets 的做法见核心契约「一个 wish，多条 target」节。
+
 ## v0.2.4（shipAssets 随包搬运 · init 脚手架 · 悬空引用检查）
 
 - **feat(build)**：`shipAssets` 配置——构建把注册表登记的随包文件按派生发布路径自动放进输出目录；源文件缺失即构建失败，撤下登记的文件清掉旧拷贝。缺省关闭，关闭时构建行为与产物不变。

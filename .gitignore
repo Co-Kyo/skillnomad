@@ -1,5 +1,8 @@
 # Dependencies
 node_modules/
+# （例外见下方两条强加软链：本地验证链配置，git add -f 一次性入库，
+#  tracked 文件不受 ignore 规则影响；npm install 会覆盖软链装真实目录，
+#  覆盖后 git status 即显示删除，开发者在 demo 目录重跑 link 脚本即可恢复。）
 
 # Build output (packages)
 packages/*/dist/

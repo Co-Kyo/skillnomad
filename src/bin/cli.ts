@@ -4,7 +4,7 @@ import { resolve, dirname } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { existsSync } from 'node:fs';
 import { buildPipeline } from '../index.js';
-import type { SkillnomadConfig } from '../index.js';
+import type { BuildDiagnostic, SkillnomadConfig } from '../index.js';
 import { checkNodeVersion } from '../cli/node-version.js';
 
 async function main() {
@@ -77,7 +77,46 @@ async function main() {
         ...(config.meta || {}),
     };
 
-    buildPipeline(steps, config.outputDir, meta, contracts, config.markrefs, config.modules, config.structure, config.shipAssets === true);
+    // 打印职责归 CLI：库只返回/抛出结构化诊断，不打印（0.3.0 起）。
+    // 失败路径＝buildPipeline 抛 BuildFailureError：先补打已采集的诊断再原样上抛
+    // （main 的 catch 印汇总行，退出码语义不变）；成功路径按旧体验分两段打印。
+    let result;
+    try {
+        result = buildPipeline({
+            steps,
+            outputDir: config.outputDir,
+            meta,
+            registry: contracts,
+            markrefs: config.markrefs,
+            modules: config.modules,
+            structure: config.structure,
+            shipAssets: config.shipAssets === true,
+        });
+    } catch (err) {
+        const collected = (err as { diagnostics?: BuildDiagnostic[] }).diagnostics;
+        if (collected) printDiagnostics(collected);
+        throw err;
+    }
+    // 校验期计数（markrefs／structure）→ 通过句 → 步序 → 渲染与搬运逐件 → 完成句
+    printDiagnostics(result.diagnostics, ['markrefs', 'structure']);
+    console.log('Validation passed ✓');
+    console.log('\nStep order resolved:');
+    for (const step of result.pipeline.steps) {
+        console.log(`  ${String(step.seq).padStart(2, '0')}: ${step.id} — ${step.title}`);
+    }
+    console.log(`\nRendering to ${config.outputDir}:`);
+    printDiagnostics(result.diagnostics, ['validation', 'publish', 'shipAssets', 'danglingRefs', 'alignReport']);
+    console.log(`\nDone. ${result.files.length} files written.`);
+}
+
+/** 逐条打印诊断（error→stderr，note→stdout）；onlySources 限定本轮打印的来源族。 */
+function printDiagnostics(diagnostics: BuildDiagnostic[], onlySources?: string[]): void {
+    for (const d of diagnostics) {
+        if (onlySources && !onlySources.includes(d.source)) continue;
+        const line = `  ${d.severity === 'error' ? '✗' : '·'}${d.site ? ` ${d.site}` : ''} ${d.message}`;
+        if (d.severity === 'error') console.error(line);
+        else console.log(line);
+    }
 }
 
 main().catch((err) => {

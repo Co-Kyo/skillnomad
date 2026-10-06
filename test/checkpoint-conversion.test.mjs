@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { createSkill, task } from '../dist/types/index.js';
+import { createSkill, taskNode } from '../dist/types/index.js';
 
 // 回归：双装配路径行为对齐。
 // 修复前 createSkill 直装配不转 checkpoint→barrier（与 createSkillFromModel 不一致），
@@ -10,11 +10,11 @@ const stepWithCheckpoint = {
     id: 'review',
     title: '复核',
     description: '复核标注',
-    graph: task({ id: 'review-do', label: '复核', type: 'agent', body: '复核标注。' }),
+    graph: taskNode({ id: 'review-do', label: '复核', type: 'agent', body: '复核标注。' }),
     reads: [],
     writes: [{ path: '{workDir}/.meta/reviewed.md', description: '复核结果', required: true }],
     checkpoint: {
-        checkItems: ['覆盖数', '用户确认'],
+        checkItems: [{ label: '覆盖数', informational: true }, { label: '用户确认', informational: true }],
         clarifyPrompt: '请确认检测报告。',
         onConfirm: 'continue',
         onReject: 'rollback',
@@ -30,7 +30,7 @@ test('createSkill 直装配：checkpoint 转换为运行时 barrier', () => {
     });
     assert.ok(skill.steps[0].barrier, 'barrier 未生成');
     assert.equal(skill.steps[0].barrier.clarifyPrompt, '请确认检测报告。');
-    assert.deepEqual(skill.steps[0].barrier.checkItems, ['覆盖数', '用户确认']);
+    assert.deepEqual(skill.steps[0].barrier.checkItems, [{ label: '覆盖数', informational: true }, { label: '用户确认', informational: true }]);
 });
 
 test('createSkill 直装配：已有 barrier 时不覆盖', () => {
@@ -40,7 +40,7 @@ test('createSkill 直装配：已有 barrier 时不覆盖', () => {
         description: '演示',
         steps: [{
             ...stepWithCheckpoint,
-            barrier: { checkItems: ['既有'], clarifyPrompt: '既有 barrier', onConfirm: 'continue', onReject: 'rollback' },
+            barrier: { checkItems: [{ label: '既有', informational: true }], clarifyPrompt: '既有 barrier', onConfirm: 'continue', onReject: 'rollback' },
         }],
     });
     assert.equal(skill.steps[0].barrier.clarifyPrompt, '既有 barrier');

@@ -25,7 +25,7 @@ const baseStep = {
     writes: [],
     graph: { kind: 'seq', id: 'g', label: 'g', nodes: [] },
     barrier: {
-        checkItems: ['覆盖数'],
+        checkItems: [{ label: '覆盖数', informational: true }],
         clarifyPrompt: '请确认。',
         onConfirm: 'continue',
         onReject: 'rollback',

@@ -11,10 +11,10 @@ import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, wr
 import { createHash } from 'node:crypto';
 import { tmpdir } from 'node:os';
 import { buildPipeline } from '../dist/index.js';
-import { task } from '../dist/types/index.js';
+import { taskNode } from '../dist/types/index.js';
 
 const META = { name: 'ship-e2e', description: '随包搬运' };
-const BARRIER = { checkItems: ['ok'], clarifyPrompt: '继续？', onConfirm: 'continue', onReject: 'rollback' };
+const BARRIER = { checkItems: [{ label: 'ok', informational: true }], clarifyPrompt: '继续？', onConfirm: 'continue', onReject: 'rollback' };
 
 const RULES = 'assets/common/rules.md';
 const TABLE = 'assets/common/table.json';
@@ -31,7 +31,7 @@ const steps = () => [
         title: 'A',
         description: '第一步',
         body: 'do a',
-        graph: task({ id: 'a-task', label: 'A', type: 'agent', body: 'do a' }),
+        graph: taskNode({ id: 'a-task', label: 'A', type: 'agent', body: 'do a' }),
         reads: [{ path: RULES, as: 'contract', description: '共享规则' }],
         writes: [{ path: '{workDir}/a.md', description: 'a 产物' }],
         barrier: BARRIER,
@@ -74,7 +74,7 @@ function withProject(sources, fn) {
         }
         chdir(root);
         const build = (registry, ship) => {
-            buildPipeline(steps(), 'out', META, registry, undefined, [], undefined, ship === true);
+            buildPipeline({ steps: steps(), outputDir: 'out', meta: META, registry, shipAssets: ship === true });
             return join(root, 'out');
         };
         return fn(build);

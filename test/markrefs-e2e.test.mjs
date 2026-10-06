@@ -26,7 +26,8 @@ function build(mode, strict = false) {
 test('ok：引用目标存在 + 模板路径跳过 → 构建通过，报告计数', () => {
     const run = build('ok');
     assert.equal(run.status, 0, run.stderr);
-    assert.match(run.stdout, /markrefs：2 条引用（1 条判存在性，1 条模板跳过）/);
+    // 引擎化后：装配层自动登记每步 reads/writes（源路径+发布路径），叠加作者手工登记
+    assert.match(run.stdout, /markrefs：4 条引用（2 条判存在性，2 条模板跳过）/);
     assert.match(run.stdout, /Validation passed ✓/);
 });
 

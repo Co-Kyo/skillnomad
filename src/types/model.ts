@@ -147,15 +147,34 @@ export interface SourceException {
 /** @category 作者面 */
 export type SourceFailRule = SourceException;
 
+/** 由 wish 派生出的可判定目标；`id` 用于把判据挂上来。 */
+export interface SourceTarget {
+    /** 步内唯一标识。 */
+    id: string;
+    /** 目标正文：一句"要达成什么"，指着产物能判过／不过。 */
+    claim: string;
+}
+
 /** @category 作者面 */
 export interface SourceVerifyRule {
     type: VerifyKind;
     ref?: string;
     description: string;
+    /** 归属的目标 id（`SourceTarget.id`）；缺省＝未归属，仍渲染进「校验清单」。 */
+    target?: string;
 }
 
 export interface SourceInstruction {
-    target: string;
+    /**
+     * 意图（wish）：这一步**带着什么倾向去做**（1 条，人读，不要求可判定）。
+     * skill 级的模糊心智写在 `description`；这里再往下一层，是"本步想达到什么效果"。
+     */
+    wish: string;
+    /**
+     * 目标（target）：由上面的 wish 派生出的**可判定目标**（通常多条）。
+     * 每条目标由若干判据支撑——机器判据＝`SourceVerifyRule.target`，人工判据＝`CheckItem.target`。
+     */
+    targets?: SourceTarget[];
     purpose?: string;
     inputs: string[];
     actions: string[];
@@ -169,12 +188,37 @@ export interface SourceInstruction {
     taskTemplates?: Record<string, string>;
 }
 
+/**
+ * 检查项：执行层（target 层）判据之一——**人可判**，指着产物判过/不过。
+ * 执行层另两件判据是 `SourceVerifyRule`（机器可查）与 `SourceInvariant`（跨步约束）。
+ * 每项要么给**期望**（明文口径），要么声明 `informational: true`（仅展示，不作过/不过依据）。
+ * 二者皆无＝构建期红。
+ */
+export interface CheckItem {
+    label: string;
+    /** 归属的目标 id（`SourceTarget.id`）；缺省＝不参与目标归组。 */
+    target?: string;
+    /** 期望：判过/不过的口径（分母、阈值、明细、状态），如「完成数＝命题总数，未完成的逐一列出」。 */
+    expect?: string;
+    /** 仅展示：不参与过/不过判定（0.3.0 起 8 处「（展示供确认…）」散文标注的类型化收编）。 */
+    informational?: boolean;
+}
+
 /** @category 作者面 */
 export interface SourceCheckpoint {
-    checkItems: string[];
+    checkItems: CheckItem[];
     clarifyPrompt: string;
     onConfirm: 'continue';
     onReject: 'rollback' | 'modify';
+}
+
+/**
+ * 跨步约束（invariant）：约束**后续步骤**或**整条链**的行为规则，挂在声明步上。
+ * 159 类句子（"后续步骤不再重复确认 workDir"）的家；渲染进独立章节由执行侧确认。
+ */
+export interface SourceInvariant {
+    text: string;
+    scope: 'downstream' | 'whole-chain';
 }
 
 export type SourceGateType = 'human_gate' | 'agent_checkpoint' | 'auto_segment';
@@ -362,6 +406,8 @@ export interface SourceStep {
    */
     dependsOn?: string;
 
+    /** 跨步约束（可选）：声明步对下游/全链的行为约束，框架聚合渲染为「跨步约束」章。 */
+    invariants?: SourceInvariant[];
     reads: SourceRef[];
     writes: SourceRef[];
 
@@ -424,13 +470,18 @@ export interface SourceRuntimeTrace {
     eventTypes: string[];
 }
 
-/** @category 作者面 */
+/**
+ * skill 级策略声明。
+ *
+ * 0.3.0 起：四个零读者死字段（contextIsolation／reuseByFileExistence／
+ * checkpointRequired／traceFields）**已删除**（H1 激进解：声明义务与读取点
+ * 同清，不给历史留接口）；`runtimeTrace` 是活字段（`enabled` 决定是否渲染
+ * 「运行记录」章），缺省＝禁用。整块可选、缺省＝禁用。
+ * @category 作者面
+ */
 export interface SourcePolicies {
-    contextIsolation: boolean;
-    reuseByFileExistence: boolean;
-    checkpointRequired: boolean;
-    traceFields: string[];
-    runtimeTrace: SourceRuntimeTrace;
+    /** 运行记录埋点协议（活字段）；缺省＝禁用。 */
+    runtimeTrace?: SourceRuntimeTrace;
 }
 
 export interface SourceParam {
@@ -470,17 +521,21 @@ export interface SourceMeta {
     name: string;
     title: string;
     description: string;
-    frontmatterDescription: string;
-    callExamples: SourceCallExample[];
+    /** frontmatter 路由句（可选）：声明"何时用这个 skill"的长句；缺省回落 description。 */
+    frontmatterDescription?: string;
+    /** 调用方式示例；缺省＝不渲染该节（渲染器有默认句式回落）。 */
+    callExamples?: SourceCallExample[];
     usageNote?: string;
     isolationNote?: string;
     includeBuildFooter?: boolean;
-    params: SourceParam[];
+    /** 参数表；缺省＝不渲染该节。 */
+    params?: SourceParam[];
     /**
    * 阶段**意图**声明：每个阶段包含哪些步骤。
    * 阶段边界与区间标注由框架从此 + 链序推导，不要求手写。
+   * 缺省＝无阶段划分（区间派生与校验对空值均按"不声明"处理）。
    */
-    phases: SourcePhase[];
+    phases?: SourcePhase[];
     initRules?: SourceInitRule[];
     /**
    * 哪个步骤负责 pipeline 初始化；renderer 优先从该步骤读取 initRules。
@@ -504,6 +559,8 @@ export interface SourceMeta {
 export interface SkillSourceModel {
     meta: SourceMeta;
     steps: SourceStep[];
-    contracts: SourceContract[];
-    policies: SourcePolicies;
+    /** 随包/契约登记条目；缺省＝空。 */
+    contracts?: SourceContract[];
+    /** 策略声明；缺省＝全关／空／禁用。 */
+    policies?: SourcePolicies;
 }

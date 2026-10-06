@@ -4,19 +4,19 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { buildPipeline } from '../dist/index.js';
-import { task } from '../dist/types/index.js';
+import { taskNode } from '../dist/types/index.js';
 
 // 模块注册表接线：modules → 构建期校验（id 唯一／deps 无环／引用在册）。
 // 缺省参数＝不启用（向后兼容）。
 
 const META = { name: 'module-wiring', description: 'module wiring' };
-const barrier = { checkItems: ['ok'], clarifyPrompt: '继续？', onConfirm: 'continue', onReject: 'rollback' };
+const barrier = { checkItems: [{ label: 'ok', informational: true }], clarifyPrompt: '继续？', onConfirm: 'continue', onReject: 'rollback' };
 const STEP = {
     id: 'a',
     title: 'A',
     description: '单步最小管线',
     body: 'do a',
-    graph: task({ id: 'a-task', label: 'A', type: 'agent', body: 'do a' }),
+    graph: taskNode({ id: 'a-task', label: 'A', type: 'agent', body: 'do a' }),
     reads: [],
     writes: [{ path: '{workDir}/a.md', description: 'a 产物' }],
     barrier,
@@ -27,7 +27,7 @@ const mod = (id, deps) => ({ id, kind: 'data', render: () => '', ...(deps ? { de
 function build(modules, registry = []) {
     const out = mkdtempSync(join(tmpdir(), 'skillnomad-wiring-'));
     try {
-        return buildPipeline([STEP], out, META, registry, undefined, modules);
+        return buildPipeline({ steps: [STEP], outputDir: out, meta: META, registry, modules });
     } finally {
         rmSync(out, { recursive: true, force: true });
     }

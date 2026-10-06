@@ -9,7 +9,7 @@
 
 export * from './model.js';
 export * from './builder.js';
-import type { NextAction, SourceRuntimeTrace, SourceContract } from './model.js';
+import type { CheckItem, NextAction, SourceRuntimeTrace, SourceContract } from './model.js';
 
 // ---------------------------------------------------------------
 // Schema 引用
@@ -134,12 +134,16 @@ export interface FileRef {
 // ---------------------------------------------------------------
 
 export interface BarrierDef {
-    checkItems: string[];
+    checkItems: CheckItem[];
     clarifyPrompt: string;
     onConfirm: 'continue' | string;
     onReject: 'rollback' | 'modify';
     recordPath?: string;
 }
+
+// CheckItem 的单一真相源在 ./model.js（顶部 `export * from './model.js'` 已转出）。
+// 此处曾另有一份同名同形的声明，会静默遮蔽 model 那份——两处都要改才知道改哪个；
+// 0.3.0 删掉，只留一处。
 
 // ---------------------------------------------------------------
 // 生命周期回调
@@ -157,24 +161,6 @@ export interface DegradeProtocol {
 }
 
 // ---------------------------------------------------------------
-// Source trace
-// ---------------------------------------------------------------
-
-export interface SourceTraceEntry {
-    section: string;
-    sourceField: string;
-    sourceFile: string;
-    sourceLayer?: 'steps' | 'contracts' | 'assets' | 'plugins' | 'renderer' | 'modules';
-    sourceKind?: 'content' | 'schema' | 'path' | 'rule' | 'render';
-}
-
-export interface SourceTraceStep {
-    stepId: string;
-    sourceFile: string;
-    entries: SourceTraceEntry[];
-}
-
-// ---------------------------------------------------------------
 // Step 定义
 // ---------------------------------------------------------------
 
@@ -185,6 +171,8 @@ export interface StepDefinition {
     description: string;
     /** 收窄为单值：最多一个前驱（线性链契约的类型级保证）。缺省表示链起点。 */
     dependsOn?: string;
+    /** 跨步约束（0.3.0 新槽）：渲染进「跨步约束」章。 */
+    invariants?: import('./model.js').SourceInvariant[];
     /** 当该步骤是 pipeline 初始化步骤时，渲染为 SKILL.md 的初始化规则。 */
     initRules?: SkillInitRule[];
     /** 运行时事件埋点协议；渲染器会把它输出为 process 的运行记录章节。 */
@@ -193,8 +181,6 @@ export interface StepDefinition {
     body?: string;
     /** 可选：复杂 graph 步骤的完整正文源文件；构建时追加到生成文档。 */
     bodyFile?: string;
-    /** 生成 section 到源码字段的映射，用于 feedback 定位。 */
-    sourceTrace?: SourceTraceEntry[];
     /** 下一步步骤 ID；用于生成文档和 align-report。 */
     next?: string;
     /** 控制流树 — 递归结构替代扁平图 */
@@ -247,9 +233,9 @@ export interface SkillApiMetadata {
     includeBuildFooter?: boolean;
     /** 流程总览中的 ASCII 流程图；未设置时使用步骤 ID 箭头。 */
     flowOverview?: string;
-    callExamples: SkillCallExample[];
-    params: SkillParam[];
-    phases: SkillPhase[];
+    callExamples?: SkillCallExample[];
+    params?: SkillParam[];
+    phases?: SkillPhase[];
     initRules?: SkillInitRule[];
     /** 指定哪个步骤负责 pipeline 初始化；renderer 优先从该步骤读取 initRules。 */
     initStepId?: string;
@@ -326,7 +312,7 @@ export interface ResolvedPipeline {
 // v2 构建辅助函数
 // ---------------------------------------------------------------
 
-export function task(config: TaskDef): TaskNode {
+export function taskNode(config: TaskDef): TaskNode {
     return { kind: 'task', task: config };
 }
 

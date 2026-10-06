@@ -1,6 +1,6 @@
 {
     "name": "skillnomad",
-    "version": "0.2.4",
+    "version": "0.3.0",
     "description": "Build LLM-executable Markdown skills from structured pipeline definitions",
     "keywords": [
         "skillnomad",
@@ -30,7 +30,7 @@
     "scripts": {
         "build": "tsc",
         "typecheck": "tsc -p tsconfig.json",
-        "test": "node --test test/steprefs.test.mjs test/module-usage.test.mjs test/renderstep-p1.test.mjs test/checkpoint-conversion.test.mjs test/decision-example.test.mjs test/define-module.test.mjs test/markrefs-bridge.test.mjs test/markrefs-e2e.test.mjs test/module-wiring.test.mjs test/module-appendix.test.mjs test/export-surface.test.mjs test/blocks.test.mjs test/structure.test.mjs test/chain.test.mjs test/package.test.mjs test/body-sections.test.mjs test/publish-refs.test.mjs test/map-input-derive.test.mjs test/prose-gates.test.mjs test/replay.test.mjs test/ship-assets.test.mjs test/init-scaffold.test.mjs test/node-version.test.mjs test/dangling-refs.test.mjs",
+        "test": "node --test test/steprefs.test.mjs test/module-usage.test.mjs test/renderstep-p1.test.mjs test/checkpoint-conversion.test.mjs test/decision-example.test.mjs test/define-module.test.mjs test/markrefs-bridge.test.mjs test/markrefs-e2e.test.mjs test/module-wiring.test.mjs test/module-appendix.test.mjs test/export-surface.test.mjs test/blocks.test.mjs test/structure.test.mjs test/chain.test.mjs test/package.test.mjs test/body-sections.test.mjs test/publish-refs.test.mjs test/map-input-derive.test.mjs test/prose-gates.test.mjs test/replay.test.mjs test/ship-assets.test.mjs test/init-scaffold.test.mjs test/node-version.test.mjs test/dangling-refs.test.mjs test/source-trace-removal.test.mjs test/comment-refs.test.mjs test/build-diagnostics.test.mjs test/model-defaults.test.mjs test/wish-targets.test.mjs test/demo-parity.test.mjs",
         "clean": "rm -rf dist tsconfig.tsbuildinfo",
         "demo": "npm run build --prefix demos/panel2doc",
         "lint": "eslint .",
@@ -38,7 +38,7 @@
     },
     "dependencies": {
         "markrefs": "0.1.0",
-        "methodblocks": "0.1.1"
+        "methodblocks": "0.2.0"
     },
     "devDependencies": {
         "@stylistic/eslint-plugin": "5.10.0",
